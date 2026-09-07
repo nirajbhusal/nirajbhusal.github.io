@@ -25,7 +25,7 @@ const FACTS = [
   },
   {
     label: 'Kathmandu',
-    text: 'Based in Kathmandu, Nepal. Contact: niraj.bhusal@icloud.com',
+    text: 'Based in Kathmandu, Nepal — reach out via the Contact card.',
   },
   {
     label: 'OPMCM years',

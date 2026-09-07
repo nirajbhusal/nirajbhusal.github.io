@@ -13,8 +13,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="/assets/index-B-txD-Md.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-kZ1gact5.css">
+  <script type="module" crossorigin src="/assets/index-C4nRxAqp.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DLqP8SdF.css">
 </head>
 <body class="gate-locked">
   <div id="enter-gate" class="enter-gate" role="dialog" aria-modal="true" aria-labelledby="enter-gate-title">
@@ -99,6 +99,32 @@
       <h1>Niraj Bhusal</h1>
       <p class="tagline">Civil servant · GovTech · AI governance · DPI</p>
       <p class="lede">Building clearer public systems — and the occasional personal civic tool when the moment demands it. Briefly left the rest of the internet.</p>
+      <div class="hero-chrono" aria-label="Local time and year progress">
+        <p class="hero-caption">move with time, understand the universe</p>
+        <p class="hero-clock" id="hero-clock" aria-live="polite">
+          <time id="hero-datetime" datetime=""></time>
+        </p>
+        <div class="progress-stack">
+          <div class="year-progress" role="progressbar" aria-labelledby="year-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="year-progress">
+            <div class="progress-track">
+              <div class="progress-fill year-fill" id="year-progress-fill"></div>
+            </div>
+            <div class="progress-meta">
+              <span id="year-progress-label">Year</span>
+              <span id="year-progress-pct" class="progress-pct">0%</span>
+            </div>
+          </div>
+          <div class="day-progress" role="progressbar" aria-labelledby="day-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="day-progress">
+            <div class="progress-track day-track">
+              <div class="progress-fill day-fill" id="day-progress-fill"></div>
+            </div>
+            <div class="progress-meta day-meta">
+              <span id="day-progress-label">Day</span>
+              <span id="day-progress-pct" class="progress-pct">0%</span>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#built">See what’s built</a>
         <a class="btn btn-ghost" href="#contact">Contact</a>
@@ -575,14 +601,49 @@
 
     <section id="contact" class="section reveal">
       <h2>Contact</h2>
-      <ul class="contact-list">
-        <li><a href="mailto:niraj.bhusal@icloud.com">niraj.bhusal@icloud.com</a></li>
-        <li><a href="https://linkedin.com/in/nirajbhusal" target="_blank" rel="noopener">linkedin.com/in/nirajbhusal</a></li>
-        <li><a href="https://x.com/nirajbhusal" target="_blank" rel="noopener">x.com/nirajbhusal</a></li>
-        <li><a href="https://www.buymeacoffee.com/helloniraz" target="_blank" rel="noopener">Buy Me a Coffee — helloniraz</a></li>
-        <li><a href="https://grokipedia.com/page/Niraj_Bhusal" target="_blank" rel="noopener">Grokipedia</a></li>
-        <li><a href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener">Flood Bulletin</a></li>
-      </ul>
+      <div class="contact-grid" role="list">
+        <a class="contact-card" role="listitem" href="mailto:niraj.bhusal@icloud.com" id="contact-email-card" aria-label="Contact by email" data-email-card>
+          <span class="contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg>
+          </span>
+          <span class="contact-label">Contact</span>
+          <span class="contact-hint">Email</span>
+        </a>
+        <a class="contact-card" role="listitem" href="https://linkedin.com/in/nirajbhusal" target="_blank" rel="noopener" aria-label="LinkedIn — nirajbhusal">
+          <span class="contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V23h-4V8.5zM8.5 8.5h3.8v2h.05c.53-1 1.82-2.05 3.75-2.05 4.01 0 4.75 2.64 4.75 6.07V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.54 1.72-2.54 3.49V23h-4V8.5z"/></svg>
+          </span>
+          <span class="contact-label">LinkedIn</span>
+          <span class="contact-hint">Profile</span>
+        </a>
+        <a class="contact-card" role="listitem" href="https://x.com/nirajbhusal" target="_blank" rel="noopener" aria-label="X — nirajbhusal">
+          <span class="contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M18.9 2H22l-6.78 7.75L23.5 22h-6.55l-5.13-6.7L6.1 22H3l7.25-8.28L.5 2h6.7l4.64 6.15L18.9 2zm-1.15 18h1.82L6.4 3.9H4.45L17.75 20z"/></svg>
+          </span>
+          <span class="contact-label">X</span>
+          <span class="contact-hint">@nirajbhusal</span>
+        </a>
+        <a class="contact-card" role="listitem" href="https://www.buymeacoffee.com/helloniraz" target="_blank" rel="noopener" aria-label="Buy Me a Coffee">
+          <span class="contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13a3 3 0 0 1 0 6h-1"/><path d="M5 8v7a4 4 0 0 0 4 4h3a4 4 0 0 0 4-4v-1"/><path d="M8 2v3M12 2v3"/></svg>
+          </span>
+          <span class="contact-label">Coffee</span>
+          <span class="contact-hint">Support</span>
+        </a>
+        <a class="contact-card" role="listitem" href="https://grokipedia.com/page/Niraj_Bhusal" target="_blank" rel="noopener" aria-label="Grokipedia — Niraj Bhusal">
+          <span class="contact-icon lettermark" aria-hidden="true">G</span>
+          <span class="contact-label">Grokipedia</span>
+          <span class="contact-hint">Page</span>
+        </a>
+        <a class="contact-card" role="listitem" href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener" aria-label="Rasuwa Flood Bulletin">
+          <span class="contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14c2-1 3.5-4 4-7 1 3 2.5 5 5 6 1.5.6 3 2 3 4H4z"/><path d="M14 7c.5-2 1.5-3.5 3-4"/><path d="M3 20h18"/></svg>
+          </span>
+          <span class="contact-label">Flood Bulletin</span>
+          <span class="contact-hint">Civic</span>
+        </a>
+      </div>
+      <div id="email-toast" class="email-toast" role="status" aria-live="polite" hidden>Copied</div>
       <div class="card coffee-card">
         <h3>Buy Me a Coffee</h3>
         <p>Coffee supports time and hosting for personal civic tools — <strong>not</strong> disaster relief.</p>

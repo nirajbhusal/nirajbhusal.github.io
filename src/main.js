@@ -7,6 +7,7 @@ import { initSpaceObjects } from './space-objects.js';
 
 const THEME_KEY = 'theme';
 const GATE_KEY = 'nb-entered';
+const EMAIL = 'niraj.bhusal@icloud.com';
 const prefersReduced = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -16,6 +17,25 @@ function applyTheme(theme) {
   } else {
     document.documentElement.removeAttribute('data-theme');
   }
+}
+
+function periodFromHour(hour) {
+  if (hour >= 5 && hour < 12) return 'morning';
+  if (hour >= 12 && hour < 18) return 'afternoon';
+  return 'night';
+}
+
+function applyTimeOfDay(period) {
+  document.documentElement.setAttribute('data-tod', period);
+}
+
+function initTimeOfDay() {
+  const tick = () => {
+    applyTimeOfDay(periodFromHour(new Date().getHours()));
+  };
+  tick();
+  // Refresh every minute so dawn/dusk transitions land cleanly
+  window.setInterval(tick, 60_000);
 }
 
 function initTheme() {
@@ -36,6 +56,152 @@ function initTheme() {
 function initYear() {
   const el = document.getElementById('year');
   if (el) el.textContent = String(new Date().getFullYear());
+}
+
+function dayOfYear(d) {
+  const start = new Date(d.getFullYear(), 0, 0);
+  const diff = d - start;
+  return Math.floor(diff / 86_400_000);
+}
+
+function daysInYear(year) {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365;
+}
+
+function initHeroChrono() {
+  const timeEl = document.getElementById('hero-datetime');
+  const yearBar = document.getElementById('year-progress');
+  const yearFill = document.getElementById('year-progress-fill');
+  const yearPct = document.getElementById('year-progress-pct');
+  const dayBar = document.getElementById('day-progress');
+  const dayFill = document.getElementById('day-progress-fill');
+  const dayPct = document.getElementById('day-progress-pct');
+  if (!timeEl && !yearBar) return;
+
+  const timeFmt = new Intl.DateTimeFormat(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+
+  function tick() {
+    const now = new Date();
+    if (timeEl) {
+      timeEl.dateTime = now.toISOString();
+      timeEl.textContent = timeFmt.format(now);
+    }
+
+    const diy = daysInYear(now.getFullYear());
+    const doy = dayOfYear(now);
+    // include fractional day for a living year bar
+    const dayFrac =
+      (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) /
+      86_400;
+    const yearFrac = Math.min(1, (doy - 1 + dayFrac) / diy);
+    const yearPercent = yearFrac * 100;
+
+    if (yearFill) yearFill.style.width = `${yearPercent}%`;
+    if (yearBar) {
+      yearBar.setAttribute('aria-valuenow', yearPercent.toFixed(1));
+      yearBar.setAttribute(
+        'aria-valuetext',
+        `Day ${doy} of ${diy}, ${yearPercent.toFixed(1)} percent`
+      );
+    }
+    if (yearPct) yearPct.textContent = `${yearPercent.toFixed(1)}%`;
+
+    const dayPercent = dayFrac * 100;
+    if (dayFill) dayFill.style.width = `${dayPercent}%`;
+    if (dayBar) {
+      dayBar.setAttribute('aria-valuenow', dayPercent.toFixed(1));
+      dayBar.setAttribute(
+        'aria-valuetext',
+        `${dayPercent.toFixed(1)} percent of today`
+      );
+    }
+    if (dayPct) dayPct.textContent = `${dayPercent.toFixed(1)}%`;
+  }
+
+  tick();
+  window.setInterval(tick, prefersReduced() ? 30_000 : 1000);
+}
+
+function showEmailToast() {
+  const toast = document.getElementById('email-toast');
+  if (!toast) return;
+  toast.hidden = false;
+  toast.classList.add('is-visible');
+  window.clearTimeout(showEmailToast._t);
+  showEmailToast._t = window.setTimeout(() => {
+    toast.classList.remove('is-visible');
+    toast.hidden = true;
+  }, 1600);
+}
+
+async function copyEmail() {
+  try {
+    await navigator.clipboard.writeText(EMAIL);
+    showEmailToast();
+    return true;
+  } catch {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = EMAIL;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      showEmailToast();
+      return true;
+    } catch {
+      return false;
+    } finally {
+      ta.remove();
+    }
+  }
+}
+
+function initContactCards() {
+  const card = document.getElementById('contact-email-card');
+  if (!card) return;
+
+  // Prefer mailto on primary click; copy on context menu / long-press / Alt+click
+  let pressTimer = 0;
+  let longPressed = false;
+
+  card.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    copyEmail();
+  });
+
+  card.addEventListener('click', (e) => {
+    if (e.altKey || e.metaKey || longPressed) {
+      e.preventDefault();
+      copyEmail();
+      longPressed = false;
+    }
+    // else: native mailto
+  });
+
+  card.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    longPressed = false;
+    pressTimer = window.setTimeout(() => {
+      longPressed = true;
+      copyEmail();
+    }, 550);
+  });
+
+  const clearPress = () => window.clearTimeout(pressTimer);
+  card.addEventListener('pointerup', clearPress);
+  card.addEventListener('pointerleave', clearPress);
+  card.addEventListener('pointercancel', clearPress);
 }
 
 function initReveal() {
@@ -282,8 +448,11 @@ function initAmbientAndGate() {
   return ambient;
 }
 
+initTimeOfDay();
 initTheme();
 initYear();
+initHeroChrono();
+initContactCards();
 initNav();
 initReveal();
 initAmbientAndGate();

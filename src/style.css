@@ -43,6 +43,7 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-h) + 0.75rem);
+  transition: background-color 1.2s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -75,6 +76,7 @@ body {
   background: var(--bg);
   line-height: 1.65;
   letter-spacing: 0.01em;
+  transition: background-color 1.2s ease, color 1.2s ease;
 }
 
 body.nav-open,
@@ -103,6 +105,7 @@ body.orbit-open {
     radial-gradient(ellipse 40% 30% at 50% 92%, rgba(20, 30, 50, 0.35), transparent 50%);
   animation: nebula-drift 48s ease-in-out infinite alternate;
   opacity: 0.85;
+  transition: background 1.6s ease, opacity 1.6s ease, filter 1.6s ease;
 }
 
 [data-theme="light"] .nebula {
@@ -707,25 +710,99 @@ h3 {
   font-size: 0.95rem;
 }
 
-.contact-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1.25rem;
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.85rem;
+  margin: 0 0 1.5rem;
 }
 
-.contact-list a {
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 1rem 1.05rem 0.95rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--card);
   color: var(--fg);
   text-decoration: none;
-  border-bottom: 1px solid transparent;
+  box-shadow: none;
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+  min-height: 7.2rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.contact-list a:hover {
+.contact-card:hover,
+.contact-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28), 0 0 0 1px var(--accent-soft);
+  outline: none;
+  background: color-mix(in srgb, var(--card) 70%, var(--accent-soft));
+}
+
+.contact-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 10px;
   color: var(--accent-bright);
-  border-bottom-color: var(--accent);
+  background: var(--accent-soft);
 }
 
-.contact-list li {
-  margin-bottom: 0.45rem;
+.contact-icon.lettermark {
+  font-family: var(--mono);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.contact-label {
+  font-size: 0.98rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.contact-hint {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.email-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  z-index: 200;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+  color: var(--fg);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.email-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.email-toast[hidden] {
+  display: none !important;
 }
 
 .coffee-card p {
@@ -1065,13 +1142,18 @@ body.gate-locked {
   padding: 0;
   border: none;
   background: transparent;
-  cursor: pointer;
+  cursor: grab;
   pointer-events: auto;
+  touch-action: none;
   -webkit-tap-highlight-color: transparent;
+  --mx: 0px;
+  --my: 0px;
   animation: cosmo-drift 14s ease-in-out infinite alternate;
   animation-delay: var(--delay);
   opacity: 0.72;
   z-index: 2;
+  transform: translate3d(var(--mx), var(--my), 0);
+  will-change: transform, left, top;
 }
 .cosmo-obj:hover,
 .cosmo-obj:focus-visible {
@@ -1079,8 +1161,17 @@ body.gate-locked {
   outline: none;
   z-index: 3;
 }
+.cosmo-obj.is-dragging {
+  cursor: grabbing;
+  opacity: 1;
+  z-index: 5;
+  animation: none;
+  filter: drop-shadow(0 0 12px rgba(59, 158, 255, 0.45));
+}
 .cosmo-obj.is-static {
   animation: none;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 .cosmo-obj.is-spin .cosmo-core {
   animation: cosmo-spin 0.85s ease;
@@ -1127,8 +1218,8 @@ body.gate-locked {
   box-shadow: 0 0 20px rgba(190, 220, 255, 0.35);
 }
 @keyframes cosmo-drift {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(10px, -14px, 0); }
+  from { transform: translate3d(var(--mx, 0px), var(--my, 0px), 0); }
+  to { transform: translate3d(calc(var(--mx, 0px) + 10px), calc(var(--my, 0px) - 14px), 0); }
 }
 @keyframes cosmo-spin {
   from { transform: rotate(0deg) scale(1); }
@@ -1173,4 +1264,147 @@ body.gate-locked {
 }
 [data-theme="light"] .cosmo-planet .cosmo-core {
   background: radial-gradient(circle at 35% 30%, #b3d9ff, #3b9eff 50%, #4a6a8a 100%);
+}
+
+
+/* —— Hero chronometer / year progress —— */
+.hero-chrono {
+  margin: 1.35rem 0 1.6rem;
+  max-width: 28rem;
+}
+
+.hero-caption {
+  margin: 0 0 0.55rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--muted);
+}
+
+.hero-clock {
+  margin: 0 0 0.95rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: color-mix(in srgb, var(--fg) 78%, var(--muted));
+  letter-spacing: 0.02em;
+}
+
+.progress-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.year-progress,
+.day-progress {
+  width: 100%;
+}
+
+.progress-track {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fg) 8%, transparent);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+.day-track {
+  height: 2px;
+  opacity: 0.85;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent-bright));
+  box-shadow: 0 0 12px var(--accent-glow);
+  transition: width 0.9s linear;
+}
+
+.day-fill {
+  background: linear-gradient(90deg, rgba(232, 233, 237, 0.35), var(--accent));
+  box-shadow: none;
+  transition: width 1s linear;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 0.35rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.day-meta {
+  font-size: 0.62rem;
+  opacity: 0.85;
+}
+
+.progress-pct {
+  color: color-mix(in srgb, var(--accent-bright) 80%, var(--muted));
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— Time-of-day atmosphere (tints dark cosmic; light mode stays paper) —— */
+html:not([data-theme="light"])[data-tod="morning"] {
+  --bg: #070a12;
+  --bg-elevated: #0d121c;
+}
+html:not([data-theme="light"])[data-tod="morning"] .nebula {
+  opacity: 0.78;
+  filter: saturate(0.9) brightness(1.08);
+  background:
+    radial-gradient(ellipse 60% 42% at 22% 18%, rgba(120, 180, 255, 0.11), transparent 62%),
+    radial-gradient(ellipse 50% 36% at 78% 55%, rgba(180, 200, 255, 0.05), transparent 55%),
+    radial-gradient(ellipse 45% 28% at 50% 95%, rgba(40, 60, 90, 0.28), transparent 50%);
+}
+
+html:not([data-theme="light"])[data-tod="afternoon"] {
+  --bg: #06080f;
+  --bg-elevated: #0c1018;
+}
+html:not([data-theme="light"])[data-tod="afternoon"] .nebula {
+  opacity: 0.92;
+  filter: saturate(1.05) brightness(1.12);
+  background:
+    radial-gradient(ellipse 58% 40% at 50% 88%, rgba(59, 158, 255, 0.14), transparent 58%),
+    radial-gradient(ellipse 45% 32% at 18% 30%, rgba(90, 170, 255, 0.08), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 85% 40%, rgba(255, 255, 255, 0.04), transparent 55%);
+}
+
+html:not([data-theme="light"])[data-tod="night"] {
+  --bg: #05060a;
+  --bg-elevated: #0b0d14;
+}
+html:not([data-theme="light"])[data-tod="night"] .nebula {
+  opacity: 0.85;
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill,
+  .day-fill,
+  .contact-card,
+  .email-toast,
+  .nebula,
+  body,
+  html {
+    transition: none !important;
+  }
+  .cosmo-obj {
+    touch-action: manipulation;
+  }
+}
+
+[data-theme="light"] .contact-card:hover,
+[data-theme="light"] .contact-card:focus-visible {
+  box-shadow: 0 12px 28px rgba(18, 20, 26, 0.08);
 }

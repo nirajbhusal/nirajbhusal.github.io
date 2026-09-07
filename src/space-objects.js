@@ -1,5 +1,7 @@
 /**
- * Floating interactive cosmic objects — non-blocking, reduced-motion aware.
+ * Floating interactive cosmic objects — draggable, reactive, reduced-motion aware.
+ * Pointer + touch drag with inertia; magnetic nudge near cursor; click reveals facts.
+ * Does not block page scroll unless actively dragging.
  */
 
 const OBJECTS = [
@@ -64,18 +66,19 @@ export function initSpaceObjects(root) {
   document.body.appendChild(tip);
 
   let hideTimer = 0;
+  const pointer = { x: -9999, y: -9999, active: false };
+  const bodies = [];
+  let raf = 0;
+  let dragging = null;
 
   function showTip(text, el) {
     tip.textContent = text;
     tip.hidden = false;
     const r = el.getBoundingClientRect();
     const pad = 12;
-    let left = r.left + r.width / 2;
-    let top = r.top - 8;
-    tip.style.left = `${left}px`;
-    tip.style.top = `${top}px`;
+    tip.style.left = `${r.left + r.width / 2}px`;
+    tip.style.top = `${r.top - 8}px`;
     tip.style.transform = 'translate(-50%, -100%)';
-    // keep on screen
     requestAnimationFrame(() => {
       const tr = tip.getBoundingClientRect();
       let dx = 0;
@@ -90,6 +93,17 @@ export function initSpaceObjects(root) {
     }, 4200);
   }
 
+  function clamp(v, min, max) {
+    return Math.min(max, Math.max(min, v));
+  }
+
+  function setPos(body, xPct, yPct) {
+    body.x = clamp(xPct, 2, 96);
+    body.y = clamp(yPct, 4, 92);
+    body.el.style.setProperty('--x', `${body.x}%`);
+    body.el.style.setProperty('--y', `${body.y}%`);
+  }
+
   OBJECTS.forEach((spec, i) => {
     const el = document.createElement('button');
     el.type = 'button';
@@ -100,19 +114,99 @@ export function initSpaceObjects(root) {
     el.style.setProperty('--delay', `${i * 0.7}s`);
     el.setAttribute('aria-label', `${spec.label}: ${spec.fact}`);
     el.innerHTML = `<span class="cosmo-core" aria-hidden="true"></span>`;
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      el.classList.add('is-spin');
-      showTip(spec.fact, el);
-      window.setTimeout(() => el.classList.remove('is-spin'), 900);
+
+    const body = {
+      el,
+      spec,
+      x: spec.x,
+      y: spec.y,
+      vx: 0,
+      vy: 0,
+      ox: 0,
+      oy: 0,
+      baseX: spec.x,
+      baseY: spec.y,
+      moved: false,
+      downAt: 0,
+      downX: 0,
+      downY: 0,
+    };
+
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      // Capture only on the object — page scroll stays free otherwise
+      el.setPointerCapture(e.pointerId);
+      dragging = body;
+      body.moved = false;
+      body.downAt = performance.now();
+      body.downX = e.clientX;
+      body.downY = e.clientY;
+      body.vx = 0;
+      body.vy = 0;
+      el.classList.add('is-dragging');
+      el.classList.remove('is-spin');
+      tip.hidden = true;
+      e.preventDefault();
     });
+
+    el.addEventListener('pointermove', (e) => {
+      if (dragging !== body) return;
+      const dx = e.clientX - body.downX;
+      const dy = e.clientY - body.downY;
+      if (!body.moved && Math.hypot(dx, dy) < 6) return;
+      body.moved = true;
+      const xPct = (e.clientX / window.innerWidth) * 100;
+      const yPct = (e.clientY / window.innerHeight) * 100;
+      const prevX = body.x;
+      const prevY = body.y;
+      setPos(body, xPct, yPct);
+      body.vx = body.x - prevX;
+      body.vy = body.y - prevY;
+      body.ox = 0;
+      body.oy = 0;
+    });
+
+    function endDrag(e) {
+      if (dragging !== body) return;
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch (_) {
+        /* already released */
+      }
+      el.classList.remove('is-dragging');
+      dragging = null;
+      if (!body.moved) {
+        el.classList.add('is-spin');
+        showTip(spec.fact, el);
+        window.setTimeout(() => el.classList.remove('is-spin'), 900);
+      } else if (!reduced) {
+        // mild inertia kick from last velocity
+        body.vx *= 1.4;
+        body.vy *= 1.4;
+      }
+    }
+
+    el.addEventListener('pointerup', endDrag);
+    el.addEventListener('pointercancel', endDrag);
+
     el.addEventListener('pointerenter', () => {
-      if (window.matchMedia('(hover: hover)').matches) showTip(spec.fact, el);
+      if (window.matchMedia('(hover: hover)').matches && !dragging) {
+        showTip(spec.fact, el);
+      }
     });
+
+    // Prevent accidental click after drag
+    el.addEventListener('click', (e) => {
+      if (body.moved) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+
     root.appendChild(el);
+    bodies.push(body);
   });
 
-  // Hide tip on scroll so it never blocks reading
   window.addEventListener(
     'scroll',
     () => {
@@ -120,4 +214,85 @@ export function initSpaceObjects(root) {
     },
     { passive: true }
   );
+
+  window.addEventListener(
+    'pointermove',
+    (e) => {
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+      pointer.active = true;
+    },
+    { passive: true }
+  );
+
+  window.addEventListener(
+    'pointerleave',
+    () => {
+      pointer.active = false;
+    },
+    { passive: true }
+  );
+
+  if (reduced) {
+    // Static placement only — no magnetic/inertia loops
+    return;
+  }
+
+  let last = performance.now();
+  function tick(now) {
+    const dt = Math.min(0.033, (now - last) / 1000);
+    last = now;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    for (const body of bodies) {
+      if (dragging === body) continue;
+
+      // Magnetic nudge near cursor
+      if (pointer.active) {
+        const cx = (body.x / 100) * w;
+        const cy = (body.y / 100) * h;
+        const dx = pointer.x - cx;
+        const dy = pointer.y - cy;
+        const dist = Math.hypot(dx, dy) || 1;
+        const radius = 140;
+        if (dist < radius) {
+          const force = (1 - dist / radius) * 18;
+          body.ox += (dx / dist) * force * dt;
+          body.oy += (dy / dist) * force * dt;
+        }
+      }
+
+      // Soft spring back toward home + inertia
+      body.vx += (body.baseX - body.x) * 0.35 * dt;
+      body.vy += (body.baseY - body.y) * 0.35 * dt;
+      body.vx *= 0.94;
+      body.vy *= 0.94;
+      body.ox *= 0.9;
+      body.oy *= 0.9;
+
+      const nx = body.x + body.vx + body.ox * 0.08;
+      const ny = body.y + body.vy + body.oy * 0.08;
+      setPos(body, nx, ny);
+
+      // Subtle follow offset via transform (keeps CSS drift free when not dragging)
+      const followX = body.ox * 0.35;
+      const followY = body.oy * 0.35;
+      body.el.style.setProperty('--mx', `${followX.toFixed(2)}px`);
+      body.el.style.setProperty('--my', `${followY.toFixed(2)}px`);
+    }
+
+    raf = requestAnimationFrame(tick);
+  }
+
+  raf = requestAnimationFrame(tick);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      cancelAnimationFrame(raf);
+    } else if (!reduced) {
+      last = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+  });
 }
