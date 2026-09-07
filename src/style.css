@@ -54,7 +54,8 @@ html {
   .reveal,
   .orbit-fab,
   .cosmo-obj,
-  .enter-gate-stars {
+  .enter-gate-canvas,
+  .enter-gate-veil {
     animation: none !important;
     transition: none !important;
   }
@@ -1156,9 +1157,9 @@ h3 {
   z-index: 500;
   display: grid;
   place-items: center;
-  background: #030408;
+  background: #020308;
   color: var(--fg);
-  transition: opacity 1.65s cubic-bezier(0.22, 1, 0.36, 1), visibility 1.65s;
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.45s;
 }
 .enter-gate.is-leaving {
   opacity: 0;
@@ -1168,35 +1169,54 @@ h3 {
 .enter-gate[hidden] {
   display: none !important;
 }
-.enter-gate-stars {
+.enter-gate-canvas {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(1px 1px at 14% 22%, rgba(255,255,255,0.45), transparent),
-    radial-gradient(1px 1px at 32% 48%, rgba(190,220,255,0.35), transparent),
-    radial-gradient(1.2px 1.2px at 58% 28%, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 74% 62%, rgba(190,220,255,0.3), transparent),
-    radial-gradient(1.4px 1.4px at 86% 34%, rgba(255,255,255,0.4), transparent),
-    radial-gradient(1px 1px at 42% 80%, rgba(190,220,255,0.28), transparent),
-    radial-gradient(1px 1px at 20% 86%, rgba(255,255,255,0.32), transparent),
-    radial-gradient(ellipse 55% 45% at 50% 48%, rgba(59,158,255,0.045), transparent 72%);
-  animation: gate-bloom 9s ease-in-out infinite alternate;
+  width: 100%;
+  height: 100%;
+  display: block;
   pointer-events: none;
-  opacity: 0.7;
+  z-index: 0;
 }
-@keyframes gate-bloom {
-  from { opacity: 0.45; transform: scale(1); }
-  to { opacity: 0.85; transform: scale(1.015); }
+.enter-gate-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(40, 70, 140, 0.12), transparent 62%),
+    radial-gradient(ellipse 45% 40% at 78% 28%, rgba(90, 50, 130, 0.1), transparent 55%),
+    radial-gradient(ellipse 50% 45% at 18% 70%, rgba(25, 55, 110, 0.1), transparent 58%),
+    radial-gradient(ellipse 90% 80% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+  opacity: 0.85;
+  animation: gate-veil-breathe 11s ease-in-out infinite alternate;
+}
+@keyframes gate-veil-breathe {
+  from { opacity: 0.65; }
+  to { opacity: 0.95; }
 }
 .enter-gate-inner {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   text-align: center;
   padding: 2.5rem 1.5rem;
   max-width: 22rem;
   opacity: 0;
   transform: translateY(10px);
   animation: gate-settle 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
+  transition: opacity 0.55s ease, transform 0.55s ease, filter 0.55s ease;
+}
+.enter-gate.is-crossing .enter-gate-inner {
+  opacity: 0 !important;
+  transform: scale(1.08) translateY(-6px);
+  filter: blur(2px);
+  pointer-events: none;
+  animation: none;
+}
+.enter-gate.is-crossing .enter-gate-veil {
+  animation: none;
+  opacity: 0.35;
+  transition: opacity 0.8s ease;
 }
 @keyframes gate-settle {
   to { opacity: 1; transform: none; }
@@ -1233,6 +1253,10 @@ h3 {
   color: var(--accent-bright);
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   outline: none;
+}
+.enter-gate .btn-gate:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 
 body.gate-locked {
@@ -1589,7 +1613,8 @@ html:not([data-theme="light"])[data-tod="night"] .nebula {
   body,
   html,
   .enter-gate,
-  .enter-gate-inner {
+  .enter-gate-inner,
+  .enter-gate-veil {
     transition: none !important;
     animation: none !important;
   }
@@ -1597,9 +1622,13 @@ html:not([data-theme="light"])[data-tod="night"] .nebula {
     opacity: 1;
     transform: none;
   }
-  .enter-gate-stars {
+  .enter-gate-veil {
     animation: none !important;
-    opacity: 0.55;
+    opacity: 0.75;
+  }
+  .enter-gate.is-crossing .enter-gate-inner {
+    transform: none;
+    filter: none;
   }
   .cosmo-obj {
     touch-action: manipulation;

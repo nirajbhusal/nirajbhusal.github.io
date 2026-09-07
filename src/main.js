@@ -4,6 +4,7 @@ import { initOrbitDodge } from './orbit-dodge.js';
 import { initConstellation } from './constellation.js';
 import { createAmbient } from './ambient.js';
 import { initSpaceObjects } from './space-objects.js';
+import { initEnterGateVista } from './enter-gate.js';
 
 const THEME_KEY = 'theme';
 const GATE_KEY = 'nb-entered';
@@ -422,6 +423,13 @@ function initAmbientAndGate() {
   const soundBtn = document.getElementById('sound-toggle');
   const gate = document.getElementById('enter-gate');
   const enterBtn = document.getElementById('enter-gate-btn');
+  const gateCanvas = document.getElementById('enter-gate-canvas');
+
+  const already = sessionStorage.getItem(GATE_KEY) === '1';
+  const vista =
+    gate && !already
+      ? initEnterGateVista(gateCanvas)
+      : { warp: async () => {}, destroy: () => {} };
 
   syncSoundButton(soundBtn, ambient);
 
@@ -435,8 +443,11 @@ function initAmbientAndGate() {
     syncSoundButton(soundBtn, ambient);
   });
 
+  let dismissing = false;
   async function dismissGate(startSound) {
-    if (!gate || gate.hidden) return;
+    if (!gate || gate.hidden || dismissing) return;
+    dismissing = true;
+    enterBtn?.setAttribute("disabled", "");
     if (startSound) {
       await ambient.start();
       if (ambient.isMuted()) {
@@ -444,23 +455,30 @@ function initAmbientAndGate() {
       }
     }
     sessionStorage.setItem(GATE_KEY, '1');
-    gate.classList.add('is-leaving');
+    syncSoundButton(soundBtn, ambient);
+    const reduced = prefersReduced();
+    gate.classList.add(reduced ? 'is-leaving' : 'is-crossing');
     document.body.classList.remove('gate-locked');
     document.body.classList.add('is-entering');
-    syncSoundButton(soundBtn, ambient);
     const done = () => {
       gate.hidden = true;
-      gate.classList.remove('is-leaving');
+      gate.classList.remove('is-leaving', 'is-crossing');
       document.body.classList.remove('is-entering');
+      vista.destroy();
     };
-    if (prefersReduced()) done();
-    else window.setTimeout(done, 1650);
+    if (reduced) {
+      window.setTimeout(done, 320);
+      return;
+    }
+    await vista.warp(2100);
+    gate.classList.add('is-leaving');
+    window.setTimeout(done, 420);
   }
 
-  const already = sessionStorage.getItem(GATE_KEY) === '1';
   if (already || !gate) {
     gate?.setAttribute('hidden', '');
     document.body.classList.remove('gate-locked');
+    vista.destroy();
   } else {
     enterBtn?.focus();
     enterBtn?.addEventListener('click', () => dismissGate(true));
