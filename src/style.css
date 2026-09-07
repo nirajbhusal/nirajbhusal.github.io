@@ -141,6 +141,7 @@ main,
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   border-bottom: 1px solid var(--border);
   z-index: 100;
+  overflow: visible;
 }
 
 .logo {
@@ -155,19 +156,27 @@ main,
 .nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.15rem 0.75rem;
+  gap: 0.2rem 0.65rem;
   margin-left: auto;
   align-items: center;
+  overflow: visible;
+  max-width: none;
 }
 
 .nav a {
   color: var(--muted);
   text-decoration: none;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 400;
-  padding: 0.25rem 0;
+  padding: 0.3rem 0.15rem;
   border-bottom: 2px solid transparent;
   transition: color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  max-width: none;
+  flex-shrink: 0;
+  line-height: 1.3;
 }
 
 .nav a:hover,
@@ -316,6 +325,12 @@ h2 {
   margin: 0 0 1.6rem;
   padding-bottom: 0.7rem;
   border-bottom: 1px solid var(--border);
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 h3 {
@@ -908,7 +923,7 @@ h3 {
   line-height: 1;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1100px) {
   .nav-toggle {
     display: inline-flex;
   }
@@ -947,12 +962,16 @@ h3 {
   }
 
   .nav a {
-    font-size: 1.05rem;
-    padding: 0.9rem 0.35rem;
+    font-size: 1.08rem;
+    padding: 0.95rem 0.4rem;
     border-bottom: 1px solid var(--border);
-    min-height: 2.75rem;
+    min-height: 2.85rem;
     display: flex;
     align-items: center;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.35;
   }
 
   .nav a.active {
@@ -1144,29 +1163,51 @@ body.gate-locked {
   background: transparent;
   cursor: grab;
   pointer-events: auto;
-  touch-action: none;
+  touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
   --mx: 0px;
   --my: 0px;
-  animation: cosmo-drift 14s ease-in-out infinite alternate;
+  --zscale: 1;
+  --depth: 0.5;
+  animation: cosmo-drift 16s ease-in-out infinite alternate;
   animation-delay: var(--delay);
-  opacity: 0.72;
-  z-index: 2;
-  transform: translate3d(var(--mx), var(--my), 0);
-  will-change: transform, left, top;
+  opacity: calc(0.55 + var(--depth) * 0.35);
+  z-index: calc(2 + var(--depth) * 4);
+  transform: translate3d(var(--mx), var(--my), 0) scale(var(--zscale));
+  will-change: transform, left, top, filter;
+  transition: filter 0.25s ease, opacity 0.25s ease;
+}
+.cosmo-glow {
+  position: absolute;
+  inset: -35%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 158, 255, 0.35), transparent 68%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+.cosmo-obj:hover .cosmo-glow,
+.cosmo-obj:focus-visible .cosmo-glow,
+.cosmo-obj.is-glow .cosmo-glow,
+.cosmo-obj.is-dragging .cosmo-glow {
+  opacity: 1;
 }
 .cosmo-obj:hover,
-.cosmo-obj:focus-visible {
+.cosmo-obj:focus-visible,
+.cosmo-obj.is-glow {
   opacity: 1;
   outline: none;
-  z-index: 3;
+  z-index: 6;
+  filter: drop-shadow(0 0 14px rgba(59, 158, 255, 0.55));
 }
 .cosmo-obj.is-dragging {
   cursor: grabbing;
   opacity: 1;
-  z-index: 5;
+  z-index: 8;
   animation: none;
-  filter: drop-shadow(0 0 12px rgba(59, 158, 255, 0.45));
+  touch-action: none;
+  filter: drop-shadow(0 0 18px rgba(59, 158, 255, 0.65));
 }
 .cosmo-obj.is-static {
   animation: none;
@@ -1177,6 +1218,8 @@ body.gate-locked {
   animation: cosmo-spin 0.85s ease;
 }
 .cosmo-core {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
@@ -1218,8 +1261,8 @@ body.gate-locked {
   box-shadow: 0 0 20px rgba(190, 220, 255, 0.35);
 }
 @keyframes cosmo-drift {
-  from { transform: translate3d(var(--mx, 0px), var(--my, 0px), 0); }
-  to { transform: translate3d(calc(var(--mx, 0px) + 10px), calc(var(--my, 0px) - 14px), 0); }
+  from { transform: translate3d(var(--mx, 0px), var(--my, 0px), 0) scale(var(--zscale, 1)); }
+  to { transform: translate3d(calc(var(--mx, 0px) + 12px), calc(var(--my, 0px) - 16px), 0) scale(var(--zscale, 1)); }
 }
 @keyframes cosmo-spin {
   from { transform: rotate(0deg) scale(1); }
@@ -1248,8 +1291,14 @@ body.gate-locked {
 
 @media (max-width: 720px) {
   .cosmo-obj {
-    opacity: 0.55;
-    transform: scale(0.85);
+    opacity: 0.6;
+    --zscale: 0.88;
+  }
+  .hero-chrono {
+    padding: 0.9rem 0.95rem 1rem;
+  }
+  .hero-caption {
+    letter-spacing: 0.04em;
   }
   /* keep clear of FAB / content gutters */
   .cosmo-obj[style*="--x: 88%"],
@@ -1269,33 +1318,45 @@ body.gate-locked {
 
 /* —— Hero chronometer / year progress —— */
 .hero-chrono {
-  margin: 1.35rem 0 1.6rem;
-  max-width: 28rem;
+  margin: 1.5rem 0 1.85rem;
+  max-width: min(40rem, 100%);
+  width: 100%;
+  padding: 1.05rem 1.15rem 1.15rem;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  background:
+    radial-gradient(ellipse 80% 70% at 12% 0%, rgba(59, 158, 255, 0.1), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(110, 192, 255, 0.06), transparent 50%),
+    color-mix(in srgb, var(--card) 88%, transparent);
+  box-shadow: 0 0 40px rgba(59, 158, 255, 0.06);
 }
 
 .hero-caption {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.7rem;
   font-family: var(--mono);
-  font-size: 0.78rem;
+  font-size: clamp(0.92rem, 2.4vw, 1.08rem);
   font-weight: 400;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: lowercase;
-  color: var(--muted);
+  color: color-mix(in srgb, var(--fg) 72%, var(--accent-bright));
+  line-height: 1.45;
+  overflow: visible;
+  white-space: normal;
 }
 
 .hero-clock {
-  margin: 0 0 0.95rem;
+  margin: 0 0 1.05rem;
   font-family: var(--mono);
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 400;
-  color: color-mix(in srgb, var(--fg) 78%, var(--muted));
+  color: color-mix(in srgb, var(--fg) 82%, var(--muted));
   letter-spacing: 0.02em;
 }
 
 .progress-stack {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.7rem;
 }
 
 .year-progress,
@@ -1311,9 +1372,16 @@ body.gate-locked {
   border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
 }
 
+.year-track {
+  height: 8px;
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+  box-shadow: inset 0 0 12px rgba(59, 158, 255, 0.08);
+}
+
 .day-track {
   height: 2px;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .progress-fill {
@@ -1323,6 +1391,10 @@ body.gate-locked {
   background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent-bright));
   box-shadow: 0 0 12px var(--accent-glow);
   transition: width 0.9s linear;
+}
+
+.year-fill {
+  box-shadow: 0 0 18px var(--accent-glow), 0 0 4px rgba(255, 255, 255, 0.35);
 }
 
 .day-fill {
@@ -1335,22 +1407,32 @@ body.gate-locked {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-top: 0.35rem;
+  gap: 0.75rem;
+  margin-top: 0.45rem;
   font-family: var(--mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: none;
   color: var(--muted);
+  overflow: visible;
+}
+
+.year-progress .progress-meta {
+  font-size: 0.84rem;
+  color: color-mix(in srgb, var(--fg) 70%, var(--muted));
 }
 
 .day-meta {
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   opacity: 0.85;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .progress-pct {
-  color: color-mix(in srgb, var(--accent-bright) 80%, var(--muted));
+  color: color-mix(in srgb, var(--accent-bright) 88%, var(--muted));
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 /* —— Time-of-day atmosphere (tints dark cosmic; light mode stays paper) —— */
@@ -1401,6 +1483,15 @@ html:not([data-theme="light"])[data-tod="night"] .nebula {
   }
   .cosmo-obj {
     touch-action: manipulation;
+    animation: none !important;
+    filter: none !important;
+    opacity: 0.65;
+  }
+  .cosmo-glow {
+    display: none;
+  }
+  .hero-chrono {
+    box-shadow: none;
   }
 }
 

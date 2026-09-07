@@ -103,13 +103,21 @@ function initHeroChrono() {
     const yearFrac = Math.min(1, (doy - 1 + dayFrac) / diy);
     const yearPercent = yearFrac * 100;
 
+    const yearLabel = document.getElementById('year-progress-label');
+    const dayLabel = document.getElementById('day-progress-label');
+    const rounded = Math.round(yearPercent);
+    const yearNow = now.getFullYear();
+
     if (yearFill) yearFill.style.width = `${yearPercent}%`;
     if (yearBar) {
       yearBar.setAttribute('aria-valuenow', yearPercent.toFixed(1));
       yearBar.setAttribute(
         'aria-valuetext',
-        `Day ${doy} of ${diy}, ${yearPercent.toFixed(1)} percent`
+        `Day ${doy} of ${diy}, ${yearPercent.toFixed(1)} percent of ${yearNow}`
       );
+    }
+    if (yearLabel) {
+      yearLabel.textContent = `Day ${doy} · ${rounded}% of ${yearNow}`;
     }
     if (yearPct) yearPct.textContent = `${yearPercent.toFixed(1)}%`;
 
@@ -122,6 +130,7 @@ function initHeroChrono() {
         `${dayPercent.toFixed(1)} percent of today`
       );
     }
+    if (dayLabel) dayLabel.textContent = 'Today';
     if (dayPct) dayPct.textContent = `${dayPercent.toFixed(1)}%`;
   }
 
