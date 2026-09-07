@@ -1200,7 +1200,7 @@ h3 {
   z-index: 2;
   text-align: center;
   padding: 2.5rem 1.5rem;
-  max-width: 22rem;
+  max-width: min(26rem, 92vw);
   opacity: 0;
   transform: translateY(10px);
   animation: gate-settle 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
@@ -1229,10 +1229,37 @@ h3 {
 }
 .enter-gate-copy {
   color: color-mix(in srgb, var(--muted) 88%, transparent);
-  margin: 0 0 2.1rem;
+  margin: 0 0 1.35rem;
   font-size: 0.88rem;
   letter-spacing: 0.04em;
   font-family: var(--mono);
+}
+.enter-gate-card {
+  margin: 0 auto 1.65rem;
+  max-width: 22rem;
+  padding: 0.95rem 1.15rem 1.05rem;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.12));
+  background:
+    radial-gradient(ellipse 80% 70% at 12% 0%, rgba(59, 158, 255, 0.14), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(110, 192, 255, 0.08), transparent 50%),
+    color-mix(in srgb, rgba(6, 10, 22, 0.72) 88%, transparent);
+  box-shadow:
+    0 0 40px rgba(59, 158, 255, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.enter-gate-caption {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: clamp(0.88rem, 2.5vw, 1.05rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: color-mix(in srgb, var(--fg) 78%, var(--accent-bright));
+  line-height: 1.5;
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.45);
 }
 .enter-gate .btn-gate {
   min-width: 7.5rem;
@@ -1433,6 +1460,12 @@ body.is-idle .cosmo-obj:not(.is-dragging) {
   .hero-caption {
     letter-spacing: 0.04em;
   }
+  .enter-gate-caption {
+    letter-spacing: 0.04em;
+  }
+  .enter-gate-card {
+    padding: 0.85rem 0.95rem 0.95rem;
+  }
   /* keep clear of FAB / content gutters */
   .cosmo-obj[style*="--x: 88%"],
   .cosmo-obj[style*="--x: 92%"],
@@ -1443,6 +1476,18 @@ body.is-idle .cosmo-obj:not(.is-dragging) {
 
 [data-theme="light"] .enter-gate {
   background: #f4f2ee;
+}
+[data-theme="light"] .enter-gate-card {
+  background:
+    radial-gradient(ellipse 80% 70% at 12% 0%, rgba(59, 158, 255, 0.1), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(110, 192, 255, 0.06), transparent 50%),
+    color-mix(in srgb, var(--card) 90%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+  box-shadow: 0 0 40px rgba(59, 158, 255, 0.06);
+}
+[data-theme="light"] .enter-gate-caption {
+  text-shadow: none;
+  color: color-mix(in srgb, var(--fg) 72%, var(--accent-bright));
 }
 [data-theme="light"] .cosmo-planet .cosmo-core {
   background: radial-gradient(circle at 35% 30%, #b3d9ff, #3b9eff 50%, #4a6a8a 100%);
