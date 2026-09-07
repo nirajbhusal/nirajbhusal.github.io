@@ -229,7 +229,7 @@ function initReveal() {
         }
       }
     },
-    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    { threshold: 0.08, rootMargin: '0px 0px -8% 0px' }
   );
   nodes.forEach((n) => io.observe(n));
 }
@@ -446,13 +446,15 @@ function initAmbientAndGate() {
     sessionStorage.setItem(GATE_KEY, '1');
     gate.classList.add('is-leaving');
     document.body.classList.remove('gate-locked');
+    document.body.classList.add('is-entering');
     syncSoundButton(soundBtn, ambient);
     const done = () => {
       gate.hidden = true;
       gate.classList.remove('is-leaving');
+      document.body.classList.remove('is-entering');
     };
     if (prefersReduced()) done();
-    else window.setTimeout(done, 900);
+    else window.setTimeout(done, 1650);
   }
 
   const already = sessionStorage.getItem(GATE_KEY) === '1';
@@ -476,7 +478,25 @@ function initAmbientAndGate() {
   return ambient;
 }
 
+
+function initQuietIdle() {
+  let timer = 0;
+  const IDLE_MS = 4200;
+  const mark = () => {
+    document.body.classList.remove('is-idle');
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      document.body.classList.add('is-idle');
+    }, IDLE_MS);
+  };
+  ['pointermove', 'pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach((evt) => {
+    window.addEventListener(evt, mark, { passive: true });
+  });
+  mark();
+}
+
 initTimeOfDay();
+initQuietIdle();
 initTheme();
 initYear();
 initHeroChrono();

@@ -326,13 +326,13 @@ main,
 .section {
   max-width: var(--max);
   margin: 0 auto;
-  padding: 4.75rem 1.25rem 0.5rem;
+  padding: 5.75rem 1.25rem 1rem;
 }
 
 .reveal {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.55s ease, transform 0.55s ease;
+  transform: translateY(14px);
+  transition: opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1), transform 0.95s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .reveal.is-visible {
@@ -341,8 +341,8 @@ main,
 }
 
 .hero {
-  padding-top: 6.5rem;
-  padding-bottom: 3.5rem;
+  padding-top: 7.25rem;
+  padding-bottom: 4.25rem;
 }
 
 .eyebrow {
@@ -1158,7 +1158,7 @@ h3 {
   place-items: center;
   background: #030408;
   color: var(--fg);
-  transition: opacity 0.9s ease, visibility 0.9s;
+  transition: opacity 1.65s cubic-bezier(0.22, 1, 0.36, 1), visibility 1.65s;
 }
 .enter-gate.is-leaving {
   opacity: 0;
@@ -1172,46 +1172,81 @@ h3 {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(1.5px 1.5px at 12% 18%, rgba(255,255,255,0.85), transparent),
-    radial-gradient(1px 1px at 28% 42%, rgba(190,220,255,0.7), transparent),
-    radial-gradient(1.5px 1.5px at 55% 22%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1px 1px at 72% 58%, rgba(190,220,255,0.65), transparent),
-    radial-gradient(2px 2px at 88% 30%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 40% 78%, rgba(190,220,255,0.55), transparent),
-    radial-gradient(1.5px 1.5px at 18% 88%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(ellipse 60% 50% at 50% 45%, rgba(59,158,255,0.08), transparent 70%);
-  animation: gate-bloom 4s ease-in-out infinite alternate;
+    radial-gradient(1px 1px at 14% 22%, rgba(255,255,255,0.45), transparent),
+    radial-gradient(1px 1px at 32% 48%, rgba(190,220,255,0.35), transparent),
+    radial-gradient(1.2px 1.2px at 58% 28%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 74% 62%, rgba(190,220,255,0.3), transparent),
+    radial-gradient(1.4px 1.4px at 86% 34%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 42% 80%, rgba(190,220,255,0.28), transparent),
+    radial-gradient(1px 1px at 20% 86%, rgba(255,255,255,0.32), transparent),
+    radial-gradient(ellipse 55% 45% at 50% 48%, rgba(59,158,255,0.045), transparent 72%);
+  animation: gate-bloom 9s ease-in-out infinite alternate;
   pointer-events: none;
+  opacity: 0.7;
 }
 @keyframes gate-bloom {
-  from { opacity: 0.55; transform: scale(1); }
-  to { opacity: 1; transform: scale(1.04); }
+  from { opacity: 0.45; transform: scale(1); }
+  to { opacity: 0.85; transform: scale(1.015); }
 }
 .enter-gate-inner {
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: 2rem 1.5rem;
-  max-width: 26rem;
+  padding: 2.5rem 1.5rem;
+  max-width: 22rem;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: gate-settle 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
 }
-.enter-gate-inner .eyebrow {
-  margin-bottom: 1.25rem;
+@keyframes gate-settle {
+  to { opacity: 1; transform: none; }
 }
 .enter-gate-inner h1 {
-  font-size: clamp(1.8rem, 5vw, 2.6rem);
-  margin-bottom: 0.75rem;
+  font-size: clamp(1.65rem, 4.5vw, 2.35rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.85rem;
 }
 .enter-gate-copy {
-  color: var(--muted);
-  margin: 0 0 1.75rem;
-  font-size: 0.98rem;
+  color: color-mix(in srgb, var(--muted) 88%, transparent);
+  margin: 0 0 2.1rem;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  font-family: var(--mono);
 }
-.enter-gate .btn {
-  min-width: 9rem;
+.enter-gate .btn-gate {
+  min-width: 7.5rem;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: color-mix(in srgb, var(--fg) 82%, var(--accent-bright));
+  box-shadow: none;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  font-family: var(--mono);
+  padding: 0.7rem 1.4rem;
+  transition: border-color 0.35s ease, color 0.35s ease, background 0.35s ease;
+}
+.enter-gate .btn-gate:hover,
+.enter-gate .btn-gate:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent-bright);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  outline: none;
 }
 
 body.gate-locked {
   overflow: hidden;
+}
+body.gate-locked .site-header,
+body.gate-locked .nav,
+body.gate-locked .orbit-fab {
+  opacity: 0;
+  pointer-events: none;
+}
+body:not(.gate-locked) .site-header,
+body:not(.gate-locked) .orbit-fab {
+  transition: opacity 1.2s ease 0.2s;
 }
 
 /* —— Floating cosmic objects —— */
@@ -1240,13 +1275,13 @@ body.gate-locked {
   --my: 0px;
   --zscale: 1;
   --depth: 0.5;
-  animation: cosmo-drift 16s ease-in-out infinite alternate;
+  animation: cosmo-drift 28s ease-in-out infinite alternate;
   animation-delay: var(--delay);
-  opacity: calc(0.55 + var(--depth) * 0.35);
+  opacity: calc(0.28 + var(--depth) * 0.22);
   z-index: calc(2 + var(--depth) * 4);
   transform: translate3d(var(--mx), var(--my), 0) scale(var(--zscale));
   will-change: transform, left, top, filter;
-  transition: filter 0.25s ease, opacity 0.25s ease;
+  transition: filter 0.55s ease, opacity 0.55s ease;
 }
 .cosmo-glow {
   position: absolute;
@@ -1267,18 +1302,21 @@ body.gate-locked {
 .cosmo-obj:hover,
 .cosmo-obj:focus-visible,
 .cosmo-obj.is-glow {
-  opacity: 1;
+  opacity: 0.82;
   outline: none;
   z-index: 6;
-  filter: drop-shadow(0 0 14px rgba(59, 158, 255, 0.55));
+  filter: drop-shadow(0 0 10px rgba(59, 158, 255, 0.35));
 }
 .cosmo-obj.is-dragging {
   cursor: grabbing;
-  opacity: 1;
+  opacity: 0.95;
   z-index: 8;
   animation: none;
   touch-action: none;
-  filter: drop-shadow(0 0 18px rgba(59, 158, 255, 0.65));
+  filter: drop-shadow(0 0 12px rgba(59, 158, 255, 0.42));
+}
+body.is-idle .cosmo-obj:not(.is-dragging) {
+  opacity: calc(0.38 + var(--depth) * 0.28);
 }
 .cosmo-obj.is-static {
   animation: none;
@@ -1295,12 +1333,12 @@ body.gate-locked {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  box-shadow: 0 0 16px rgba(59, 158, 255, 0.25);
+  box-shadow: 0 0 10px rgba(59, 158, 255, 0.14);
 }
 .cosmo-planet .cosmo-core {
   background:
     radial-gradient(circle at 35% 30%, #9ecfff, #3b9eff 45%, #1a3a5c 100%);
-  box-shadow: inset -6px -4px 12px rgba(0,0,0,0.35), 0 0 18px rgba(59,158,255,0.3);
+  box-shadow: inset -6px -4px 12px rgba(0,0,0,0.35), 0 0 12px rgba(59,158,255,0.16);
 }
 .cosmo-satellite .cosmo-core {
   border-radius: 4px;
@@ -1549,14 +1587,25 @@ html:not([data-theme="light"])[data-tod="night"] .nebula {
   .email-toast,
   .nebula,
   body,
-  html {
+  html,
+  .enter-gate,
+  .enter-gate-inner {
     transition: none !important;
+    animation: none !important;
+  }
+  .enter-gate-inner {
+    opacity: 1;
+    transform: none;
+  }
+  .enter-gate-stars {
+    animation: none !important;
+    opacity: 0.55;
   }
   .cosmo-obj {
     touch-action: manipulation;
     animation: none !important;
     filter: none !important;
-    opacity: 0.65;
+    opacity: 0.45;
   }
   .cosmo-glow {
     display: none;

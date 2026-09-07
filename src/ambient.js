@@ -24,7 +24,7 @@ export function createAmbient() {
     if (!AC) return null;
     ctx = new AC();
     master = ctx.createGain();
-    master.gain.value = muted ? 0 : 0.28;
+    master.gain.value = muted ? 0 : 0.16;
 
     dryGain = ctx.createGain();
     dryGain.gain.value = 0.55;
@@ -149,7 +149,7 @@ export function createAmbient() {
       osc.frequency.setValueAtTime(f * 0.98, t0);
       osc.frequency.linearRampToValueAtTime(f, t0 + 0.9);
       gain.gain.setValueAtTime(0.0001, t0);
-      gain.gain.linearRampToValueAtTime(0.038 - i * 0.006, t0 + 0.35);
+      gain.gain.linearRampToValueAtTime(0.024 - i * 0.004, t0 + 0.45);
       gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 3.8);
       osc.connect(filter);
       filter.connect(gain);
@@ -158,7 +158,7 @@ export function createAmbient() {
       osc.stop(t0 + 4.1);
     }
 
-    const delay = 7 + Math.random() * 11;
+    const delay = 11 + Math.random() * 16;
     toneTimer = window.setTimeout(scheduleSparseTone, delay * 1000);
   }
 
@@ -172,13 +172,13 @@ export function createAmbient() {
     started = true;
 
     // Pipe-organ-ish pedal + slow pads (original frequencies only)
-    addDrone(32.7, 'sine', 0.09, 0.028, 180); // C1 pedal
-    addDrone(49.0, 'sine', 0.07, 0.035, 220);
-    addDrone(65.41, 'triangle', 0.035, 0.05, 320);
-    addDrone(98.0, 'sine', 0.028, 0.06, 400);
-    addPad(130.81, 0.022);
-    addPad(196.0, 0.014);
-    addDrone(41.2, 'sine', 0.055, 0.022, 200);
+    addDrone(32.7, 'sine', 0.06, 0.028, 180); // C1 pedal
+    addDrone(49.0, 'sine', 0.045, 0.035, 220);
+    addDrone(65.41, 'triangle', 0.022, 0.05, 320);
+    addDrone(98.0, 'sine', 0.016, 0.06, 400);
+    addPad(130.81, 0.014);
+    addPad(196.0, 0.009);
+    addDrone(41.2, 'sine', 0.035, 0.022, 200);
 
     if (!muted && !reduced()) scheduleSparseTone();
   }
@@ -189,7 +189,7 @@ export function createAmbient() {
     if (master && ctx) {
       const t = ctx.currentTime;
       master.gain.cancelScheduledValues(t);
-      master.gain.linearRampToValueAtTime(muted ? 0 : 0.28, t + 0.35);
+      master.gain.linearRampToValueAtTime(muted ? 0 : 0.16, t + 0.45);
     }
     if (muted) {
       window.clearTimeout(toneTimer);
