@@ -14,9 +14,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 </head>
-<body>
+<body class="gate-locked">
+  <div id="enter-gate" class="enter-gate" role="dialog" aria-modal="true" aria-labelledby="enter-gate-title">
+    <div class="enter-gate-stars" aria-hidden="true"></div>
+    <div class="enter-gate-inner">
+      <p class="eyebrow">Briefly left the internet</p>
+      <h1 id="enter-gate-title">Niraj Bhusal</h1>
+      <p class="enter-gate-copy">A quiet orbit of GovTech, AI governance, and personal civic tools. Stars bloom; gravity waits.</p>
+      <button type="button" id="enter-gate-btn" class="btn btn-primary">Enter</button>
+    </div>
+  </div>
   <canvas id="starfield" aria-hidden="true"></canvas>
   <div id="nebula" class="nebula" aria-hidden="true"></div>
+  <div id="cosmo-layer" class="cosmo-layer" aria-hidden="false"></div>
   <div id="nav-overlay" class="nav-overlay" hidden></div>
 
   <header class="site-header">
@@ -38,6 +48,9 @@
       <a href="#play">Play</a>
       <a href="#contact">Contact</a>
     </nav>
+    <button type="button" id="sound-toggle" class="sound-toggle" aria-pressed="false" aria-label="Sound off" title="Sound">
+      Sound
+    </button>
     <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle light mode" title="Toggle theme">
       <span class="theme-icon" aria-hidden="true">◐</span>
     </button>
@@ -257,6 +270,7 @@
           <p class="meta">May 2025 · Covered in Kathmandu Post</p>
           <p>Youth discussion panelist.
             <a href="https://www.facebook.com/rotaractkathmandu/photos/introducing-our-panelist-niraj-bhusalwere-honored-to-welcome-niraj-bhusal-civil-/1131421312362069/" target="_blank" rel="noopener">FB panelist photo ↗</a>
+            · <a href="https://www.facebook.com/rotaractkathmandu/posts/introducing-our-panelist-niraj-bhusalwere-honored-to-welcome-niraj-bhusal-civil-/1131421585695375/" target="_blank" rel="noopener">Rotaract post ↗</a>
             · <a href="https://kathmandupost.com/art-culture/2025/05/12/youth-urged-to-embrace-uncertainty-and-build-in-nepal" target="_blank" rel="noopener">Kathmandu Post ↗</a>
           </p>
         </article>
@@ -283,7 +297,11 @@
           <span class="badge">Panelist</span>
           <h3>vivo 5G Talk Asia</h3>
           <p class="meta">May 2023</p>
-          <p>Regional tech talk on 5G prospects (Nepal–Pakistan experts).</p>
+          <p>Regional tech talk on 5G prospects (Nepal–Pakistan experts).
+            <a href="https://www.vivo.com/pk/about-vivo/news/5g-talk" target="_blank" rel="noopener">vivo news ↗</a>
+            · <a href="https://propakistani.pk/2023/05/31/vivos-5g-talk-event-a-glimpse-into-a-boundless-intelligent-world-powered-by-5g/amp/" target="_blank" rel="noopener">ProPakistani ↗</a>
+            · <a href="https://www.sharesansar.com/newsdetail/vivo-hosts-tech-talk-on-prospects-for-5g-in-nepal-featuring-pre-eminent-south-asian-experts-on-the-revolutionary-technology-2023-06-02" target="_blank" rel="noopener">ShareSansar ↗</a>
+          </p>
         </article>
         <article class="card event-card">
           <span class="badge">Judge</span>
@@ -346,44 +364,175 @@
     </section>
 
     <section id="media" class="section reveal">
-      <h2>Media</h2>
-      <ul class="media-list">
-        <li>
-          <a href="https://kathmandupost.com/national/2026/09/06/how-an-it-engineer-used-ai-to-aid-nepal-s-flood-response" target="_blank" rel="noopener">
+      <h2>Awards &amp; Media</h2>
+
+      <div class="media-group">
+        <h3>Awards &amp; recognition</h3>
+        <div class="media-grid">
+          <a class="media-card" href="https://www.facebook.com/425174071175625/posts/1008164656209894/" target="_blank" rel="noopener">
+            <span class="outlet">Facebook</span>
+            <span class="headline">Influencer award recognition</span>
+            <span class="when">Community award post</span>
+          </a>
+          <a class="media-card" href="https://app.favikon.com/public/profile/68904be8f1f2a284578be081/" target="_blank" rel="noopener">
+            <span class="outlet">Favikon</span>
+            <span class="headline">Public creator profile</span>
+            <span class="when">Favikon</span>
+          </a>
+          <a class="media-card" href="https://googlecrowdsource.com/team.html" target="_blank" rel="noopener">
+            <span class="outlet">Google Crowdsource</span>
+            <span class="headline">Crowdsource team page</span>
+            <span class="when">Community leadership</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="media-group">
+        <h3>News</h3>
+        <div class="media-grid">
+          <a class="media-card" href="https://kathmandupost.com/national/2026/09/06/how-an-it-engineer-used-ai-to-aid-nepal-s-flood-response" target="_blank" rel="noopener">
             <span class="outlet">The Kathmandu Post</span>
             <span class="headline">How an IT engineer used AI to aid Nepal’s flood response</span>
             <span class="when">6 Sep 2026</span>
           </a>
-        </li>
-        <li>
-          <a href="https://ekantipur.com/technology/2026/09/03/neeraj-creates-bhotekoshi-flood-portal-with-the-power-of-ai-58-15.html" target="_blank" rel="noopener">
+          <a class="media-card" href="https://ekantipur.com/technology/2026/09/03/neeraj-creates-bhotekoshi-flood-portal-with-the-power-of-ai-58-15.html" target="_blank" rel="noopener">
             <span class="outlet">eKantipur</span>
             <span class="headline">बाढीमा हराएको सूचना खोजिरहेका निरज</span>
             <span class="when">3 Sep 2026</span>
           </a>
-        </li>
-        <li>
-          <a href="https://ictsamachar.com/news/niraj-bhusal-started--rasuwa-bhotekoshi-flood--update-to/" target="_blank" rel="noopener">
+          <a class="media-card" href="https://ictsamachar.com/news/niraj-bhusal-started--rasuwa-bhotekoshi-flood--update-to/" target="_blank" rel="noopener">
             <span class="outlet">ICT Samachar</span>
-            <span class="headline">रसुवा बाढीबारे सूचना दिन निरज भुसालले सुरु गरे ‘रसुवा-भोटेकोशी बाढी’ अपडेट</span>
-            <span class="when">ICT Samachar</span>
+            <span class="headline">रसुवा–भोटेकोशी बाढी अपडेट</span>
+            <span class="when">Flood bulletin coverage</span>
           </a>
-        </li>
-        <li>
-          <a href="https://bankingsamachar.com/news/168477/" target="_blank" rel="noopener">
+          <a class="media-card" href="https://bankingsamachar.com/news/168477/" target="_blank" rel="noopener">
             <span class="outlet">Banking Samachar</span>
             <span class="headline">निरज भुसालको एआई बाढी ‘ट्रयाकर’</span>
-            <span class="when">Flood tracker coverage</span>
+            <span class="when">Flood tracker</span>
           </a>
-        </li>
-        <li>
-          <a href="https://kathmandupost.com/art-culture/2025/05/12/youth-urged-to-embrace-uncertainty-and-build-in-nepal" target="_blank" rel="noopener">
+          <a class="media-card" href="https://bankingsamachar.com/news/55567/" target="_blank" rel="noopener">
+            <span class="outlet">Banking Samachar</span>
+            <span class="headline">Profile / coverage feature</span>
+            <span class="when">Banking Samachar</span>
+          </a>
+          <a class="media-card" href="https://bankingnews.com.np/2026/08/6370/" target="_blank" rel="noopener">
+            <span class="outlet">Banking News</span>
+            <span class="headline">Coverage of civic flood information work</span>
+            <span class="when">Aug 2026</span>
+          </a>
+          <a class="media-card" href="https://www.nepalhackathon.org/blog/innovative-flood-response-tech-projects" target="_blank" rel="noopener">
+            <span class="outlet">Nepal Hackathon</span>
+            <span class="headline">Innovative flood response tech projects</span>
+            <span class="when">Nepal Hackathon blog</span>
+          </a>
+          <a class="media-card" href="https://kalamweekly.substack.com/p/nepals-devastating-flash-flood" target="_blank" rel="noopener">
+            <span class="outlet">Kalam Weekly</span>
+            <span class="headline">Nepal’s devastating flash flood</span>
+            <span class="when">Substack</span>
+          </a>
+          <a class="media-card" href="https://nepaleconomicforum.substack.com/p/bhotekoshi-flood-how-to-stay-informed" target="_blank" rel="noopener">
+            <span class="outlet">Nepal Economic Forum</span>
+            <span class="headline">Bhotekoshi flood — how to stay informed</span>
+            <span class="when">NEF Substack</span>
+          </a>
+          <a class="media-card" href="https://www.setopati.com/social/397005" target="_blank" rel="noopener">
+            <span class="outlet">Setopati</span>
+            <span class="headline">Social coverage</span>
+            <span class="when">Setopati</span>
+          </a>
+          <a class="media-card" href="https://github.com/h4syy/nepal-flood-bulletin" target="_blank" rel="noopener">
+            <span class="outlet">GitHub</span>
+            <span class="headline">Community fork — nepal-flood-bulletin</span>
+            <span class="when">Open source</span>
+          </a>
+          <a class="media-card" href="https://kathmandupost.com/art-culture/2025/05/12/youth-urged-to-embrace-uncertainty-and-build-in-nepal" target="_blank" rel="noopener">
             <span class="outlet">The Kathmandu Post</span>
             <span class="headline">Youth urged to embrace uncertainty and build in Nepal</span>
             <span class="when">12 May 2025</span>
           </a>
-        </li>
-      </ul>
+          <a class="media-card" href="https://kathmandupost.com/national/2026/02/25/nepal-s-it-exports-near-1-billion-can-the-momentum-be-sustained" target="_blank" rel="noopener">
+            <span class="outlet">The Kathmandu Post</span>
+            <span class="headline">Nepal’s IT exports near $1 billion — can the momentum be sustained?</span>
+            <span class="when">25 Feb 2026</span>
+          </a>
+          <a class="media-card" href="https://www.b360nepal.com/detail/21982/the-pains-pitfalls-triumphs-of-first-gen-entrepreneurs-2024-Mar-08-292300" target="_blank" rel="noopener">
+            <span class="outlet">B360</span>
+            <span class="headline">The pains, pitfalls &amp; triumphs of first-gen entrepreneurs</span>
+            <span class="when">8 Mar 2024</span>
+          </a>
+          <a class="media-card" href="https://techpana.com/2022/30368" target="_blank" rel="noopener">
+            <span class="outlet">TechPana</span>
+            <span class="headline">Feature coverage (2022)</span>
+            <span class="when">2022</span>
+          </a>
+          <a class="media-card" href="https://techpana.com/2023/143419/niraj-bhusal-blog" target="_blank" rel="noopener">
+            <span class="outlet">TechPana</span>
+            <span class="headline">Niraj Bhusal blog feature</span>
+            <span class="when">2023</span>
+          </a>
+          <a class="media-card" href="https://english.ratopati.com/story/28469" target="_blank" rel="noopener">
+            <span class="outlet">Ratopati</span>
+            <span class="headline">English feature</span>
+            <span class="when">Ratopati</span>
+          </a>
+          <a class="media-card" href="https://www.newbusinessage.com/news/43851/making-nepal-remote-work-ready/" target="_blank" rel="noopener">
+            <span class="outlet">New Business Age</span>
+            <span class="headline">Making Nepal remote-work ready</span>
+            <span class="when">New Business Age</span>
+          </a>
+          <a class="media-card" href="https://alltechishuman.org/all-tech-is-human-blog/what-are-the-most-important-issues-with-ai-companions-six-key-themes-emerged-from-our-community" target="_blank" rel="noopener">
+            <span class="outlet">All Tech Is Human</span>
+            <span class="headline">AI companions — six key themes from the community</span>
+            <span class="when">ATIH blog</span>
+          </a>
+          <a class="media-card" href="https://www.facebook.com/share/p/1JACM7JmYr/" target="_blank" rel="noopener">
+            <span class="outlet">Facebook</span>
+            <span class="headline">Shared coverage post</span>
+            <span class="when">Facebook</span>
+          </a>
+          <a class="media-card" href="https://www.instagram.com/p/DcgHtJ5K6Tv/" target="_blank" rel="noopener">
+            <span class="outlet">Instagram</span>
+            <span class="headline">Coverage / community post</span>
+            <span class="when">Instagram</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="media-group">
+        <h3>Speaking coverage</h3>
+        <div class="media-grid">
+          <a class="media-card" href="https://www.vivo.com/pk/about-vivo/news/5g-talk" target="_blank" rel="noopener">
+            <span class="outlet">vivo</span>
+            <span class="headline">vivo 5G Talk — official news</span>
+            <span class="when">May 2023</span>
+          </a>
+          <a class="media-card" href="https://propakistani.pk/2023/05/31/vivos-5g-talk-event-a-glimpse-into-a-boundless-intelligent-world-powered-by-5g/amp/" target="_blank" rel="noopener">
+            <span class="outlet">ProPakistani</span>
+            <span class="headline">vivo’s 5G Talk event — a boundless intelligent world powered by 5G</span>
+            <span class="when">31 May 2023</span>
+          </a>
+          <a class="media-card" href="https://www.sharesansar.com/newsdetail/vivo-hosts-tech-talk-on-prospects-for-5g-in-nepal-featuring-pre-eminent-south-asian-experts-on-the-revolutionary-technology-2023-06-02" target="_blank" rel="noopener">
+            <span class="outlet">ShareSansar</span>
+            <span class="headline">vivo hosts tech talk on 5G prospects in Nepal</span>
+            <span class="when">2 Jun 2023</span>
+          </a>
+          <a class="media-card" href="https://adaptconvention.com/speaker/niraj-bhusal/" target="_blank" rel="noopener">
+            <span class="outlet">Adapt Convention</span>
+            <span class="headline">Speaker profile — Niraj Bhusal</span>
+            <span class="when">Adapt</span>
+          </a>
+          <a class="media-card" href="https://www.facebook.com/rotaractkathmandu/posts/introducing-our-panelist-niraj-bhusalwere-honored-to-welcome-niraj-bhusal-civil-/1131421585695375/" target="_blank" rel="noopener">
+            <span class="outlet">Rotaract Kathmandu</span>
+            <span class="headline">Introducing panelist Niraj Bhusal</span>
+            <span class="when">May 2025</span>
+          </a>
+          <a class="media-card" href="https://grokipedia.com/page/Niraj_Bhusal" target="_blank" rel="noopener">
+            <span class="outlet">Grokipedia</span>
+            <span class="headline">Niraj Bhusal — encyclopedia entry</span>
+            <span class="when">Grokipedia</span>
+          </a>
+        </div>
+      </div>
     </section>
 
     <section id="play" class="section reveal">

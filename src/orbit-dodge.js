@@ -144,10 +144,10 @@ export function initOrbitDodge(canvas, hud, padId = 'touch-pad') {
     const w = canvas.width;
     const h = canvas.height;
     const light = document.documentElement.getAttribute('data-theme') === 'light';
-    ctx.fillStyle = light ? '#e8eef7' : '#050a14';
+    ctx.fillStyle = light ? '#efece6' : '#07080e';
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = light ? 'rgba(21,101,192,0.12)' : 'rgba(110,192,255,0.12)';
+    ctx.strokeStyle = light ? 'rgba(26,115,199,0.12)' : 'rgba(232,233,237,0.08)';
     for (let i = 0; i < 6; i++) {
       ctx.beginPath();
       ctx.arc(w / 2, h / 2, 30 + i * 35, 0, Math.PI * 2);
@@ -168,7 +168,7 @@ export function initOrbitDodge(canvas, hud, padId = 'touch-pad') {
       ctx.stroke();
     }
 
-    ctx.fillStyle = light ? '#3a4a62' : '#a8b8d0';
+    ctx.fillStyle = light ? '#2a2e3a' : '#c9ccd6';
     for (const a of asteroids) {
       ctx.beginPath();
       ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);

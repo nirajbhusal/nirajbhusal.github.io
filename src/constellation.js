@@ -54,7 +54,7 @@ export function initConstellation(canvas, panel) {
     ctx.fillStyle = light ? '#efece6' : '#07080e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = light ? 'rgba(226,85,26,0.35)' : 'rgba(255,107,44,0.35)';
+    ctx.strokeStyle = light ? 'rgba(26,115,199,0.35)' : 'rgba(59,158,255,0.35)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     nodes.forEach((n, i) => {
@@ -77,10 +77,10 @@ export function initConstellation(canvas, panel) {
       const on = i === selected;
       ctx.beginPath();
       ctx.arc(n.x, n.y, on ? n.r + 3 : n.r, 0, Math.PI * 2);
-      ctx.fillStyle = on ? '#ff6b2c' : light ? '#2a2e3a' : '#d7d9e0';
+      ctx.fillStyle = on ? '#3b9eff' : light ? '#2a2e3a' : '#d7d9e0';
       ctx.fill();
       if (on) {
-        ctx.strokeStyle = 'rgba(255,107,44,0.5)';
+        ctx.strokeStyle = 'rgba(59,158,255,0.5)';
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.r + 8, 0, Math.PI * 2);
         ctx.stroke();

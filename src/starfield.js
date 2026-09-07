@@ -50,7 +50,7 @@ export function initStarfield(canvas) {
         (theme === 'light' ? 0.32 : 0.62) * s.z * (prefersReduced() ? 1 : twinkle);
       ctx.fillStyle =
         theme === 'light'
-          ? `rgba(21, 101, 192, ${alpha})`
+          ? `rgba(60, 70, 90, ${alpha})`
           : `rgba(190, 220, 255, ${alpha})`;
       ctx.beginPath();
       ctx.arc(x, y, s.r * s.z, 0, Math.PI * 2);

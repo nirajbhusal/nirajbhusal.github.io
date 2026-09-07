@@ -2,8 +2,11 @@ import './style.css';
 import { initStarfield } from './starfield.js';
 import { initOrbitDodge } from './orbit-dodge.js';
 import { initConstellation } from './constellation.js';
+import { createAmbient } from './ambient.js';
+import { initSpaceObjects } from './space-objects.js';
 
 const THEME_KEY = 'theme';
+const GATE_KEY = 'nb-entered';
 const prefersReduced = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -212,10 +215,79 @@ function initOrbitModal(sectionGame) {
   });
 }
 
+function syncSoundButton(btn, ambient) {
+  if (!btn) return;
+  const on = ambient.isStarted() && !ambient.isMuted();
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.setAttribute('aria-label', on ? 'Sound on' : 'Sound off');
+  btn.title = on ? 'Sound on — click to mute' : 'Sound off — click to unmute';
+}
+
+function initAmbientAndGate() {
+  const ambient = createAmbient();
+  const soundBtn = document.getElementById('sound-toggle');
+  const gate = document.getElementById('enter-gate');
+  const enterBtn = document.getElementById('enter-gate-btn');
+
+  syncSoundButton(soundBtn, ambient);
+
+  soundBtn?.addEventListener('click', async () => {
+    if (!ambient.isStarted()) {
+      await ambient.start();
+      if (ambient.isMuted()) ambient.setMuted(false);
+    } else {
+      ambient.toggleMute();
+    }
+    syncSoundButton(soundBtn, ambient);
+  });
+
+  async function dismissGate(startSound) {
+    if (!gate || gate.hidden) return;
+    if (startSound) {
+      await ambient.start();
+      if (ambient.isMuted()) {
+        // keep muted preference; user can unmute via Sound
+      }
+    }
+    sessionStorage.setItem(GATE_KEY, '1');
+    gate.classList.add('is-leaving');
+    document.body.classList.remove('gate-locked');
+    syncSoundButton(soundBtn, ambient);
+    const done = () => {
+      gate.hidden = true;
+      gate.classList.remove('is-leaving');
+    };
+    if (prefersReduced()) done();
+    else window.setTimeout(done, 900);
+  }
+
+  const already = sessionStorage.getItem(GATE_KEY) === '1';
+  if (already || !gate) {
+    gate?.setAttribute('hidden', '');
+    document.body.classList.remove('gate-locked');
+  } else {
+    enterBtn?.focus();
+    enterBtn?.addEventListener('click', () => dismissGate(true));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !gate.hidden && document.activeElement === enterBtn) {
+        // native button click handles it
+      }
+      if (e.key === 'Escape' && !gate.hidden) {
+        e.preventDefault();
+        dismissGate(false);
+      }
+    });
+  }
+
+  return ambient;
+}
+
 initTheme();
 initYear();
 initNav();
 initReveal();
+initAmbientAndGate();
+initSpaceObjects(document.getElementById('cosmo-layer'));
 
 const starCanvas = document.getElementById('starfield');
 if (starCanvas) initStarfield(starCanvas);
