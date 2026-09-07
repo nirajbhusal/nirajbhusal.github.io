@@ -116,6 +116,8 @@ body.nav-open {
   animation: nebula-drift 48s ease-in-out infinite alternate;
   opacity: 0.85;
   transition: background 1.6s ease, opacity 1.6s ease, filter 1.6s ease;
+  /* Composes with animated transform (modern individual transform props) */
+  translate: var(--gyro-x, 0px) var(--gyro-y, 0px);
 }
 
 [data-theme="light"] .nebula {
@@ -1130,6 +1132,45 @@ h3 {
 }
 
 /* —— Sound control —— */
+
+.motion-enable {
+  position: relative;
+  z-index: 40;
+  margin-right: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 75%, var(--accent));
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 999px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.25s ease, color 0.25s ease, opacity 0.25s ease;
+}
+.motion-enable:hover,
+.motion-enable:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent-bright);
+  outline: none;
+}
+.motion-enable[hidden] {
+  display: none !important;
+}
+@media (pointer: fine) and (hover: hover) {
+  .motion-enable {
+    display: none !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-enable {
+    display: none !important;
+  }
+}
+
 .sound-toggle {
   border: 1px solid var(--border);
   background: var(--card);

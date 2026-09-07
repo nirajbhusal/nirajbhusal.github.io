@@ -4,6 +4,8 @@
  * but below menus; stays interactive after Enter gate; menu open disables hits.
  */
 
+import { getGyro, gyroPixels } from './gyro.js';
+
 const OBJECTS = [
   {
     kind: 'planet',
@@ -79,6 +81,7 @@ export function initSpaceObjects(root) {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const coarse = window.matchMedia('(pointer: coarse)').matches;
+  const gyro = getGyro();
   const tip = document.createElement('div');
   tip.className = 'cosmo-tip';
   tip.setAttribute('role', 'status');
@@ -144,6 +147,7 @@ export function initSpaceObjects(root) {
       tip.hidden = true;
       dragging = null;
       activePointerId = null;
+      gyro.setDragging(false);
     }
   }
 
@@ -192,6 +196,7 @@ export function initSpaceObjects(root) {
       if (dragging && dragging !== body) return;
 
       dragging = body;
+      gyro.setDragging(true);
       activePointerId = e.pointerId;
       body.pointerId = e.pointerId;
       body.moved = false;
@@ -315,6 +320,7 @@ export function initSpaceObjects(root) {
     activePointerId = null;
     body.capturing = false;
     body.pointerId = null;
+    gyro.setDragging(false);
 
     if (cancelled || pointersBlocked()) return;
 
@@ -494,8 +500,11 @@ export function initSpaceObjects(root) {
       setPos(body, nx, ny);
 
       const parallax = (scrollY * 0.018 * body.depth) % 40;
-      const followX = body.ox * (0.28 + body.depth * 0.2);
-      const followY = body.oy * (0.28 + body.depth * 0.2) - parallax;
+      const g = gyroPixels(gyro.getOffset(), reduced ? 4 : 12);
+      const gScale = 0.45 + body.depth * 0.55;
+      const followX = body.ox * (0.28 + body.depth * 0.2) + g.x * gScale;
+      const followY =
+        body.oy * (0.28 + body.depth * 0.2) - parallax + g.y * gScale;
       body.el.style.setProperty('--mx', `${followX.toFixed(2)}px`);
       body.el.style.setProperty('--my', `${followY.toFixed(2)}px`);
       body.el.style.setProperty(

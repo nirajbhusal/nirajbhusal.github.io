@@ -5,6 +5,7 @@ import { initConstellation } from './constellation.js';
 import { createAmbient } from './ambient.js';
 import { initSpaceObjects } from './space-objects.js';
 import { initEnterGateVista } from './enter-gate.js';
+import { getGyro } from './gyro.js';
 
 const THEME_KEY = 'theme';
 const GATE_KEY = 'nb-entered';
@@ -418,12 +419,54 @@ function syncSoundButton(btn, ambient) {
   btn.title = on ? 'Sound on — click to mute' : 'Sound off — click to unmute';
 }
 
+
+function initMotionEnable(gyro) {
+  const btn = document.getElementById('motion-enable');
+  if (!btn || !gyro) return;
+
+  function sync() {
+    const show = gyro.shouldOfferEnable();
+    btn.hidden = !show;
+    btn.setAttribute('aria-hidden', show ? 'false' : 'true');
+    if (!show) return;
+    btn.textContent = 'Enable motion';
+    btn.setAttribute('aria-label', 'Enable device motion parallax');
+  }
+
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    btn.disabled = true;
+    const ok = await gyro.requestPermission();
+    btn.disabled = false;
+    if (ok) {
+      btn.hidden = true;
+      btn.setAttribute('aria-hidden', 'true');
+    } else {
+      // Denied or failed — hide to avoid spam
+      btn.hidden = true;
+      btn.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  sync();
+  // Re-check after Enter / orientation changes
+  window.addEventListener('resize', sync, { passive: true });
+  document.addEventListener('visibilitychange', sync);
+  return { sync };
+}
+
 function initAmbientAndGate(cosmo) {
   const ambient = createAmbient();
   const soundBtn = document.getElementById('sound-toggle');
   const gate = document.getElementById('enter-gate');
   const enterBtn = document.getElementById('enter-gate-btn');
   const gateCanvas = document.getElementById('enter-gate-canvas');
+  const gyro = getGyro();
+  const motionUI = initMotionEnable(gyro);
+  // Non-iOS coarse devices can start without a prompt
+  gyro.tryAutoStart();
+  motionUI?.sync?.();
 
   const already = sessionStorage.getItem(GATE_KEY) === '1';
   const vista =
@@ -448,6 +491,11 @@ function initAmbientAndGate(cosmo) {
     if (!gate || gate.hidden || dismissing) return;
     dismissing = true;
     enterBtn?.setAttribute("disabled", "");
+    // iOS 13+: request motion permission in this same user gesture (once)
+    if (startSound) {
+      await gyro.requestPermission();
+      motionUI?.sync?.();
+    }
     if (startSound) {
       await ambient.start();
       if (ambient.isMuted()) {
@@ -477,6 +525,7 @@ function initAmbientAndGate(cosmo) {
       // Cosmo layer must be interactive after Enter
       cosmo?.refresh?.();
       cosmo?.syncHitState?.();
+      motionUI?.sync?.();
     };
     if (reduced) {
       window.setTimeout(done, 320);
@@ -495,6 +544,7 @@ function initAmbientAndGate(cosmo) {
     vista.destroy();
     if (gateCanvas && gateCanvas.parentNode) gateCanvas.remove();
     cosmo?.refresh?.();
+    motionUI?.sync?.();
   } else {
     enterBtn?.focus();
     enterBtn?.addEventListener('click', () => dismissGate(true));
