@@ -1,7 +1,7 @@
 /**
- * Floating interactive cosmic objects — draggable, reactive, reduced-motion aware.
- * Pointer capture + inertia + bounds; magnetic cursor; soft collisions; parallax depth.
- * Does not block page scroll unless actively dragging past a small threshold.
+ * Floating interactive cosmic objects — continuous drift, tap facts, drag + inertia.
+ * Mobile/iOS: document-level pointers, tap-vs-drag threshold, layer above content/canvas
+ * but below menus; stays interactive after Enter gate; menu open disables hits.
  */
 
 const OBJECTS = [
@@ -61,9 +61,24 @@ const OBJECTS = [
   },
 ];
 
+const TAP_PX = 12;
+const DRAG_PX = 10;
+
+function pointersBlocked() {
+  const b = document.body;
+  return (
+    b.classList.contains('nav-open') ||
+    b.classList.contains('orbit-open') ||
+    b.classList.contains('gate-locked') ||
+    b.classList.contains('is-entering')
+  );
+}
+
 export function initSpaceObjects(root) {
-  if (!root) return;
+  if (!root) return { refresh: () => {}, destroy: () => {} };
+
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const coarse = window.matchMedia('(pointer: coarse)').matches;
   const tip = document.createElement('div');
   tip.className = 'cosmo-tip';
   tip.setAttribute('role', 'status');
@@ -77,6 +92,12 @@ export function initSpaceObjects(root) {
   let raf = 0;
   let dragging = null;
   let scrollY = window.scrollY || 0;
+  let last = performance.now();
+  let destroyed = false;
+  let activePointerId = null;
+
+  root.classList.add('cosmo-layer--live');
+  if (reduced) root.classList.add('cosmo-layer--reduced');
 
   function showTip(text, el) {
     tip.textContent = text;
@@ -111,31 +132,48 @@ export function initSpaceObjects(root) {
     body.el.style.setProperty('--y', `${body.y}%`);
   }
 
+  function syncHitState() {
+    const block = pointersBlocked();
+    root.classList.toggle('cosmo-layer--blocked', block);
+    for (const body of bodies) {
+      body.el.disabled = block;
+      body.el.setAttribute('aria-hidden', block ? 'true' : 'false');
+      if (block) body.el.classList.remove('is-dragging', 'is-glow');
+    }
+    if (block) {
+      tip.hidden = true;
+      dragging = null;
+      activePointerId = null;
+    }
+  }
+
   OBJECTS.forEach((spec, i) => {
     const el = document.createElement('button');
     el.type = 'button';
-    el.className = `cosmo-obj cosmo-${spec.kind} cosmo-depth-${Math.round(spec.depth * 10)}${reduced ? ' is-static' : ''}`;
+    el.className = `cosmo-obj cosmo-${spec.kind} cosmo-depth-${Math.round(spec.depth * 10)} is-physics${reduced ? ' is-static' : ''}`;
     el.style.setProperty('--x', `${spec.x}%`);
     el.style.setProperty('--y', `${spec.y}%`);
     el.style.setProperty('--size', `${spec.size}px`);
     el.style.setProperty('--delay', `${i * 0.7}s`);
     el.style.setProperty('--depth', String(spec.depth));
     el.setAttribute('aria-label', `${spec.label}: ${spec.fact}`);
-    el.innerHTML = `<span class="cosmo-glow" aria-hidden="true"></span><span class="cosmo-core" aria-hidden="true"></span>`;
+    el.innerHTML =
+      '<span class="cosmo-glow" aria-hidden="true"></span><span class="cosmo-core" aria-hidden="true"></span>';
 
     const body = {
       el,
       spec,
       x: spec.x,
       y: spec.y,
-      vx: 0,
-      vy: 0,
+      vx: (Math.random() - 0.5) * (reduced ? 0.04 : 0.12),
+      vy: (Math.random() - 0.5) * (reduced ? 0.04 : 0.12),
       ox: 0,
       oy: 0,
       baseX: spec.x,
       baseY: spec.y,
       depth: spec.depth,
       radius: spec.size / 2,
+      phase: i * 1.73 + spec.depth * 2.1,
       moved: false,
       capturing: false,
       downAt: 0,
@@ -143,11 +181,19 @@ export function initSpaceObjects(root) {
       downY: 0,
       lastX: 0,
       lastY: 0,
+      _lastTs: 0,
+      pointerId: null,
     };
 
     el.addEventListener('pointerdown', (e) => {
+      if (pointersBlocked()) return;
       if (e.button !== undefined && e.button !== 0) return;
+      // Only one active drag/tap at a time
+      if (dragging && dragging !== body) return;
+
       dragging = body;
+      activePointerId = e.pointerId;
+      body.pointerId = e.pointerId;
       body.moved = false;
       body.capturing = false;
       body.downAt = performance.now();
@@ -155,92 +201,27 @@ export function initSpaceObjects(root) {
       body.downY = e.clientY;
       body.lastX = e.clientX;
       body.lastY = e.clientY;
+      body._lastTs = e.timeStamp || performance.now();
       body.vx = 0;
       body.vy = 0;
       el.classList.add('is-dragging');
       el.classList.remove('is-spin');
       tip.hidden = true;
-      // Do NOT preventDefault yet — allow scroll until drag threshold
-    });
 
-    el.addEventListener('pointermove', (e) => {
-      if (dragging !== body) return;
-      const dx = e.clientX - body.downX;
-      const dy = e.clientY - body.downY;
-      const dist = Math.hypot(dx, dy);
-
-      // Only capture + block scroll once the user clearly intends to drag
-      if (!body.capturing && dist >= 8) {
-        body.capturing = true;
-        body.moved = true;
+      // Capture immediately on touch so iOS delivers move/up reliably.
+      // Tap vs drag is decided by movement threshold, not by capture timing.
+      if (coarse || e.pointerType === 'touch') {
         try {
           el.setPointerCapture(e.pointerId);
+          body.capturing = true;
         } catch (_) {
           /* ignore */
         }
       }
-      if (!body.capturing) return;
-
-      e.preventDefault();
-      const xPct = (e.clientX / window.innerWidth) * 100;
-      const yPct = (e.clientY / window.innerHeight) * 100;
-      const prevX = body.x;
-      const prevY = body.y;
-      // Velocity from recent pointer delta for satisfying inertia
-      const dtMs = Math.max(8, e.timeStamp - (body._lastTs || e.timeStamp));
-      body._lastTs = e.timeStamp;
-      const scale = 16 / dtMs;
-      body.vx = ((e.clientX - body.lastX) / window.innerWidth) * 100 * scale;
-      body.vy = ((e.clientY - body.lastY) / window.innerHeight) * 100 * scale;
-      body.lastX = e.clientX;
-      body.lastY = e.clientY;
-      setPos(body, xPct, yPct);
-      // Blend measured velocity with position delta
-      body.vx = body.vx * 0.6 + (body.x - prevX) * 0.4;
-      body.vy = body.vy * 0.6 + (body.y - prevY) * 0.4;
-      body.ox = 0;
-      body.oy = 0;
-    });
-
-    function endDrag(e) {
-      if (dragging !== body) return;
-      if (body.capturing) {
-        try {
-          el.releasePointerCapture(e.pointerId);
-        } catch (_) {
-          /* already released */
-        }
-      }
-      el.classList.remove('is-dragging');
-      dragging = null;
-      if (!body.moved) {
-        el.classList.add('is-spin');
-        showTip(spec.fact, el);
-        window.setTimeout(() => el.classList.remove('is-spin'), 900);
-      } else if (!reduced) {
-        body.vx *= 1.85;
-        body.vy *= 1.85;
-        const maxV = 3.2;
-        body.vx = clamp(body.vx, -maxV, maxV);
-        body.vy = clamp(body.vy, -maxV, maxV);
-      }
-      body.capturing = false;
-    }
-
-    el.addEventListener('pointerup', endDrag);
-    el.addEventListener('pointercancel', endDrag);
-
-    el.addEventListener('pointerenter', () => {
-      if (window.matchMedia('(hover: hover)').matches && !dragging) {
-        el.classList.add('is-glow');
-        showTip(spec.fact, el);
-      }
-    });
-    el.addEventListener('pointerleave', () => {
-      el.classList.remove('is-glow');
     });
 
     el.addEventListener('click', (e) => {
+      // Synthetic click after drag — suppress navigation quirks
       if (body.moved) {
         e.preventDefault();
         e.stopPropagation();
@@ -250,6 +231,122 @@ export function initSpaceObjects(root) {
     root.appendChild(el);
     bodies.push(body);
   });
+
+  function onPointerMove(e) {
+    if (!dragging) return;
+    if (activePointerId != null && e.pointerId !== activePointerId) return;
+    if (pointersBlocked()) {
+      endDrag(e, true);
+      return;
+    }
+
+    const body = dragging;
+    const dx = e.clientX - body.downX;
+    const dy = e.clientY - body.downY;
+    const dist = Math.hypot(dx, dy);
+
+    if (!body.moved && dist >= DRAG_PX) {
+      body.moved = true;
+      if (!body.capturing) {
+        try {
+          body.el.setPointerCapture(e.pointerId);
+          body.capturing = true;
+        } catch (_) {
+          /* ignore */
+        }
+      }
+    }
+
+    if (!body.moved) return;
+
+    // Once dragging, prevent scroll / page gesture
+    if (e.cancelable) e.preventDefault();
+
+    const xPct = (e.clientX / window.innerWidth) * 100;
+    const yPct = (e.clientY / window.innerHeight) * 100;
+    const prevX = body.x;
+    const prevY = body.y;
+    const nowTs = e.timeStamp || performance.now();
+    const dtMs = Math.max(8, nowTs - (body._lastTs || nowTs));
+    body._lastTs = nowTs;
+    const scale = 16 / dtMs;
+    body.vx = ((e.clientX - body.lastX) / window.innerWidth) * 100 * scale;
+    body.vy = ((e.clientY - body.lastY) / window.innerHeight) * 100 * scale;
+    body.lastX = e.clientX;
+    body.lastY = e.clientY;
+    setPos(body, xPct, yPct);
+    body.vx = body.vx * 0.55 + (body.x - prevX) * 0.45;
+    body.vy = body.vy * 0.55 + (body.y - prevY) * 0.45;
+    body.ox = 0;
+    body.oy = 0;
+    // Wander home toward release point so they don't snap back hard
+    body.baseX = body.x;
+    body.baseY = body.y;
+  }
+
+  function endDrag(e, cancelled = false) {
+    if (!dragging) return;
+    if (
+      e &&
+      activePointerId != null &&
+      e.pointerId !== undefined &&
+      e.pointerId !== activePointerId
+    ) {
+      return;
+    }
+
+    const body = dragging;
+    const el = body.el;
+    const wasMoved = body.moved;
+    const dist = e
+      ? Math.hypot(e.clientX - body.downX, e.clientY - body.downY)
+      : 0;
+
+    if (body.capturing && e) {
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch (_) {
+        /* already released */
+      }
+    }
+
+    el.classList.remove('is-dragging');
+    dragging = null;
+    activePointerId = null;
+    body.capturing = false;
+    body.pointerId = null;
+
+    if (cancelled || pointersBlocked()) return;
+
+    const isTap = !wasMoved && dist < TAP_PX;
+    if (isTap) {
+      el.classList.add('is-spin');
+      showTip(body.spec.fact, el);
+      window.setTimeout(() => el.classList.remove('is-spin'), 900);
+      return;
+    }
+
+    // Resume drift with inertia from fling
+    const boost = reduced ? 1.15 : 1.85;
+    const maxV = reduced ? 1.2 : 3.2;
+    body.vx *= boost;
+    body.vy *= boost;
+    body.vx = clamp(body.vx, -maxV, maxV);
+    body.vy = clamp(body.vy, -maxV, maxV);
+  }
+
+  function onPointerUp(e) {
+    endDrag(e, false);
+  }
+
+  function onPointerCancel(e) {
+    endDrag(e, true);
+  }
+
+  // Document-level listeners: reliable on iOS Safari after Enter + during drag
+  document.addEventListener('pointermove', onPointerMove, { passive: false });
+  document.addEventListener('pointerup', onPointerUp, { passive: true });
+  document.addEventListener('pointercancel', onPointerCancel, { passive: true });
 
   window.addEventListener(
     'scroll',
@@ -263,9 +360,13 @@ export function initSpaceObjects(root) {
   window.addEventListener(
     'pointermove',
     (e) => {
+      if (e.pointerType === 'touch' && !dragging) {
+        // Don't treat finger resting as magnetic hover target after lift
+        return;
+      }
       pointer.x = e.clientX;
       pointer.y = e.clientY;
-      pointer.active = true;
+      pointer.active = e.pointerType === 'mouse' || e.pointerType === 'pen';
     },
     { passive: true }
   );
@@ -278,21 +379,39 @@ export function initSpaceObjects(root) {
     { passive: true }
   );
 
-  if (reduced) {
-    // Gentle static placement — tap still shows facts
-    return;
+  // Hover facts only when fine pointer available
+  for (const body of bodies) {
+    body.el.addEventListener('pointerenter', () => {
+      if (pointersBlocked() || dragging) return;
+      if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        body.el.classList.add('is-glow');
+        showTip(body.spec.fact, body.el);
+      }
+    });
+    body.el.addEventListener('pointerleave', () => {
+      body.el.classList.remove('is-glow');
+    });
   }
 
-  let last = performance.now();
+  const mo = new MutationObserver(syncHitState);
+  mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  syncHitState();
+
   function tick(now) {
+    if (destroyed) return;
     const dt = Math.min(0.033, (now - last) / 1000);
     last = now;
     const w = window.innerWidth;
     const h = window.innerHeight;
-    const magStrength = 26;
+    const t = now / 1000;
+    const magStrength = coarse ? 0 : 26;
     const magRadius = 160;
+    // Continuous gentle drift — never freezes when “idle” or after touch ends
+    const driftAmp = reduced ? 0.035 : 0.11;
+    const damp = reduced ? 0.985 : 0.962;
+    const homeK = reduced ? 0.06 : 0.16;
 
-    // Soft collisions (pairwise)
+    // Soft collisions
     for (let i = 0; i < bodies.length; i++) {
       for (let j = i + 1; j < bodies.length; j++) {
         const a = bodies[i];
@@ -321,28 +440,52 @@ export function initSpaceObjects(root) {
     }
 
     for (const body of bodies) {
-      if (dragging === body) continue;
+      if (dragging === body) {
+        // Keep CSS vars fresh while held
+        body.el.style.setProperty('--mx', '0px');
+        body.el.style.setProperty('--my', '0px');
+        continue;
+      }
 
-      // Magnetic nudge near cursor
-      if (pointer.active) {
+      // Ambient wander (sine) so motion never dies when idle
+      const driftX =
+        Math.sin(t * (0.22 + body.depth * 0.08) + body.phase) * driftAmp;
+      const driftY =
+        Math.cos(t * (0.18 + body.depth * 0.06) + body.phase * 1.3) *
+        driftAmp *
+        0.85;
+      body.vx += driftX * dt * 60 * 0.02;
+      body.vy += driftY * dt * 60 * 0.02;
+
+      // Soft leash toward a slowly drifting home
+      const homeX =
+        body.baseX +
+        Math.sin(t * 0.07 + body.phase) * (reduced ? 1.2 : 3.5) * body.depth;
+      const homeY =
+        body.baseY +
+        Math.cos(t * 0.06 + body.phase * 0.9) *
+          (reduced ? 1.0 : 2.8) *
+          body.depth;
+      body.vx += (homeX - body.x) * homeK * dt;
+      body.vy += (homeY - body.y) * homeK * dt;
+
+      // Magnetic nudge (desktop mouse only)
+      if (pointer.active && magStrength > 0) {
         const cx = (body.x / 100) * w;
         const cy = (body.y / 100) * h;
         const dx = pointer.x - cx;
         const dy = pointer.y - cy;
         const dist = Math.hypot(dx, dy) || 1;
         if (dist < magRadius) {
-          const force = (1 - dist / magRadius) * magStrength * (0.6 + body.depth * 0.5);
+          const force =
+            (1 - dist / magRadius) * magStrength * (0.6 + body.depth * 0.5);
           body.ox += (dx / dist) * force * dt;
           body.oy += (dy / dist) * force * dt;
         }
       }
 
-      // Soft spring home + inertia
-      const homeK = 0.28 + body.depth * 0.12;
-      body.vx += (body.baseX - body.x) * homeK * dt;
-      body.vy += (body.baseY - body.y) * homeK * dt;
-      body.vx *= 0.955;
-      body.vy *= 0.955;
+      body.vx *= damp;
+      body.vy *= damp;
       body.ox *= 0.88;
       body.oy *= 0.88;
 
@@ -350,26 +493,56 @@ export function initSpaceObjects(root) {
       const ny = body.y + body.vy + body.oy * 0.09;
       setPos(body, nx, ny);
 
-      // Parallax from scroll + magnetic follow
       const parallax = (scrollY * 0.018 * body.depth) % 40;
       const followX = body.ox * (0.28 + body.depth * 0.2);
       const followY = body.oy * (0.28 + body.depth * 0.2) - parallax;
       body.el.style.setProperty('--mx', `${followX.toFixed(2)}px`);
       body.el.style.setProperty('--my', `${followY.toFixed(2)}px`);
-      body.el.style.setProperty('--zscale', (0.92 + body.depth * 0.12).toFixed(3));
+      body.el.style.setProperty(
+        '--zscale',
+        (0.92 + body.depth * 0.12).toFixed(3)
+      );
     }
 
     raf = requestAnimationFrame(tick);
   }
 
-  raf = requestAnimationFrame(tick);
+  function startLoop() {
+    cancelAnimationFrame(raf);
+    last = performance.now();
+    raf = requestAnimationFrame(tick);
+  }
+
+  startLoop();
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       cancelAnimationFrame(raf);
-    } else if (!reduced) {
-      last = performance.now();
-      raf = requestAnimationFrame(tick);
+    } else {
+      startLoop();
     }
   });
+
+  // After Enter gate closes, force a hit-test refresh (iOS Safari)
+  function refresh() {
+    syncHitState();
+    // Nudge compositing so objects receive taps after overlay removal
+    root.style.display = 'none';
+    // force reflow
+    void root.offsetHeight;
+    root.style.display = '';
+    startLoop();
+  }
+
+  function destroy() {
+    destroyed = true;
+    cancelAnimationFrame(raf);
+    mo.disconnect();
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerCancel);
+    tip.remove();
+  }
+
+  return { refresh, destroy, syncHitState };
 }

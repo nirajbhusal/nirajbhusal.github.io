@@ -63,8 +63,9 @@ html {
     opacity: 1 !important;
     transform: none !important;
   }
+  /* Keep objects tappable; JS may still apply a very slow drift via left/top */
   .cosmo-obj {
-    transform: none !important;
+    cursor: pointer;
   }
 }
 
@@ -100,7 +101,7 @@ body.nav-open {
   width: 100%;
   height: 100%;
   z-index: 0;
-  pointer-events: none;
+  pointer-events: none !important;
 }
 
 .nebula {
@@ -1049,13 +1050,19 @@ h3 {
     padding-top: 5rem;
   }
 
-  /* Keep cosmic objects under chrome; never steal header taps */
+  /* Above page content for taps; still under header/nav/overlay */
   .cosmo-layer {
-    z-index: 0;
+    z-index: 2;
   }
 
   body.nav-open .cosmo-layer,
-  body.nav-open .cosmo-obj {
+  body.nav-open .cosmo-obj,
+  body.orbit-open .cosmo-layer,
+  body.orbit-open .cosmo-obj,
+  body.gate-locked .cosmo-layer,
+  body.gate-locked .cosmo-obj,
+  body.is-entering .cosmo-layer,
+  body.is-entering .cosmo-obj {
     pointer-events: none !important;
   }
 }
@@ -1175,8 +1182,12 @@ h3 {
   width: 100%;
   height: 100%;
   display: block;
-  pointer-events: none;
+  pointer-events: none !important;
   z-index: 0;
+}
+.enter-gate[hidden],
+.enter-gate[hidden] * {
+  pointer-events: none !important;
 }
 .enter-gate-veil {
   position: absolute;
@@ -1200,7 +1211,7 @@ h3 {
   z-index: 2;
   text-align: center;
   padding: 2.5rem 1.5rem;
-  max-width: min(26rem, 92vw);
+  max-width: min(28rem, 94vw);
   opacity: 0;
   transform: translateY(10px);
   animation: gate-settle 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
@@ -1251,7 +1262,7 @@ h3 {
   -webkit-backdrop-filter: blur(10px);
 }
 .enter-gate-caption {
-  margin: 0;
+  margin: 0 0 0.65rem;
   font-family: var(--mono);
   font-size: clamp(0.88rem, 2.5vw, 1.05rem);
   font-weight: 400;
@@ -1260,6 +1271,24 @@ h3 {
   color: color-mix(in srgb, var(--fg) 78%, var(--accent-bright));
   line-height: 1.5;
   text-shadow: 0 1px 18px rgba(0, 0, 0, 0.45);
+}
+.enter-gate-chrono {
+  text-align: left;
+  max-width: min(24rem, 92vw);
+  padding: 1rem 1.15rem 1.1rem;
+}
+.enter-gate-chrono .enter-gate-clock {
+  margin: 0 0 0.9rem;
+  text-align: left;
+}
+.enter-gate-chrono .progress-stack {
+  gap: 0.65rem;
+}
+.enter-gate-chrono .progress-meta {
+  font-size: 0.72rem;
+}
+.enter-gate-chrono .year-progress .progress-meta {
+  font-size: 0.78rem;
 }
 .enter-gate .btn-gate {
   min-width: 7.5rem;
@@ -1289,6 +1318,21 @@ h3 {
 body.gate-locked {
   overflow: hidden;
 }
+/* Warp → site: keep deep space; never bleach to white during handoff */
+body.is-entering,
+body.is-entering .enter-gate {
+  background: #020308 !important;
+}
+body.is-entering .enter-gate.is-leaving {
+  background: #020308;
+}
+.enter-gate.is-crossing {
+  background: #020308;
+}
+.enter-gate.is-leaving {
+  /* fade the gate away over dark void — opacity only, no lighten */
+  background: #020308;
+}
 body.gate-locked .site-header,
 body.gate-locked .nav,
 body.gate-locked .orbit-fab {
@@ -1304,9 +1348,14 @@ body:not(.gate-locked) .orbit-fab {
 .cosmo-layer {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  /* Above main/starfield canvas, below menus/header */
+  z-index: 2;
   pointer-events: none;
   overflow: hidden;
+}
+.cosmo-layer.cosmo-layer--blocked .cosmo-obj,
+.cosmo-layer.cosmo-layer--blocked {
+  pointer-events: none !important;
 }
 .cosmo-obj {
   position: absolute;
@@ -1320,8 +1369,10 @@ body:not(.gate-locked) .orbit-fab {
   background: transparent;
   cursor: grab;
   pointer-events: auto;
-  touch-action: pan-y;
+  touch-action: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
   --mx: 0px;
   --my: 0px;
   --zscale: 1;
@@ -1333,6 +1384,10 @@ body:not(.gate-locked) .orbit-fab {
   transform: translate3d(var(--mx), var(--my), 0) scale(var(--zscale));
   will-change: transform, left, top, filter;
   transition: filter 0.55s ease, opacity 0.55s ease;
+}
+/* JS physics drives continuous drift — avoid CSS animation fighting transforms */
+.cosmo-obj.is-physics {
+  animation: none;
 }
 .cosmo-glow {
   position: absolute;
@@ -1368,10 +1423,13 @@ body:not(.gate-locked) .orbit-fab {
 }
 body.is-idle .cosmo-obj:not(.is-dragging) {
   opacity: calc(0.38 + var(--depth) * 0.28);
+  /* never pause drift when idle — motion continues via JS physics */
+  animation-play-state: running;
 }
 .cosmo-obj.is-static {
   animation: none;
   cursor: pointer;
+  /* still tappable; slow JS drift may still run */
   touch-action: manipulation;
 }
 .cosmo-obj.is-spin .cosmo-core {
@@ -1463,9 +1521,14 @@ body.is-idle .cosmo-obj:not(.is-dragging) {
   .enter-gate-caption {
     letter-spacing: 0.04em;
   }
-  .enter-gate-card {
+  .enter-gate-card,
+  .enter-gate-chrono {
     padding: 0.85rem 0.95rem 0.95rem;
   }
+  .enter-gate-chrono .progress-meta {
+    font-size: 0.68rem;
+  }
+
   /* keep clear of FAB / content gutters */
   .cosmo-obj[style*="--x: 88%"],
   .cosmo-obj[style*="--x: 92%"],
@@ -1679,7 +1742,8 @@ html:not([data-theme="light"])[data-tod="night"] .nebula {
     touch-action: manipulation;
     animation: none !important;
     filter: none !important;
-    opacity: 0.45;
+    opacity: 0.5;
+    cursor: pointer;
   }
   .cosmo-glow {
     display: none;

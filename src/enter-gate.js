@@ -1,7 +1,7 @@
 /**
  * Galactic Enter gate — dense starfield, nebula, distant spiral, parallax.
- * On Enter: warp/zoom through stars, then hand off to the site.
- * Respects prefers-reduced-motion (idle vista still draws once; exit is a short fade).
+ * On Enter: warp/zoom through stars, then soft deep-space dissolve into the site
+ * (no white flash / bleach). Respects prefers-reduced-motion (short dark fade).
  */
 
 const prefersReduced = () =>
@@ -51,7 +51,7 @@ export function initEnterGateVista(canvas) {
   let dust = [];
   let nebulae = [];
   let warp = null; // { start, duration, resolve }
-  let flash = 0;
+  let dissolve = 0; // late-warp dark dissolve (never a white flash)
 
   const reduced = prefersReduced();
 
@@ -194,12 +194,15 @@ export function initEnterGateVista(canvas) {
       const t = clamp((now - warp.start) / warp.duration, 0, 1);
       warpP = easeInCubic(t);
       speed = 1 + warpP * 38;
-      flash = t > 0.72 ? easeOutCubic((t - 0.72) / 0.28) : 0;
+      // Soft dark dissolve at the end — stay in deep space, never bleach white
+      dissolve = t > 0.68 ? easeOutCubic((t - 0.68) / 0.32) : 0;
       if (t >= 1 && warp.resolve) {
         const resolve = warp.resolve;
         warp.resolve = null;
         resolve();
       }
+    } else {
+      dissolve = 0;
     }
 
     // deep space backdrop
@@ -291,7 +294,7 @@ export function initEnterGateVista(canvas) {
         const streak = warpP * (8 + s.z * 42) * (dist / Math.max(w, h));
         const ux = dx / dist;
         const uy = dy / dist;
-        ctx.strokeStyle = `hsla(${200 + s.hue * 40}, 80%, ${70 + s.z * 20}%, ${Math.min(1, alpha + warpP * 0.45)})`;
+        ctx.strokeStyle = `hsla(${205 + s.hue * 35}, 75%, ${48 + s.z * 18}%, ${Math.min(0.85, alpha + warpP * 0.28) * (1 - dissolve * 0.65)})`;
         ctx.lineWidth = Math.max(0.6, s.r * (0.8 + warpP * 1.4));
         ctx.beginPath();
         ctx.moveTo(nx - ux * streak, ny - uy * streak);
@@ -313,32 +316,70 @@ export function initEnterGateVista(canvas) {
       }
 
       const hue = 200 + s.hue * 50;
-      ctx.fillStyle = `hsla(${hue}, 70%, ${78 + s.z * 12}%, ${alpha})`;
+      const starA = alpha * (1 - dissolve * 0.75);
+      ctx.fillStyle = `hsla(${hue}, 70%, ${58 + s.z * 14}%, ${starA})`;
       ctx.beginPath();
       ctx.arc(x, y, s.r * (1 + warpP * 0.5), 0, Math.PI * 2);
       ctx.fill();
 
-      if (s.z > 0.75 && s.bright > 0.7 && warpP < 0.85) {
-        ctx.fillStyle = `hsla(${hue}, 80%, 90%, ${alpha * 0.25})`;
+      if (s.z > 0.75 && s.bright > 0.7 && warpP < 0.85 && dissolve < 0.5) {
+        ctx.fillStyle = `hsla(${hue}, 75%, 72%, ${starA * 0.2})`;
         ctx.beginPath();
         ctx.arc(x, y, s.r * 2.4, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
-    // center pull glow during warp
+    // Center pull — cool blue, peaks mid-warp then yields to dark dissolve
     if (warpP > 0.05) {
+      const glowFade = Math.max(0, 1 - dissolve * 1.15);
       const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.55);
-      cg.addColorStop(0, `rgba(180, 210, 255, ${0.08 + warpP * 0.35})`);
-      cg.addColorStop(0.4, `rgba(60, 90, 180, ${0.06 + warpP * 0.12})`);
+      cg.addColorStop(
+        0,
+        `rgba(90, 140, 220, ${(0.05 + warpP * 0.14) * glowFade})`
+      );
+      cg.addColorStop(
+        0.4,
+        `rgba(40, 70, 140, ${(0.05 + warpP * 0.1) * glowFade})`
+      );
       cg.addColorStop(1, 'rgba(2, 3, 8, 0)');
       ctx.fillStyle = cg;
       ctx.fillRect(0, 0, w, h);
     }
 
-    if (flash > 0) {
-      ctx.fillStyle = `rgba(230, 240, 255, ${flash * 0.85})`;
+    // Deep-space handoff: darken into site void + faint blue star hush (no white)
+    if (dissolve > 0) {
+      const vg = ctx.createRadialGradient(
+        cx,
+        cy,
+        Math.min(w, h) * 0.08,
+        cx,
+        cy,
+        Math.max(w, h) * 0.75
+      );
+      vg.addColorStop(0, `rgba(8, 14, 32, ${dissolve * 0.55})`);
+      vg.addColorStop(0.45, `rgba(3, 5, 14, ${dissolve * 0.78})`);
+      vg.addColorStop(1, `rgba(2, 3, 8, ${dissolve * 0.96})`);
+      ctx.fillStyle = vg;
       ctx.fillRect(0, 0, w, h);
+
+      // Soft blue streak hush at the rim — dissolves with the field
+      ctx.strokeStyle = `rgba(90, 150, 230, ${0.12 * (1 - dissolve) * warpP})`;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 18; i++) {
+        const ang = (i / 18) * Math.PI * 2 + dissolve * 0.4;
+        const rad = Math.min(w, h) * (0.12 + dissolve * 0.55);
+        const x0 = cx + Math.cos(ang) * rad * 0.35;
+        const y0 = cy + Math.sin(ang) * rad * 0.35;
+        const x1 = cx + Math.cos(ang) * rad;
+        const y1 = cy + Math.sin(ang) * rad;
+        ctx.globalAlpha = 0.08 + (1 - dissolve) * 0.1;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
     }
   }
 
@@ -398,8 +439,8 @@ export function initEnterGateVista(canvas) {
         return;
       }
       if (prefersReduced()) {
-        // brief white/soft fade handled by CSS; canvas can soft-brighten once
-        flash = 0.35;
+        // Short dark dissolve only — stay in deep space
+        dissolve = 0.85;
         draw(performance.now());
         window.setTimeout(resolve, 280);
         return;

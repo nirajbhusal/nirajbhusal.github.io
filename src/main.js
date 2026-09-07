@@ -69,15 +69,18 @@ function daysInYear(year) {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365;
 }
 
+/** Shared live chrono for hero + Enter gate — one clock keeps both in sync. */
 function initHeroChrono() {
-  const timeEl = document.getElementById('hero-datetime');
-  const yearBar = document.getElementById('year-progress');
-  const yearFill = document.getElementById('year-progress-fill');
-  const yearPct = document.getElementById('year-progress-pct');
-  const dayBar = document.getElementById('day-progress');
-  const dayFill = document.getElementById('day-progress-fill');
-  const dayPct = document.getElementById('day-progress-pct');
-  if (!timeEl && !yearBar) return;
+  const timeEls = [...document.querySelectorAll('[data-chrono="datetime"]')];
+  const yearBars = [...document.querySelectorAll('[data-chrono="year-bar"]')];
+  const yearFills = [...document.querySelectorAll('[data-chrono="year-fill"]')];
+  const yearPcts = [...document.querySelectorAll('[data-chrono="year-pct"]')];
+  const yearLabels = [...document.querySelectorAll('[data-chrono="year-label"]')];
+  const dayBars = [...document.querySelectorAll('[data-chrono="day-bar"]')];
+  const dayFills = [...document.querySelectorAll('[data-chrono="day-fill"]')];
+  const dayPcts = [...document.querySelectorAll('[data-chrono="day-pct"]')];
+  const dayLabels = [...document.querySelectorAll('[data-chrono="day-label"]')];
+  if (!timeEls.length && !yearBars.length) return;
 
   const timeFmt = new Intl.DateTimeFormat(undefined, {
     weekday: 'short',
@@ -90,49 +93,46 @@ function initHeroChrono() {
 
   function tick() {
     const now = new Date();
-    if (timeEl) {
-      timeEl.dateTime = now.toISOString();
-      timeEl.textContent = timeFmt.format(now);
+    const stamp = timeFmt.format(now);
+    const iso = now.toISOString();
+    for (const el of timeEls) {
+      el.dateTime = iso;
+      el.textContent = stamp;
     }
 
     const diy = daysInYear(now.getFullYear());
     const doy = dayOfYear(now);
-    // include fractional day for a living year bar
     const dayFrac =
       (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) /
       86_400;
     const yearFrac = Math.min(1, (doy - 1 + dayFrac) / diy);
     const yearPercent = yearFrac * 100;
-
-    const yearLabel = document.getElementById('year-progress-label');
-    const dayLabel = document.getElementById('day-progress-label');
     const rounded = Math.round(yearPercent);
     const yearNow = now.getFullYear();
-
-    if (yearFill) yearFill.style.width = `${yearPercent}%`;
-    if (yearBar) {
-      yearBar.setAttribute('aria-valuenow', yearPercent.toFixed(1));
-      yearBar.setAttribute(
-        'aria-valuetext',
-        `Day ${doy} of ${diy}, ${yearPercent.toFixed(1)} percent of ${yearNow}`
-      );
-    }
-    if (yearLabel) {
-      yearLabel.textContent = `Day ${doy} · ${rounded}% of ${yearNow}`;
-    }
-    if (yearPct) yearPct.textContent = `${yearPercent.toFixed(1)}%`;
-
+    const yearText = `Day ${doy} · ${rounded}% of ${yearNow}`;
+    const yearAria = `Day ${doy} of ${diy}, ${yearPercent.toFixed(1)} percent of ${yearNow}`;
     const dayPercent = dayFrac * 100;
-    if (dayFill) dayFill.style.width = `${dayPercent}%`;
-    if (dayBar) {
-      dayBar.setAttribute('aria-valuenow', dayPercent.toFixed(1));
-      dayBar.setAttribute(
+    const dayPctText = `${dayPercent.toFixed(1)}%`;
+    const yearPctText = `${yearPercent.toFixed(1)}%`;
+
+    for (const fill of yearFills) fill.style.width = `${yearPercent}%`;
+    for (const bar of yearBars) {
+      bar.setAttribute('aria-valuenow', yearPercent.toFixed(1));
+      bar.setAttribute('aria-valuetext', yearAria);
+    }
+    for (const label of yearLabels) label.textContent = yearText;
+    for (const pct of yearPcts) pct.textContent = yearPctText;
+
+    for (const fill of dayFills) fill.style.width = `${dayPercent}%`;
+    for (const bar of dayBars) {
+      bar.setAttribute('aria-valuenow', dayPercent.toFixed(1));
+      bar.setAttribute(
         'aria-valuetext',
         `${dayPercent.toFixed(1)} percent of today`
       );
     }
-    if (dayLabel) dayLabel.textContent = 'Today';
-    if (dayPct) dayPct.textContent = `${dayPercent.toFixed(1)}%`;
+    for (const label of dayLabels) label.textContent = 'Today';
+    for (const pct of dayPcts) pct.textContent = dayPctText;
   }
 
   tick();
@@ -418,7 +418,7 @@ function syncSoundButton(btn, ambient) {
   btn.title = on ? 'Sound on — click to mute' : 'Sound off — click to unmute';
 }
 
-function initAmbientAndGate() {
+function initAmbientAndGate(cosmo) {
   const ambient = createAmbient();
   const soundBtn = document.getElementById('sound-toggle');
   const gate = document.getElementById('enter-gate');
@@ -462,9 +462,21 @@ function initAmbientAndGate() {
     document.body.classList.add('is-entering');
     const done = () => {
       gate.hidden = true;
+      gate.setAttribute('hidden', '');
+      gate.setAttribute('aria-hidden', 'true');
+      gate.style.pointerEvents = 'none';
       gate.classList.remove('is-leaving', 'is-crossing');
-      document.body.classList.remove('is-entering');
+      document.body.classList.remove('is-entering', 'gate-locked');
       vista.destroy();
+      // Drop canvas so it cannot intercept hits on iOS Safari
+      if (gateCanvas && gateCanvas.parentNode) {
+        gateCanvas.width = 0;
+        gateCanvas.height = 0;
+        gateCanvas.remove();
+      }
+      // Cosmo layer must be interactive after Enter
+      cosmo?.refresh?.();
+      cosmo?.syncHitState?.();
     };
     if (reduced) {
       window.setTimeout(done, 320);
@@ -477,8 +489,12 @@ function initAmbientAndGate() {
 
   if (already || !gate) {
     gate?.setAttribute('hidden', '');
+    gate?.setAttribute('aria-hidden', 'true');
+    if (gate) gate.style.pointerEvents = 'none';
     document.body.classList.remove('gate-locked');
     vista.destroy();
+    if (gateCanvas && gateCanvas.parentNode) gateCanvas.remove();
+    cosmo?.refresh?.();
   } else {
     enterBtn?.focus();
     enterBtn?.addEventListener('click', () => dismissGate(true));
@@ -521,8 +537,8 @@ initHeroChrono();
 initContactCards();
 initNav();
 initReveal();
-initAmbientAndGate();
-initSpaceObjects(document.getElementById('cosmo-layer'));
+const cosmo = initSpaceObjects(document.getElementById('cosmo-layer'));
+initAmbientAndGate(cosmo);
 
 const starCanvas = document.getElementById('starfield');
 if (starCanvas) initStarfield(starCanvas);

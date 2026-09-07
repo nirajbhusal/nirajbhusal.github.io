@@ -21,8 +21,31 @@
     <div class="enter-gate-inner">
       <h1 id="enter-gate-title">Niraj Bhusal</h1>
       <p class="enter-gate-copy">GovTech · AI governance · civic tools</p>
-      <div class="enter-gate-card">
+      <div class="enter-gate-card enter-gate-chrono" aria-label="Local time and year progress">
         <p class="enter-gate-caption">move with time, understand the universe</p>
+        <p class="hero-clock enter-gate-clock" aria-live="polite">
+          <time id="gate-datetime" data-chrono="datetime" datetime=""></time>
+        </p>
+        <div class="progress-stack">
+          <div class="year-progress" role="progressbar" aria-labelledby="gate-year-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="gate-year-progress" data-chrono="year-bar">
+            <div class="progress-track year-track">
+              <div class="progress-fill year-fill" id="gate-year-progress-fill" data-chrono="year-fill"></div>
+            </div>
+            <div class="progress-meta">
+              <span id="gate-year-progress-label" data-chrono="year-label">Day 1 · 0% of 2026</span>
+              <span id="gate-year-progress-pct" class="progress-pct" data-chrono="year-pct">0%</span>
+            </div>
+          </div>
+          <div class="day-progress" role="progressbar" aria-labelledby="gate-day-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="gate-day-progress" data-chrono="day-bar">
+            <div class="progress-track day-track">
+              <div class="progress-fill day-fill" id="gate-day-progress-fill" data-chrono="day-fill"></div>
+            </div>
+            <div class="progress-meta day-meta">
+              <span id="gate-day-progress-label" data-chrono="day-label">Today</span>
+              <span id="gate-day-progress-pct" class="progress-pct" data-chrono="day-pct">0%</span>
+            </div>
+          </div>
+        </div>
       </div>
       <button type="button" id="enter-gate-btn" class="btn btn-gate">Enter</button>
     </div>
@@ -106,25 +129,25 @@
       <div class="hero-chrono" aria-label="Local time and year progress">
         <p class="hero-caption">move with time, understand the universe</p>
         <p class="hero-clock" id="hero-clock" aria-live="polite">
-          <time id="hero-datetime" datetime=""></time>
+          <time id="hero-datetime" data-chrono="datetime" datetime=""></time>
         </p>
         <div class="progress-stack">
-          <div class="year-progress" role="progressbar" aria-labelledby="year-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="year-progress">
+          <div class="year-progress" role="progressbar" aria-labelledby="year-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="year-progress" data-chrono="year-bar">
             <div class="progress-track year-track">
-              <div class="progress-fill year-fill" id="year-progress-fill"></div>
+              <div class="progress-fill year-fill" id="year-progress-fill" data-chrono="year-fill"></div>
             </div>
             <div class="progress-meta">
-              <span id="year-progress-label">Day 1 · 0% of 2026</span>
-              <span id="year-progress-pct" class="progress-pct">0%</span>
+              <span id="year-progress-label" data-chrono="year-label">Day 1 · 0% of 2026</span>
+              <span id="year-progress-pct" class="progress-pct" data-chrono="year-pct">0%</span>
             </div>
           </div>
-          <div class="day-progress" role="progressbar" aria-labelledby="day-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="day-progress">
+          <div class="day-progress" role="progressbar" aria-labelledby="day-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="day-progress" data-chrono="day-bar">
             <div class="progress-track day-track">
-              <div class="progress-fill day-fill" id="day-progress-fill"></div>
+              <div class="progress-fill day-fill" id="day-progress-fill" data-chrono="day-fill"></div>
             </div>
             <div class="progress-meta day-meta">
-              <span id="day-progress-label">Today</span>
-              <span id="day-progress-pct" class="progress-pct">0%</span>
+              <span id="day-progress-label" data-chrono="day-label">Today</span>
+              <span id="day-progress-pct" class="progress-pct" data-chrono="day-pct">0%</span>
             </div>
           </div>
         </div>
