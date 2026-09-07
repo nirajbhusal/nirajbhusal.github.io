@@ -16,6 +16,8 @@
 </head>
 <body>
   <canvas id="starfield" aria-hidden="true"></canvas>
+  <div id="nebula" class="nebula" aria-hidden="true"></div>
+  <div id="nav-overlay" class="nav-overlay" hidden></div>
 
   <header class="site-header">
     <a class="logo" href="#hero">NB</a>
@@ -30,6 +32,8 @@
       <a href="#experience">Experience</a>
       <a href="#education">Education</a>
       <a href="#certs">Certs</a>
+      <a href="#speaking">Speaking</a>
+      <a href="#community">Community</a>
       <a href="#media">Media</a>
       <a href="#play">Play</a>
       <a href="#contact">Contact</a>
@@ -39,26 +43,63 @@
     </button>
   </header>
 
+  <button type="button" id="orbit-fab" class="orbit-fab" aria-haspopup="dialog" aria-controls="orbit-modal" aria-expanded="false" title="Play Orbit Dodge">
+    <span class="orbit-fab-icon" aria-hidden="true">◎</span>
+    <span class="orbit-fab-label">Play</span>
+  </button>
+
+  <div id="orbit-modal" class="orbit-modal" role="dialog" aria-modal="true" aria-labelledby="orbit-modal-title" hidden>
+    <div class="orbit-modal-backdrop" data-orbit-close></div>
+    <div class="orbit-modal-panel card">
+      <div class="orbit-modal-head">
+        <h2 id="orbit-modal-title">Orbit Dodge</h2>
+        <button type="button" id="orbit-modal-close" class="btn btn-ghost orbit-close" aria-label="Close game" data-orbit-close>×</button>
+      </div>
+      <p class="meta">WASD / arrows · space to dash · waves · high score saved locally</p>
+      <canvas id="orbit-dodge-modal" width="640" height="400" role="img" aria-label="Orbit Dodge mini-game"></canvas>
+      <div class="game-hud">
+        <span id="odm-score">Score: 0</span>
+        <span id="odm-wave">Wave: 1</span>
+        <span id="odm-high">High: 0</span>
+      </div>
+      <div class="game-controls">
+        <button type="button" id="odm-start" class="btn btn-primary">Start / Resume</button>
+        <button type="button" id="odm-pause" class="btn btn-ghost">Pause</button>
+      </div>
+      <div class="touch-pad" id="touch-pad-modal" aria-label="Touch controls">
+        <button type="button" data-dir="up" aria-label="Up">↑</button>
+        <div class="touch-mid">
+          <button type="button" data-dir="left" aria-label="Left">←</button>
+          <button type="button" data-dir="dash" aria-label="Dash">◆</button>
+          <button type="button" data-dir="right" aria-label="Right">→</button>
+        </div>
+        <button type="button" data-dir="down" aria-label="Down">↓</button>
+      </div>
+    </div>
+  </div>
+
   <main>
-    <section id="hero" class="section hero">
+    <section id="hero" class="section hero reveal">
       <p class="eyebrow">Kathmandu · Nepal</p>
       <h1>Niraj Bhusal</h1>
       <p class="tagline">Civil servant · GovTech · AI governance · DPI</p>
-      <p class="lede">Building clearer public systems — and the occasional personal civic tool when the moment demands it.</p>
+      <p class="lede">Building clearer public systems — and the occasional personal civic tool when the moment demands it. Briefly left the rest of the internet.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#built">See what’s built</a>
         <a class="btn btn-ghost" href="#contact">Contact</a>
+        <a class="btn btn-ghost" href="https://grokipedia.com/page/Niraj_Bhusal" target="_blank" rel="noopener">Grokipedia ↗</a>
         <a class="btn btn-ghost" href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener">Flood bulletin ↗</a>
       </div>
     </section>
 
-    <section id="about" class="section">
+    <section id="about" class="section reveal">
       <h2>About</h2>
       <div class="about-grid">
         <div class="about-copy">
           <p>I’m a civil servant with the Government of Nepal, currently at the <strong>Ministry of Finance</strong>, working at the intersection of government technology, AI governance, and digital public infrastructure (DPI).</p>
           <p>Alongside day-to-day public service, I build personal civic experiments — including a flood information bulletin during the Rasuwa–Bhotekoshi crisis — and help grow communities like <strong>GovTech Nepal</strong>.</p>
           <p>I care about systems people can trust: accurate data, clear routing to official channels, and tools that respect the line between personal initiative and government authority.</p>
+          <p class="about-links">Also on <a href="https://grokipedia.com/page/Niraj_Bhusal" target="_blank" rel="noopener">Grokipedia</a>.</p>
         </div>
         <aside class="card focus-card">
           <h3>Focus</h3>
@@ -72,7 +113,7 @@
       </div>
     </section>
 
-    <section id="built" class="section">
+    <section id="built" class="section reveal">
       <h2>Built</h2>
       <article class="card featured">
         <span class="badge">Featured · Personal civic</span>
@@ -105,7 +146,7 @@
       </div>
     </section>
 
-    <section id="experience" class="section">
+    <section id="experience" class="section reveal">
       <h2>Experience</h2>
       <div class="card experience-intro">
         <h3>Civil Servant, Government of Nepal</h3>
@@ -162,7 +203,7 @@
       </ol>
     </section>
 
-    <section id="education" class="section">
+    <section id="education" class="section reveal">
       <h2>Education</h2>
       <article class="card featured education-card">
         <span class="badge">Master’s</span>
@@ -181,69 +222,130 @@
       </article>
     </section>
 
-    <section id="certs" class="section">
+    <section id="certs" class="section reveal">
       <h2>Trainings &amp; Certifications</h2>
-      <ul class="certs-list">
-        <li>
-          <span class="cert-name">Oxford AI &amp; Digital Transformation for Government</span>
-          <span class="cert-when">Dec 2025</span>
-        </li>
-        <li>
-          <span class="cert-name">ITU AI Governance — Geneva</span>
-          <span class="cert-when">Sept–Oct 2025</span>
-        </li>
-        <li>
-          <span class="cert-name">Google Gemini Educator</span>
-          <span class="cert-when">Certification</span>
-        </li>
-        <li>
-          <span class="cert-name">ITU Spectrum for 5G</span>
-          <span class="cert-when">Jul 2025</span>
-        </li>
-        <li>
-          <span class="cert-name">Nanjing New Generation AI</span>
-          <span class="cert-when">Jun 2025</span>
-        </li>
-        <li>
-          <span class="cert-name">BlueDot AI Governance</span>
-          <span class="cert-when">Jan–Apr 2025</span>
-        </li>
-        <li>
-          <span class="cert-name">University of Michigan — Generative AI Governance</span>
-          <span class="cert-when">Dec 2024</span>
-        </li>
-        <li>
-          <span class="cert-name">MOFCOM Cross-Border E-Commerce (CBEC)</span>
-          <span class="cert-when">Nov 2024</span>
-        </li>
-        <li>
-          <span class="cert-name">DIGOV — Erasmus / University of Leeds</span>
-          <span class="cert-when">Digital governance</span>
-        </li>
-        <li>
-          <span class="cert-name">Perplexity AI Fellowship</span>
-          <span class="cert-when">Mar–Aug 2025</span>
-        </li>
-        <li>
-          <span class="cert-name">ATIH Mentorship</span>
-          <span class="cert-when">Mentorship</span>
-        </li>
-        <li>
-          <span class="cert-name">Texas Hackathon — Mentor</span>
-          <span class="cert-when">Mentor</span>
-        </li>
-        <li>
-          <span class="cert-name">India AI Impact Summit</span>
-          <span class="cert-when">Feb 2026</span>
-        </li>
-        <li>
-          <span class="cert-name">World Summit on AI (WSAI) — Doha</span>
-          <span class="cert-when">Dec 2024</span>
-        </li>
-      </ul>
+      <div class="chip-grid" role="list">
+        <span class="chip" role="listitem"><span class="chip-name">Oxford AI &amp; Digital Transformation for Government</span><span class="chip-when">Dec 2025</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">ITU AI Governance — Geneva</span><span class="chip-when">Sept–Oct 2025</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">Google Gemini Educator</span><span class="chip-when">2025–2028</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">ITU Spectrum Assignment Policies</span><span class="chip-when">Jul 2025</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">Nanjing New Generation AI</span><span class="chip-when">Jun 2025</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">BlueDot AI Governance</span><span class="chip-when">Jan–Apr 2025</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">U. Michigan — Generative AI Governance</span><span class="chip-when">Dec 2024</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">MOFCOM Cross-Border E-Commerce</span><span class="chip-when">Nov 2024</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">DIGOV Erasmus / Leeds</span><span class="chip-when">Digital governance</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">Perplexity AI Fellowship</span><span class="chip-when">Mar–Aug 2025</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">ATIH Responsible Tech Mentorship</span><span class="chip-when">Feb–Jun 2025</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">Texas Hackathon 2025 — Mentor</span><span class="chip-when">Jul 2025</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">India AI Impact Summit</span><span class="chip-when">Feb 2026</span></span>
+        <span class="chip" role="listitem"><span class="chip-name">World Summit AI — Doha</span><span class="chip-when">Dec 2024</span></span>
+      </div>
     </section>
 
-    <section id="media" class="section">
+    <section id="speaking" class="section reveal">
+      <h2>Speaking &amp; Events</h2>
+      <div class="event-grid">
+        <article class="card event-card">
+          <span class="badge">AI Trainer</span>
+          <h3>JCI Nepal Area "B" Conference 2026</h3>
+          <p class="meta">4–5 Sep 2026 · Hetauda-02, Makawanpur</p>
+          <p>AI Trainer — AI Governance track.</p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Panelist</span>
+          <h3>Rotaract Kathmandu — Sambhavnaharuko Desh</h3>
+          <p class="meta">May 2025 · Covered in Kathmandu Post</p>
+          <p>Youth discussion panelist.
+            <a href="https://www.facebook.com/rotaractkathmandu/photos/introducing-our-panelist-niraj-bhusalwere-honored-to-welcome-niraj-bhusal-civil-/1131421312362069/" target="_blank" rel="noopener">FB panelist photo ↗</a>
+            · <a href="https://kathmandupost.com/art-culture/2025/05/12/youth-urged-to-embrace-uncertainty-and-build-in-nepal" target="_blank" rel="noopener">Kathmandu Post ↗</a>
+          </p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Speaking</span>
+          <h3>Instagram appearances</h3>
+          <p class="meta">Event &amp; community posts</p>
+          <p>
+            <a href="https://www.instagram.com/p/DVOWtLTEbWp/" target="_blank" rel="noopener">Instagram DVOWtLTEbWp ↗</a>
+            · <a href="https://www.instagram.com/p/Db022HKMEyK/" target="_blank" rel="noopener">Instagram Db022HKMEyK ↗</a>
+          </p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Delegate</span>
+          <h3>India AI Impact Summit</h3>
+          <p class="meta">February 2026</p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Delegate</span>
+          <h3>World Summit AI — Doha</h3>
+          <p class="meta">December 2024</p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Panelist</span>
+          <h3>vivo 5G Talk Asia</h3>
+          <p class="meta">May 2023</p>
+          <p>Regional tech talk on 5G prospects (Nepal–Pakistan experts).</p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Judge</span>
+          <h3>Hult Prize Grand Finale</h3>
+          <p class="meta">March 2022 · Far Western University</p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Summit</span>
+          <h3>Global Crowdsource Summit</h3>
+          <p class="meta">January 2020 · Google, Singapore</p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Summit</span>
+          <h3>GDG / WTM SEA Summit</h3>
+          <p class="meta">August 2019 · Google, Bangkok</p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Speaker</span>
+          <h3>Adapt Convention</h3>
+          <p class="meta">Speaker listing</p>
+          <p><a href="https://adaptconvention.com/speaker/niraj-bhusal/" target="_blank" rel="noopener">adaptconvention.com ↗</a></p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Mentor</span>
+          <h3>ATIH Responsible Tech Mentorship</h3>
+          <p class="meta">February–June 2025</p>
+        </article>
+        <article class="card event-card">
+          <span class="badge">Mentor</span>
+          <h3>Texas Hackathon 2025 Vol.1</h3>
+          <p class="meta">July 2025</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="community" class="section reveal">
+      <h2>Community</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>GDG Dang</h3>
+          <p>Founder (2015–2019) — first tech community outside Kathmandu; DevFest, I/O Extended, Cloud Next, Women Techmakers.</p>
+        </article>
+        <article class="card">
+          <h3>Google Crowdsource</h3>
+          <p>Community Leader / Influencer for Nepal (2020–2021).</p>
+        </article>
+        <article class="card">
+          <h3>TheirWorld</h3>
+          <p>Global Youth Ambassador (2020–2022).</p>
+        </article>
+        <article class="card">
+          <h3>TechSathi</h3>
+          <p>Founder (2019–2020); grew to 100K+ followers within a year.</p>
+        </article>
+        <article class="card">
+          <h3>GovTech Nepal</h3>
+          <p>Founder — government digital-adoption community.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="media" class="section reveal">
       <h2>Media</h2>
       <ul class="media-list">
         <li>
@@ -254,9 +356,9 @@
           </a>
         </li>
         <li>
-          <a href="https://ekantipur.com/" target="_blank" rel="noopener">
+          <a href="https://ekantipur.com/technology/2026/09/03/neeraj-creates-bhotekoshi-flood-portal-with-the-power-of-ai-58-15.html" target="_blank" rel="noopener">
             <span class="outlet">eKantipur</span>
-            <span class="headline">Coverage of the AI-assisted flood information effort</span>
+            <span class="headline">बाढीमा हराएको सूचना खोजिरहेका निरज</span>
             <span class="when">3 Sep 2026</span>
           </a>
         </li>
@@ -274,15 +376,22 @@
             <span class="when">Flood tracker coverage</span>
           </a>
         </li>
+        <li>
+          <a href="https://kathmandupost.com/art-culture/2025/05/12/youth-urged-to-embrace-uncertainty-and-build-in-nepal" target="_blank" rel="noopener">
+            <span class="outlet">The Kathmandu Post</span>
+            <span class="headline">Youth urged to embrace uncertainty and build in Nepal</span>
+            <span class="when">12 May 2025</span>
+          </a>
+        </li>
       </ul>
     </section>
 
-    <section id="play" class="section">
+    <section id="play" class="section reveal">
       <h2>Play</h2>
       <div class="play-grid">
         <div class="card game-card">
           <h3>Orbit Dodge</h3>
-          <p class="meta">WASD / arrows · dash · waves · high score saved locally</p>
+          <p class="meta">WASD / arrows · dash · waves · high score saved locally — or use the floating Play control anytime</p>
           <canvas id="orbit-dodge" width="640" height="400" role="img" aria-label="Orbit Dodge mini-game"></canvas>
           <div class="game-hud">
             <span id="od-score">Score: 0</span>
@@ -292,6 +401,7 @@
           <div class="game-controls">
             <button type="button" id="od-start" class="btn btn-primary">Start / Resume</button>
             <button type="button" id="od-pause" class="btn btn-ghost">Pause</button>
+            <button type="button" id="od-open-modal" class="btn btn-ghost">Open overlay</button>
           </div>
           <div class="touch-pad" id="touch-pad" aria-label="Touch controls">
             <button type="button" data-dir="up" aria-label="Up">↑</button>
@@ -312,13 +422,15 @@
       </div>
     </section>
 
-    <section id="contact" class="section">
+    <section id="contact" class="section reveal">
       <h2>Contact</h2>
       <ul class="contact-list">
         <li><a href="mailto:niraj.bhusal@icloud.com">niraj.bhusal@icloud.com</a></li>
-        <li><a href="tel:+9779701010000">+977-9701010000</a></li>
         <li><a href="https://linkedin.com/in/nirajbhusal" target="_blank" rel="noopener">linkedin.com/in/nirajbhusal</a></li>
         <li><a href="https://x.com/nirajbhusal" target="_blank" rel="noopener">x.com/nirajbhusal</a></li>
+        <li><a href="https://www.buymeacoffee.com/helloniraz" target="_blank" rel="noopener">Buy Me a Coffee — helloniraz</a></li>
+        <li><a href="https://grokipedia.com/page/Niraj_Bhusal" target="_blank" rel="noopener">Grokipedia</a></li>
+        <li><a href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener">Flood Bulletin</a></li>
       </ul>
       <div class="card coffee-card">
         <h3>Buy Me a Coffee</h3>

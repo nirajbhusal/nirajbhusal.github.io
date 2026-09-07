@@ -4,6 +4,8 @@ import { initOrbitDodge } from './orbit-dodge.js';
 import { initConstellation } from './constellation.js';
 
 const THEME_KEY = 'theme';
+const prefersReduced = () =>
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function applyTheme(theme) {
   if (theme === 'light') {
@@ -33,35 +35,101 @@ function initYear() {
   if (el) el.textContent = String(new Date().getFullYear());
 }
 
+function initReveal() {
+  const nodes = [...document.querySelectorAll('.reveal')];
+  if (!nodes.length) return;
+  if (prefersReduced() || !('IntersectionObserver' in window)) {
+    nodes.forEach((n) => n.classList.add('is-visible'));
+    return;
+  }
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      }
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+  );
+  nodes.forEach((n) => io.observe(n));
+}
+
 function initNav() {
   const toggle = document.getElementById('nav-toggle');
   const nav = document.getElementById('site-nav');
+  const overlay = document.getElementById('nav-overlay');
   if (!toggle || !nav) return;
 
   const links = [...nav.querySelectorAll('a[href^="#"]')];
+  let lastFocus = null;
+
+  function focusables() {
+    return [toggle, ...links].filter(
+      (el) => el && !el.hasAttribute('disabled') && el.offsetParent !== null
+    );
+  }
 
   function setOpen(open) {
+    const wasOpen = toggle.getAttribute('aria-expanded') === 'true';
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
     nav.classList.toggle('is-open', open);
     document.body.classList.toggle('nav-open', open);
+    if (overlay) {
+      if (open) overlay.hidden = false;
+      else overlay.hidden = true;
+    }
+    if (open && !wasOpen) {
+      lastFocus = document.activeElement;
+      const firstLink = links[0];
+      window.setTimeout(() => firstLink?.focus(), 50);
+    } else if (!open && wasOpen) {
+      (lastFocus || toggle).focus?.();
+    }
   }
 
-  toggle.addEventListener('click', () => {
+  toggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     const open = toggle.getAttribute('aria-expanded') !== 'true';
     setOpen(open);
   });
+
+  overlay?.addEventListener('click', () => setOpen(false));
 
   links.forEach((link) => {
     link.addEventListener('click', () => setOpen(false));
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') setOpen(false);
+    if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+      e.preventDefault();
+      setOpen(false);
+      return;
+    }
+    if (
+      e.key === 'Tab' &&
+      toggle.getAttribute('aria-expanded') === 'true' &&
+      window.matchMedia('(max-width: 980px)').matches
+    ) {
+      const items = focusables();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
   });
 
   window.addEventListener('resize', () => {
-    if (window.matchMedia('(min-width: 901px)').matches) setOpen(false);
+    if (window.matchMedia('(min-width: 981px)').matches) setOpen(false);
   });
 
   const sections = links
@@ -84,23 +152,82 @@ function initNav() {
   setActiveFromScroll();
 }
 
+function wireGame(canvas, hudIds, padId, startId, pauseId) {
+  if (!canvas) return null;
+  const game = initOrbitDodge(canvas, {
+    score: document.getElementById(hudIds.score),
+    wave: document.getElementById(hudIds.wave),
+    high: document.getElementById(hudIds.high),
+  }, padId);
+  document.getElementById(startId)?.addEventListener('click', () => game.start());
+  document.getElementById(pauseId)?.addEventListener('click', () => game.pause());
+  return game;
+}
+
+function initOrbitModal(sectionGame) {
+  const fab = document.getElementById('orbit-fab');
+  const modal = document.getElementById('orbit-modal');
+  const closeBtns = document.querySelectorAll('[data-orbit-close]');
+  const openFromSection = document.getElementById('od-open-modal');
+  if (!fab || !modal) return;
+
+  const modalCanvas = document.getElementById('orbit-dodge-modal');
+  const modalGame = wireGame(
+    modalCanvas,
+    { score: 'odm-score', wave: 'odm-wave', high: 'odm-high' },
+    'touch-pad-modal',
+    'odm-start',
+    'odm-pause'
+  );
+
+  let lastFocus = null;
+
+  function setOpen(open) {
+    const wasOpen = !modal.hidden;
+    fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.classList.toggle('orbit-open', open);
+    modal.hidden = !open;
+    if (open && !wasOpen) {
+      lastFocus = document.activeElement;
+      sectionGame?.pause?.(true);
+      window.setTimeout(() => {
+        document.getElementById('odm-start')?.focus();
+        modalGame?.start();
+      }, 40);
+    } else if (!open && wasOpen) {
+      modalGame?.pause?.(true);
+      (lastFocus || fab).focus?.();
+    }
+  }
+
+  fab.addEventListener('click', () => setOpen(true));
+  openFromSection?.addEventListener('click', () => setOpen(true));
+  closeBtns.forEach((el) => el.addEventListener('click', () => setOpen(false)));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.hidden) {
+      e.preventDefault();
+      setOpen(false);
+    }
+  });
+}
+
 initTheme();
 initYear();
 initNav();
+initReveal();
 
 const starCanvas = document.getElementById('starfield');
 if (starCanvas) initStarfield(starCanvas);
 
-const gameCanvas = document.getElementById('orbit-dodge');
-if (gameCanvas) {
-  const game = initOrbitDodge(gameCanvas, {
-    score: document.getElementById('od-score'),
-    wave: document.getElementById('od-wave'),
-    high: document.getElementById('od-high'),
-  });
-  document.getElementById('od-start')?.addEventListener('click', () => game.start());
-  document.getElementById('od-pause')?.addEventListener('click', () => game.pause());
-}
+const sectionGame = wireGame(
+  document.getElementById('orbit-dodge'),
+  { score: 'od-score', wave: 'od-wave', high: 'od-high' },
+  'touch-pad',
+  'od-start',
+  'od-pause'
+);
+initOrbitModal(sectionGame);
 
 const constCanvas = document.getElementById('constellation');
 const factPanel = document.getElementById('fact-panel');

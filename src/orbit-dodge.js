@@ -2,7 +2,7 @@ const HS_KEY = 'orbitDodgeHighScore';
 const prefersReduced = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function initOrbitDodge(canvas, hud) {
+export function initOrbitDodge(canvas, hud, padId = 'touch-pad') {
   const ctx = canvas.getContext('2d');
   const keys = new Set();
   let running = false;
@@ -18,7 +18,7 @@ export function initOrbitDodge(canvas, hud) {
   let last = 0;
   let raf = 0;
 
-  hud.high.textContent = `High: ${high}`;
+  if (hud?.high) hud.high.textContent = `High: ${high}`;
 
   function reset() {
     const w = canvas.width;
@@ -34,9 +34,9 @@ export function initOrbitDodge(canvas, hud) {
   }
 
   function updateHud() {
-    hud.score.textContent = `Score: ${Math.floor(score)}`;
-    hud.wave.textContent = `Wave: ${wave}`;
-    hud.high.textContent = `High: ${high}`;
+    if (hud?.score) hud.score.textContent = `Score: ${Math.floor(score)}`;
+    if (hud?.wave) hud.wave.textContent = `Wave: ${wave}`;
+    if (hud?.high) hud.high.textContent = `High: ${high}`;
   }
 
   function spawn() {
@@ -144,28 +144,31 @@ export function initOrbitDodge(canvas, hud) {
     const w = canvas.width;
     const h = canvas.height;
     const light = document.documentElement.getAttribute('data-theme') === 'light';
-    ctx.fillStyle = light ? '#e9e6e0' : '#07080e';
+    ctx.fillStyle = light ? '#e8eef7' : '#050a14';
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = light ? 'rgba(18,20,26,0.08)' : 'rgba(255,255,255,0.05)';
+    ctx.strokeStyle = light ? 'rgba(21,101,192,0.12)' : 'rgba(110,192,255,0.12)';
     for (let i = 0; i < 6; i++) {
       ctx.beginPath();
       ctx.arc(w / 2, h / 2, 30 + i * 35, 0, Math.PI * 2);
       ctx.stroke();
     }
 
-    ctx.fillStyle = '#ff6b2c';
+    ctx.fillStyle = '#3b9eff';
+    ctx.shadowColor = 'rgba(59,158,255,0.7)';
+    ctx.shadowBlur = 12;
     ctx.beginPath();
     ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowBlur = 0;
     if (dashActive > 0) {
-      ctx.strokeStyle = 'rgba(255,107,44,0.7)';
+      ctx.strokeStyle = 'rgba(110,192,255,0.85)';
       ctx.beginPath();
       ctx.arc(player.x, player.y, player.r + 6, 0, Math.PI * 2);
       ctx.stroke();
     }
 
-    ctx.fillStyle = light ? '#2a2e3a' : '#c9ccd6';
+    ctx.fillStyle = light ? '#3a4a62' : '#a8b8d0';
     for (const a of asteroids) {
       ctx.beginPath();
       ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
@@ -226,26 +229,37 @@ export function initOrbitDodge(canvas, hud) {
     raf = requestAnimationFrame(loop);
   }
 
-  function pause() {
+  function pause(forcePause) {
     if (!running) return;
-    paused = !paused;
+    if (forcePause === true) paused = true;
+    else if (forcePause === false) paused = false;
+    else paused = !paused;
   }
 
-  window.addEventListener('keydown', (e) => {
+  function onKeyDown(e) {
+    if (document.body.classList.contains('orbit-open')) {
+      // modal instance handles keys when open; section instance still gets events —
+      // gate section canvas by visibility of its parent section when modal open
+    }
     keys.add(e.key);
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-      e.preventDefault();
+      if (running) e.preventDefault();
     }
-    if (e.key === ' ' || e.key === 'Shift') tryDash();
-    if (e.key === 'p' || e.key === 'P') pause();
-  });
-  window.addEventListener('keyup', (e) => keys.delete(e.key));
+    if ((e.key === ' ' || e.key === 'Shift') && running) tryDash();
+    if ((e.key === 'p' || e.key === 'P') && running) pause();
+  }
+  function onKeyUp(e) {
+    keys.delete(e.key);
+  }
+
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden' && running) paused = true;
   });
 
-  const pad = document.getElementById('touch-pad');
+  const pad = document.getElementById(padId);
   if (pad) {
     pad.querySelectorAll('button').forEach((btn) => {
       const dir = btn.dataset.dir;
@@ -264,8 +278,6 @@ export function initOrbitDodge(canvas, hud) {
     });
   }
 
-  // Fit canvas internal resolution
-  const rect = canvas.getBoundingClientRect();
   canvas.width = 640;
   canvas.height = 400;
   reset();
