@@ -1,23 +1,23 @@
 const FACTS = [
   {
     label: 'Civil servant',
-    text: 'Niraj Bhusal is a civil servant in Nepal, focused on public digital systems.',
+    text: 'Niraj Bhusal is a civil servant with the Government of Nepal (since September 2013), focused on public digital systems.',
+  },
+  {
+    label: 'Ministry of Finance',
+    text: 'Currently at the Ministry of Finance (Dec 2019 – Present), working on digital transformation, GovTech, and AI use-cases.',
   },
   {
     label: 'GovTech & DPI',
-    text: 'Works on GovTech, AI governance, and digital public infrastructure (DPI).',
-  },
-  {
-    label: 'MoF · FSO',
-    text: 'Assistant IT Officer at the Ministry of Finance / Financial Comptroller General Office since December 2019.',
+    text: 'Works on GovTech, AI governance, and digital public infrastructure (DPI). Founded the GovTech Nepal community.',
   },
   {
     label: 'Flood bulletin',
     text: 'Built the Rasuwa–Bhotekoshi Flood Bulletin as a personal civic project — not a government website.',
   },
   {
-    label: 'Grok-assisted',
-    text: 'Used Grok to help ship crisis information tooling during the August 2026 flood response.',
+    label: 'MOFCOM · HUST',
+    text: 'M.E. Information & Communication Engineering at HUST, China (2021–2023) on a MOFCOM Scholarship nominated by the Government of Nepal.',
   },
   {
     label: 'Gov contributions',
@@ -29,7 +29,7 @@ const FACTS = [
   },
   {
     label: 'OPMCM years',
-    text: 'Served at OPMCM (Jun 2017–Dec 2019), after roles at Water Supply and Urban Development.',
+    text: 'At OPMCM (Jun 2017–Dec 2019), after Ministry of Water Supply and Ministry of Urban Development.',
   },
 ];
 

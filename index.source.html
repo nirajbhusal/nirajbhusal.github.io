@@ -19,10 +19,17 @@
 
   <header class="site-header">
     <a class="logo" href="#hero">NB</a>
-    <nav class="nav" aria-label="Primary">
+    <button type="button" id="nav-toggle" class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+    </button>
+    <nav id="site-nav" class="nav" aria-label="Primary">
       <a href="#about">About</a>
       <a href="#built">Built</a>
       <a href="#experience">Experience</a>
+      <a href="#education">Education</a>
+      <a href="#certs">Certs</a>
       <a href="#media">Media</a>
       <a href="#play">Play</a>
       <a href="#contact">Contact</a>
@@ -48,9 +55,9 @@
     <section id="about" class="section">
       <h2>About</h2>
       <div class="about-grid">
-        <div>
-          <p>I’m a civil servant in Nepal working at the intersection of government technology, AI governance, and digital public infrastructure (DPI).</p>
-          <p>Day job: Assistant IT Officer at the Ministry of Finance / Financial Comptroller General Office. Side of desk: personal civic experiments — including a flood information bulletin built during the Rasuwa–Bhotekoshi crisis.</p>
+        <div class="about-copy">
+          <p>I’m a civil servant with the Government of Nepal, currently at the <strong>Ministry of Finance</strong>, working at the intersection of government technology, AI governance, and digital public infrastructure (DPI).</p>
+          <p>Alongside day-to-day public service, I build personal civic experiments — including a flood information bulletin during the Rasuwa–Bhotekoshi crisis — and help grow communities like <strong>GovTech Nepal</strong>.</p>
           <p>I care about systems people can trust: accurate data, clear routing to official channels, and tools that respect the line between personal initiative and government authority.</p>
         </div>
         <aside class="card focus-card">
@@ -100,33 +107,140 @@
 
     <section id="experience" class="section">
       <h2>Experience</h2>
+      <div class="card experience-intro">
+        <h3>Civil Servant, Government of Nepal</h3>
+        <p class="meta">September 2013 – Present</p>
+        <p class="current-line"><span class="eyebrow-inline">Currently</span> Ministry of Finance</p>
+      </div>
       <ol class="timeline">
         <li>
-          <span class="when">Dec 2019 – present</span>
-          <span class="role">Assistant IT Officer</span>
-          <span class="org">Ministry of Finance · Financial Comptroller General Office (FSO)</span>
-        </li>
-        <li>
-          <span class="when">Oct 2025 – Mar 2026</span>
-          <span class="role">Advisor</span>
-          <span class="org">Finance Minister Secretariat</span>
+          <span class="when">Dec 2019 – Present</span>
+          <span class="org-name">Ministry of Finance</span>
+          <span class="current-tag">Current</span>
+          <ul class="highlights">
+            <li>Digital transformation and technology support to senior leadership</li>
+            <li>High Level Economic Reform Committee — Digital Nepal Framework, IT as a growth engine, interoperable government IT</li>
+            <li>Founded the GovTech Nepal community</li>
+            <li>Trained 100+ civil servants on AI tools</li>
+            <li>Sovereign credit rating research with focus on IT exports and AI</li>
+            <li>Prepaid USD card initiative</li>
+            <li>AI use-cases across finance, tax, and customs</li>
+            <li>Finance Minister’s secretariat support (Oct 2025 – Mar 2026): AI dashboards, scheduling, and automation</li>
+          </ul>
         </li>
         <li>
           <span class="when">Jun 2017 – Dec 2019</span>
-          <span class="role">APS</span>
-          <span class="org">Office of the Prime Minister and Council of Ministers (OPMCM)</span>
+          <span class="org-name">Office of the Prime Minister and Council of Ministers (OPMCM)</span>
+          <ul class="highlights">
+            <li>Technology policy work in a Prime Minister’s office environment</li>
+            <li>Government Centralized Email</li>
+            <li>Cabinet Automation System</li>
+            <li>OAS → GIOMS transition</li>
+            <li>Early Nagarik App</li>
+            <li>Cross-ministry digital coordination</li>
+          </ul>
         </li>
         <li>
-          <span class="when">2016 – 2017</span>
-          <span class="role">Ministry of Water Supply</span>
-          <span class="org">Government of Nepal</span>
+          <span class="when">Jan 2016 – Jun 2017</span>
+          <span class="org-name">Ministry of Water Supply</span>
+          <ul class="highlights">
+            <li>IT procurement</li>
+            <li>Ministry website and email systems</li>
+            <li>Inventory management</li>
+            <li>Digital document training for staff</li>
+          </ul>
         </li>
         <li>
-          <span class="when">2013 – 2016</span>
-          <span class="role">Ministry of Urban Development</span>
-          <span class="org">Government of Nepal</span>
+          <span class="when">Sept 2013 – Jan 2016</span>
+          <span class="org-name">Ministry of Urban Development</span>
+          <ul class="highlights">
+            <li>Joined the civil service in September 2013</li>
+            <li>Databases and digitization</li>
+            <li>2015 earthquake period — relief logistics support at Tribhuvan International Airport (TIA) and customs</li>
+          </ul>
         </li>
       </ol>
+    </section>
+
+    <section id="education" class="section">
+      <h2>Education</h2>
+      <article class="card featured education-card">
+        <span class="badge">Master’s</span>
+        <h3>M.E. Information &amp; Communication Engineering</h3>
+        <p class="meta">Huazhong University of Science and Technology (HUST), China · 2021–2023</p>
+        <ul class="highlights">
+          <li><strong>MOFCOM Scholarship (China)</strong> — nominated by the Government of Nepal</li>
+          <li>Specializations: Cyber Security, AI, Mobile Communication, IT Project Management, Digital Governance</li>
+          <li>Thesis: 5G and Massive MIMO</li>
+          <li>Excellence in Research Award — May 2023</li>
+        </ul>
+      </article>
+      <article class="card education-card">
+        <h3>Bachelor of Information and Communication Technology (BICT)</h3>
+        <p class="meta">Sanothimi Campus, Tribhuvan University · 2012–2015</p>
+      </article>
+    </section>
+
+    <section id="certs" class="section">
+      <h2>Trainings &amp; Certifications</h2>
+      <ul class="certs-list">
+        <li>
+          <span class="cert-name">Oxford AI &amp; Digital Transformation for Government</span>
+          <span class="cert-when">Dec 2025</span>
+        </li>
+        <li>
+          <span class="cert-name">ITU AI Governance — Geneva</span>
+          <span class="cert-when">Sept–Oct 2025</span>
+        </li>
+        <li>
+          <span class="cert-name">Google Gemini Educator</span>
+          <span class="cert-when">Certification</span>
+        </li>
+        <li>
+          <span class="cert-name">ITU Spectrum for 5G</span>
+          <span class="cert-when">Jul 2025</span>
+        </li>
+        <li>
+          <span class="cert-name">Nanjing New Generation AI</span>
+          <span class="cert-when">Jun 2025</span>
+        </li>
+        <li>
+          <span class="cert-name">BlueDot AI Governance</span>
+          <span class="cert-when">Jan–Apr 2025</span>
+        </li>
+        <li>
+          <span class="cert-name">University of Michigan — Generative AI Governance</span>
+          <span class="cert-when">Dec 2024</span>
+        </li>
+        <li>
+          <span class="cert-name">MOFCOM Cross-Border E-Commerce (CBEC)</span>
+          <span class="cert-when">Nov 2024</span>
+        </li>
+        <li>
+          <span class="cert-name">DIGOV — Erasmus / University of Leeds</span>
+          <span class="cert-when">Digital governance</span>
+        </li>
+        <li>
+          <span class="cert-name">Perplexity AI Fellowship</span>
+          <span class="cert-when">Mar–Aug 2025</span>
+        </li>
+        <li>
+          <span class="cert-name">ATIH Mentorship</span>
+          <span class="cert-when">Mentorship</span>
+        </li>
+        <li>
+          <span class="cert-name">Texas Hackathon — Mentor</span>
+          <span class="cert-when">Mentor</span>
+        </li>
+        <li>
+          <span class="cert-name">India AI Impact Summit</span>
+          <span class="cert-when">Feb 2026</span>
+        </li>
+        <li>
+          <span class="cert-name">World Summit on AI (WSAI) — Doha</span>
+          <span class="cert-when">Dec 2024</span>
+        </li>
+      </ul>
     </section>
 
     <section id="media" class="section">

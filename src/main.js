@@ -33,8 +33,60 @@ function initYear() {
   if (el) el.textContent = String(new Date().getFullYear());
 }
 
+function initNav() {
+  const toggle = document.getElementById('nav-toggle');
+  const nav = document.getElementById('site-nav');
+  if (!toggle || !nav) return;
+
+  const links = [...nav.querySelectorAll('a[href^="#"]')];
+
+  function setOpen(open) {
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    nav.classList.toggle('is-open', open);
+    document.body.classList.toggle('nav-open', open);
+  }
+
+  toggle.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    setOpen(open);
+  });
+
+  links.forEach((link) => {
+    link.addEventListener('click', () => setOpen(false));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setOpen(false);
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.matchMedia('(min-width: 901px)').matches) setOpen(false);
+  });
+
+  const sections = links
+    .map((a) => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+
+  function setActiveFromScroll() {
+    const marker = window.scrollY + 120;
+    let current = sections[0];
+    for (const section of sections) {
+      if (section.offsetTop <= marker) current = section;
+    }
+    const id = current?.id;
+    links.forEach((a) => {
+      a.classList.toggle('active', a.getAttribute('href') === `#${id}`);
+    });
+  }
+
+  window.addEventListener('scroll', setActiveFromScroll, { passive: true });
+  setActiveFromScroll();
+}
+
 initTheme();
 initYear();
+initNav();
 
 const starCanvas = document.getElementById('starfield');
 if (starCanvas) initStarfield(starCanvas);
