@@ -6,6 +6,7 @@ import { createAmbient } from './ambient.js';
 import { initSpaceObjects } from './space-objects.js';
 import { initEnterGateVista } from './enter-gate.js';
 import { getGyro } from './gyro.js';
+import { initBasketball, initCricket, initFootball } from './sports-games.js';
 
 const THEME_KEY = 'theme';
 const GATE_KEY = 'nb-entered';
@@ -364,11 +365,10 @@ function wireGame(canvas, hudIds, padId, startId, pauseId) {
 }
 
 function initOrbitModal(sectionGame) {
-  const fab = document.getElementById('orbit-fab');
   const modal = document.getElementById('orbit-modal');
   const closeBtns = document.querySelectorAll('[data-orbit-close]');
   const openFromSection = document.getElementById('od-open-modal');
-  if (!fab || !modal) return;
+  if (!modal) return { open() {}, close() {}, isOpen: () => false };
 
   const modalCanvas = document.getElementById('orbit-dodge-modal');
   const modalGame = wireGame(
@@ -383,7 +383,6 @@ function initOrbitModal(sectionGame) {
 
   function setOpen(open) {
     const wasOpen = !modal.hidden;
-    fab.setAttribute('aria-expanded', open ? 'true' : 'false');
     document.body.classList.toggle('orbit-open', open);
     modal.hidden = !open;
     if (open && !wasOpen) {
@@ -395,11 +394,10 @@ function initOrbitModal(sectionGame) {
       }, 40);
     } else if (!open && wasOpen) {
       modalGame?.pause?.(true);
-      (lastFocus || fab).focus?.();
+      lastFocus?.focus?.();
     }
   }
 
-  fab.addEventListener('click', () => setOpen(true));
   openFromSection?.addEventListener('click', () => setOpen(true));
   closeBtns.forEach((el) => el.addEventListener('click', () => setOpen(false)));
 
@@ -409,16 +407,191 @@ function initOrbitModal(sectionGame) {
       setOpen(false);
     }
   });
+
+  return {
+    open: () => setOpen(true),
+    close: () => setOpen(false),
+    isOpen: () => !modal.hidden,
+  };
+}
+
+function initSportsModal() {
+  const modal = document.getElementById('sports-modal');
+  const canvas = document.getElementById('sports-canvas');
+  const title = document.getElementById('sports-modal-title');
+  const meta = document.getElementById('sports-modal-meta');
+  if (!modal || !canvas) return { open() {}, close() {}, isOpen: () => false };
+
+  const hud = {
+    score: document.getElementById('sp-score'),
+    extra: document.getElementById('sp-extra'),
+  };
+
+  const factories = {
+    basketball: {
+      title: 'Basketball',
+      meta: '←→ aim · hold Space / drag to charge · release to shoot · Esc closes',
+      init: initBasketball,
+    },
+    cricket: {
+      title: 'Cricket',
+      meta: 'Space / tap in the blue zone · Esc closes',
+      init: initCricket,
+    },
+    football: {
+      title: 'Football',
+      meta: '←→ aim · hold Space / drag for power · release to kick · Esc closes',
+      init: initFootball,
+    },
+  };
+
+  let current = null;
+  let currentKey = null;
+  let lastFocus = null;
+
+  function destroyCurrent() {
+    current?.pause?.(true);
+    current = null;
+    currentKey = null;
+  }
+
+  function setOpen(open, key) {
+    const wasOpen = !modal.hidden;
+    if (open) {
+      const spec = factories[key];
+      if (!spec) return;
+      if (currentKey !== key) {
+        destroyCurrent();
+        current = spec.init(canvas, hud);
+        currentKey = key;
+      }
+      title.textContent = spec.title;
+      if (meta) meta.textContent = spec.meta;
+      lastFocus = document.activeElement;
+      document.body.classList.add('orbit-open');
+      modal.hidden = false;
+      window.setTimeout(() => {
+        document.getElementById('sp-start')?.focus();
+        current?.start();
+      }, 40);
+    } else if (wasOpen) {
+      destroyCurrent();
+      modal.hidden = true;
+      const orbitModal = document.getElementById('orbit-modal');
+      if (!orbitModal || orbitModal.hidden) {
+        document.body.classList.remove('orbit-open');
+      }
+      lastFocus?.focus?.();
+    }
+  }
+
+  document.getElementById('sp-start')?.addEventListener('click', () => current?.start());
+  document.getElementById('sp-pause')?.addEventListener('click', () => current?.pause?.(true));
+  document.querySelectorAll('[data-sports-close]').forEach((el) => {
+    el.addEventListener('click', () => setOpen(false));
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.hidden) {
+      e.preventDefault();
+      setOpen(false);
+    }
+  });
+
+  return {
+    open: (key) => setOpen(true, key),
+    close: () => setOpen(false),
+    isOpen: () => !modal.hidden,
+  };
+}
+
+function initGamesLauncher(orbitApi, sportsApi) {
+  const fab = document.getElementById('games-fab');
+  const menu = document.getElementById('games-menu');
+  const launcher = document.getElementById('games-launcher');
+  if (!fab || !menu) return;
+
+  function setMenu(open) {
+    menu.hidden = !open;
+    fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    launcher?.classList.toggle('is-open', open);
+  }
+
+  fab.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setMenu(menu.hidden);
+  });
+
+  menu.querySelectorAll('[data-game]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const game = btn.getAttribute('data-game');
+      setMenu(false);
+      if (game === 'orbit') orbitApi?.open?.();
+      else sportsApi?.open?.(game);
+    });
+  });
+
+  document.querySelectorAll('[data-open-game]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const game = btn.getAttribute('data-open-game');
+      setMenu(false);
+      if (game === 'orbit') orbitApi?.open?.();
+      else sportsApi?.open?.(game);
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!menu.hidden && launcher && !launcher.contains(e.target)) setMenu(false);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !menu.hidden) setMenu(false);
+  });
 }
 
 function syncSoundButton(btn, ambient) {
   if (!btn) return;
+  const level = ambient.volumeLevel?.() ?? (ambient.isMuted() ? 0 : 2);
   const on = ambient.isStarted() && !ambient.isMuted();
+  const pct = Math.round(((ambient.getVolume?.() ?? 0) / (ambient.VOL_MAX || 0.32)) * 100);
   btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  btn.setAttribute('aria-label', on ? 'Sound on' : 'Sound off');
-  btn.title = on ? 'Sound on — click to mute' : 'Sound off — click to unmute';
+  btn.setAttribute('data-vol-level', String(level));
+  btn.setAttribute('aria-label', on ? `Ambient sound ${pct}%` : 'Ambient sound off');
+  btn.title = on
+    ? `Volume ${pct}% — use − / + to adjust`
+    : 'Sound off — press + to raise volume';
+  const label = btn.querySelector('.sound-label');
+  if (label) label.textContent = on ? `${pct}%` : 'Off';
+  const root = btn.closest('.sound-control');
+  if (root) root.setAttribute('data-vol-level', String(level));
 }
 
+function wireVolumeControls(ambient) {
+  const btn = document.getElementById('sound-toggle');
+  const down = document.getElementById('sound-vol-down');
+  const up = document.getElementById('sound-vol-up');
+  syncSoundButton(btn, ambient);
+
+  async function ensureStarted() {
+    if (!ambient.isStarted()) await ambient.start();
+  }
+
+  down?.addEventListener('click', async () => {
+    await ensureStarted();
+    ambient.volumeDown();
+    syncSoundButton(btn, ambient);
+  });
+  up?.addEventListener('click', async () => {
+    await ensureStarted();
+    ambient.volumeUp();
+    syncSoundButton(btn, ambient);
+  });
+  btn?.addEventListener('click', async () => {
+    await ensureStarted();
+    if (ambient.isMuted()) ambient.volumeUp();
+    else ambient.setVolume(0);
+    syncSoundButton(btn, ambient);
+  });
+}
 
 function initMotionEnable(gyro) {
   const btn = document.getElementById('motion-enable');
@@ -443,14 +616,12 @@ function initMotionEnable(gyro) {
       btn.hidden = true;
       btn.setAttribute('aria-hidden', 'true');
     } else {
-      // Denied or failed — hide to avoid spam
       btn.hidden = true;
       btn.setAttribute('aria-hidden', 'true');
     }
   });
 
   sync();
-  // Re-check after Enter / orientation changes
   window.addEventListener('resize', sync, { passive: true });
   document.addEventListener('visibilitychange', sync);
   return { sync };
@@ -464,7 +635,6 @@ function initAmbientAndGate(cosmo) {
   const gateCanvas = document.getElementById('enter-gate-canvas');
   const gyro = getGyro();
   const motionUI = initMotionEnable(gyro);
-  // Non-iOS coarse devices can start without a prompt
   gyro.tryAutoStart();
   motionUI?.sync?.();
 
@@ -474,33 +644,19 @@ function initAmbientAndGate(cosmo) {
       ? initEnterGateVista(gateCanvas)
       : { warp: async () => {}, destroy: () => {} };
 
-  syncSoundButton(soundBtn, ambient);
-
-  soundBtn?.addEventListener('click', async () => {
-    if (!ambient.isStarted()) {
-      await ambient.start();
-      if (ambient.isMuted()) ambient.setMuted(false);
-    } else {
-      ambient.toggleMute();
-    }
-    syncSoundButton(soundBtn, ambient);
-  });
+  wireVolumeControls(ambient);
 
   let dismissing = false;
   async function dismissGate(startSound) {
     if (!gate || gate.hidden || dismissing) return;
     dismissing = true;
-    enterBtn?.setAttribute("disabled", "");
-    // iOS 13+: request motion permission in this same user gesture (once)
+    enterBtn?.setAttribute('disabled', '');
     if (startSound) {
       await gyro.requestPermission();
       motionUI?.sync?.();
     }
     if (startSound) {
       await ambient.start();
-      if (ambient.isMuted()) {
-        // keep muted preference; user can unmute via Sound
-      }
     }
     sessionStorage.setItem(GATE_KEY, '1');
     syncSoundButton(soundBtn, ambient);
@@ -516,13 +672,11 @@ function initAmbientAndGate(cosmo) {
       gate.classList.remove('is-leaving', 'is-crossing');
       document.body.classList.remove('is-entering', 'gate-locked');
       vista.destroy();
-      // Drop canvas so it cannot intercept hits on iOS Safari
       if (gateCanvas && gateCanvas.parentNode) {
         gateCanvas.width = 0;
         gateCanvas.height = 0;
         gateCanvas.remove();
       }
-      // Cosmo layer must be interactive after Enter
       cosmo?.refresh?.();
       cosmo?.syncHitState?.();
       motionUI?.sync?.();
@@ -531,9 +685,9 @@ function initAmbientAndGate(cosmo) {
       window.setTimeout(done, 320);
       return;
     }
-    await vista.warp(2100);
+    await vista.warp(4800);
     gate.classList.add('is-leaving');
-    window.setTimeout(done, 420);
+    window.setTimeout(done, 560);
   }
 
   if (already || !gate) {
@@ -549,9 +703,6 @@ function initAmbientAndGate(cosmo) {
     enterBtn?.focus();
     enterBtn?.addEventListener('click', () => dismissGate(true));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !gate.hidden && document.activeElement === enterBtn) {
-        // native button click handles it
-      }
       if (e.key === 'Escape' && !gate.hidden) {
         e.preventDefault();
         dismissGate(false);
@@ -600,7 +751,9 @@ const sectionGame = wireGame(
   'od-start',
   'od-pause'
 );
-initOrbitModal(sectionGame);
+const orbitApi = initOrbitModal(sectionGame);
+const sportsApi = initSportsModal();
+initGamesLauncher(orbitApi, sportsApi);
 
 const constCanvas = document.getElementById('constellation');
 const factPanel = document.getElementById('fact-panel');

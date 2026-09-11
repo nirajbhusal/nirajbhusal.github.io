@@ -13,8 +13,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="/assets/index-BKK0tJpf.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DiEJz0Hq.css">
+  <script type="module" crossorigin src="/assets/index-CgAe7B-J.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BkED-6fI.css">
 </head>
 <body class="gate-locked">
   <div id="enter-gate" class="enter-gate" role="dialog" aria-modal="true" aria-labelledby="enter-gate-title">
@@ -24,7 +24,7 @@
       <h1 id="enter-gate-title">Niraj Bhusal</h1>
       <p class="enter-gate-copy">GovTech · AI governance · civic tools</p>
       <div class="enter-gate-card enter-gate-chrono" aria-label="Local time and year progress">
-        <p class="enter-gate-caption">move with time, understand the universe</p>
+        <p class="enter-gate-caption"><span class="enter-gate-caption-line">move with time,</span> <span class="enter-gate-caption-line">understand the universe</span></p>
         <p class="hero-clock enter-gate-clock" aria-live="polite">
           <time id="gate-datetime" data-chrono="datetime" datetime=""></time>
         </p>
@@ -66,15 +66,29 @@
       <span class="nav-toggle-bar" aria-hidden="true"></span>
       <span class="nav-toggle-label" aria-hidden="true">Menu</span>
     </button>
-    <button type="button" id="motion-enable" class="motion-enable" hidden aria-hidden="true" title="Enable motion parallax">
-      Enable motion
-    </button>
-    <button type="button" id="sound-toggle" class="sound-toggle" aria-pressed="false" aria-label="Sound off" title="Sound">
-      Sound
-    </button>
-    <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle light mode" title="Toggle theme">
-      <span class="theme-icon" aria-hidden="true">◐</span>
-    </button>
+    <div class="header-actions">
+      <button type="button" id="motion-enable" class="motion-enable" hidden aria-hidden="true" title="Enable motion parallax">
+        Enable motion
+      </button>
+      <div class="sound-control" role="group" aria-label="Ambient sound volume">
+        <button type="button" id="sound-vol-down" class="sound-vol-btn" aria-label="Decrease volume" title="Volume down">−</button>
+        <button type="button" id="sound-toggle" class="sound-toggle" aria-pressed="false" aria-label="Sound off" title="Ambient sound" data-vol-level="0">
+          <span class="sound-icon" aria-hidden="true">
+            <svg class="sound-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 10v4h3l4 3V7L7 10H4z"/>
+              <path class="sound-wave sound-wave-1" d="M14.5 9.5a3.5 3.5 0 0 1 0 5"/>
+              <path class="sound-wave sound-wave-2" d="M16.8 7.5a6.5 6.5 0 0 1 0 9"/>
+              <line class="sound-mute-slash" x1="4" y1="4" x2="20" y2="20"/>
+            </svg>
+          </span>
+          <span class="sound-label" id="sound-level-label">Vol</span>
+        </button>
+        <button type="button" id="sound-vol-up" class="sound-vol-btn" aria-label="Increase volume" title="Volume up">+</button>
+      </div>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle light mode" title="Toggle theme">
+        <span class="theme-icon" aria-hidden="true">◐</span>
+      </button>
+    </div>
   </header>
 
   <nav id="site-nav" class="nav" aria-label="Primary">
@@ -90,10 +104,21 @@
     <a href="#contact">Contact</a>
   </nav>
 
-  <button type="button" id="orbit-fab" class="orbit-fab" aria-haspopup="dialog" aria-controls="orbit-modal" aria-expanded="false" title="Play Orbit Dodge">
-    <span class="orbit-fab-icon" aria-hidden="true">◎</span>
-    <span class="orbit-fab-label">Play</span>
-  </button>
+  <div class="games-launcher" id="games-launcher">
+    <button type="button" id="games-fab" class="orbit-fab games-fab" aria-haspopup="true" aria-controls="games-menu" aria-expanded="false" title="Optional mini-games">
+      <span class="orbit-fab-icon" aria-hidden="true">◎</span>
+      <span class="orbit-fab-label">Games</span>
+    </button>
+    <div id="games-menu" class="games-menu" role="menu" hidden>
+      <button type="button" class="games-menu-item" role="menuitem" data-game="orbit">Orbit Dodge</button>
+      <button type="button" class="games-menu-item" role="menuitem" data-game="basketball">Basketball</button>
+      <button type="button" class="games-menu-item" role="menuitem" data-game="cricket">Cricket</button>
+      <button type="button" class="games-menu-item" role="menuitem" data-game="football">Football</button>
+    </div>
+  </div>
+
+  <!-- legacy id kept for CSS/body.orbit-open compatibility -->
+  <button type="button" id="orbit-fab" class="orbit-fab orbit-fab-legacy" hidden aria-hidden="true" tabindex="-1"></button>
 
   <div id="orbit-modal" class="orbit-modal" role="dialog" aria-modal="true" aria-labelledby="orbit-modal-title" hidden>
     <div class="orbit-modal-backdrop" data-orbit-close></div>
@@ -121,6 +146,28 @@
           <button type="button" data-dir="right" aria-label="Right">→</button>
         </div>
         <button type="button" data-dir="down" aria-label="Down">↓</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="sports-modal" class="orbit-modal sports-modal" role="dialog" aria-modal="true" aria-labelledby="sports-modal-title" hidden>
+    <div class="orbit-modal-backdrop" data-sports-close></div>
+    <div class="orbit-modal-panel card">
+      <div class="orbit-modal-head">
+        <h2 id="sports-modal-title">Mini-game</h2>
+        <button type="button" id="sports-modal-close" class="btn btn-ghost orbit-close" aria-label="Close game" data-sports-close>×</button>
+      </div>
+      <p class="meta" id="sports-modal-meta">Optional · quiet · Esc to close</p>
+      <canvas id="sports-canvas" width="640" height="400" role="img" aria-label="Sports mini-game"></canvas>
+      <div class="game-hud">
+        <span id="sp-score">Score: 0</span>
+        <span id="sp-extra"></span>
+      </div>
+      <div class="game-controls">
+        <button type="button" id="sp-start" class="btn btn-primary">Play</button>
+        <button type="button" id="sp-pause" class="btn btn-ghost">Pause</button>
+        <button type="button" class="btn btn-ghost" data-sports-close>Close</button>
       </div>
     </div>
   </div>
@@ -681,6 +728,15 @@
               <button type="button" data-dir="right" aria-label="Right">→</button>
             </div>
             <button type="button" data-dir="down" aria-label="Down">↓</button>
+          </div>
+        </div>
+        <div class="card game-card sports-card">
+          <h3>Sports (optional)</h3>
+          <p class="meta">Quiet mini-games — open anytime from the Games control. Does not interrupt reading.</p>
+          <div class="sports-launch-row">
+            <button type="button" class="btn btn-ghost" data-open-game="basketball">Basketball</button>
+            <button type="button" class="btn btn-ghost" data-open-game="cricket">Cricket</button>
+            <button type="button" class="btn btn-ghost" data-open-game="football">Football</button>
           </div>
         </div>
         <div class="card constellation-card">

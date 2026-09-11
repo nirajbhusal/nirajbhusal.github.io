@@ -6,6 +6,23 @@
  */
 
 const MUTE_KEY = 'nb-sound-muted';
+const VOL_KEY = 'nb-sound-volume';
+const DEFAULT_VOL = 0.16;
+const VOL_STEP = 0.04;
+const VOL_MIN = 0;
+const VOL_MAX = 0.32;
+
+function clamp(n, a, b) {
+  return Math.max(a, Math.min(b, n));
+}
+
+function readStoredVolume() {
+  const raw = localStorage.getItem(VOL_KEY);
+  if (raw == null) return DEFAULT_VOL;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return DEFAULT_VOL;
+  return clamp(n, VOL_MIN, VOL_MAX);
+}
 
 export function createAmbient() {
   let ctx = null;
@@ -15,8 +32,18 @@ export function createAmbient() {
   let droneNodes = [];
   let toneTimer = 0;
   let started = false;
-  let muted = localStorage.getItem(MUTE_KEY) === '1';
+  let volume = readStoredVolume();
+  // Legacy mute flag: if previously muted, start at 0 but keep preferred volume
+  let mutedLegacy = localStorage.getItem(MUTE_KEY) === '1';
+  if (mutedLegacy && volume > 0) {
+    // Keep preferred loudness in VOL_KEY; effective level is 0 until user raises
+    volume = 0;
+  }
   let reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function effectiveGain() {
+    return volume;
+  }
 
   function ensureCtx() {
     if (ctx) return ctx;
@@ -24,7 +51,7 @@ export function createAmbient() {
     if (!AC) return null;
     ctx = new AC();
     master = ctx.createGain();
-    master.gain.value = muted ? 0 : 0.16;
+    master.gain.value = effectiveGain();
 
     dryGain = ctx.createGain();
     dryGain.gain.value = 0.55;
@@ -130,7 +157,7 @@ export function createAmbient() {
   }
 
   function scheduleSparseTone() {
-    if (!ctx || !master || muted || reduced()) return;
+    if (!ctx || !master || volume <= 0.001 || reduced()) return;
     const now = ctx.currentTime;
     // Sparse rising fifths / open intervals — cinematic, original
     const ladder = [82.41, 110, 146.83, 164.81, 220, 246.94, 329.63];
@@ -162,6 +189,21 @@ export function createAmbient() {
     toneTimer = window.setTimeout(scheduleSparseTone, delay * 1000);
   }
 
+  function applyMasterGain(ms = 0.35) {
+    if (!master || !ctx) return;
+    const t = ctx.currentTime;
+    master.gain.cancelScheduledValues(t);
+    master.gain.linearRampToValueAtTime(Math.max(0.0001, effectiveGain()), t + ms);
+    if (effectiveGain() <= 0.0001) {
+      master.gain.linearRampToValueAtTime(0, t + ms);
+    }
+  }
+
+  function persistVolume() {
+    localStorage.setItem(VOL_KEY, String(volume));
+    localStorage.setItem(MUTE_KEY, volume <= 0.001 ? '1' : '0');
+  }
+
   async function start() {
     if (started) {
       if (ctx?.state === 'suspended') await ctx.resume();
@@ -180,36 +222,76 @@ export function createAmbient() {
     addPad(196.0, 0.009);
     addDrone(41.2, 'sine', 0.035, 0.022, 200);
 
-    if (!muted && !reduced()) scheduleSparseTone();
+    applyMasterGain(0.01);
+    if (volume > 0.001 && !reduced()) scheduleSparseTone();
   }
 
-  function setMuted(next) {
-    muted = next;
-    localStorage.setItem(MUTE_KEY, muted ? '1' : '0');
-    if (master && ctx) {
-      const t = ctx.currentTime;
-      master.gain.cancelScheduledValues(t);
-      master.gain.linearRampToValueAtTime(muted ? 0 : 0.16, t + 0.45);
-    }
-    if (muted) {
+  function setVolume(next) {
+    const prev = volume;
+    volume = clamp(Number(next) || 0, VOL_MIN, VOL_MAX);
+    persistVolume();
+    applyMasterGain(0.28);
+    if (volume <= 0.001) {
       window.clearTimeout(toneTimer);
-    } else if (started && !reduced()) {
+    } else if (started && prev <= 0.001 && !reduced()) {
       scheduleSparseTone();
     }
-    return muted;
+    return volume;
+  }
+
+  function getVolume() {
+    return volume;
+  }
+
+  function volumeUp() {
+    if (volume <= 0.001) return setVolume(VOL_STEP);
+    return setVolume(volume + VOL_STEP);
+  }
+
+  function volumeDown() {
+    return setVolume(volume - VOL_STEP);
+  }
+
+  /** @deprecated mute API kept for callers; maps to volume 0 / restore default */
+  function setMuted(next) {
+    if (next) return setVolume(0);
+    if (volume <= 0.001) return setVolume(DEFAULT_VOL);
+    return volume;
   }
 
   function toggleMute() {
-    return setMuted(!muted);
+    if (volume > 0.001) return setVolume(0);
+    return setVolume(DEFAULT_VOL);
   }
 
   function isMuted() {
-    return muted;
+    return volume <= 0.001;
   }
 
   function isStarted() {
     return started;
   }
 
-  return { start, toggleMute, setMuted, isMuted, isStarted };
+  /** 0–4 bars for UI */
+  function volumeLevel() {
+    if (volume <= 0.001) return 0;
+    if (volume < 0.08) return 1;
+    if (volume < 0.16) return 2;
+    if (volume < 0.24) return 3;
+    return 4;
+  }
+
+  return {
+    start,
+    toggleMute,
+    setMuted,
+    isMuted,
+    isStarted,
+    setVolume,
+    getVolume,
+    volumeUp,
+    volumeDown,
+    volumeLevel,
+    VOL_MAX,
+  };
 }

@@ -203,10 +203,12 @@ export function initEnterGateVista(canvas) {
     let speed = 1;
     if (warp) {
       const t = clamp((now - warp.start) / warp.duration, 0, 1);
-      warpP = easeInCubic(t);
-      speed = 1 + warpP * 38;
-      // Soft dark dissolve at the end — stay in deep space, never bleach white
-      dissolve = t > 0.68 ? easeOutCubic((t - 0.68) / 0.32) : 0;
+      // Ease in slowly, then surge — longer travel through deep space
+      const ease = t < 0.55 ? easeInCubic(t / 0.55) * 0.55 : 0.55 + easeOutCubic((t - 0.55) / 0.45) * 0.45;
+      warpP = ease;
+      speed = 1 + warpP * 52 + (t > 0.4 ? (t - 0.4) * 28 : 0);
+      // Soft dark dissolve later so the flight lasts longer
+      dissolve = t > 0.78 ? easeOutCubic((t - 0.78) / 0.22) : 0;
       if (t >= 1 && warp.resolve) {
         const resolve = warp.resolve;
         warp.resolve = null;
@@ -245,7 +247,7 @@ export function initEnterGateVista(canvas) {
     drawSpiral(
       w * 0.62 + px * 0.35,
       h * 0.38 + py * 0.25,
-      gScale * (1 + warpP * 2.4),
+      gScale * (1 + warpP * 3.6),
       gRot,
       gAlpha
     );
@@ -299,10 +301,10 @@ export function initEnterGateVista(canvas) {
         const dx = x - cx;
         const dy = y - cy;
         const dist = Math.hypot(dx, dy) || 1;
-        const push = 1 + warpP * speed * (0.04 + s.z * 0.12);
+        const push = 1 + warpP * speed * (0.055 + s.z * 0.16);
         const nx = cx + dx * push;
         const ny = cy + dy * push;
-        const streak = warpP * (8 + s.z * 42) * (dist / Math.max(w, h));
+        const streak = warpP * (14 + s.z * 68) * (dist / Math.max(w, h)) * (0.85 + speed * 0.012);
         const ux = dx / dist;
         const uy = dy / dist;
         ctx.strokeStyle = `hsla(${205 + s.hue * 35}, 75%, ${48 + s.z * 18}%, ${Math.min(0.85, alpha + warpP * 0.28) * (1 - dissolve * 0.65)})`;
@@ -445,7 +447,7 @@ export function initEnterGateVista(canvas) {
     // But keep a very slow redraw optional? Spec says simpler fade on enter; idle can be static.
   }
 
-  function warpToSite(durationMs = 2000) {
+  function warpToSite(durationMs = 4800) {
     return new Promise((resolve) => {
       if (destroyed) {
         resolve();
@@ -455,7 +457,7 @@ export function initEnterGateVista(canvas) {
         // Short dark dissolve only — stay in deep space
         dissolve = 0.85;
         draw(performance.now());
-        window.setTimeout(resolve, 280);
+        window.setTimeout(resolve, 320);
         return;
       }
       if (warp) {
