@@ -98,7 +98,7 @@
     <a href="#speaking">Speaking</a>
     <a href="#community">Community</a>
     <a href="#media">Media</a>
-    <a href="#play">Play</a>
+    <a href="#play">Games</a>
     <a href="#contact">Contact</a>
   </nav>
 
@@ -208,6 +208,17 @@
         <a class="btn btn-ghost" href="#contact">Contact</a>
         <a class="btn btn-ghost" href="https://grokipedia.com/page/Niraj_Bhusal" target="_blank" rel="noopener">Grokipedia ↗</a>
         <a class="btn btn-ghost" href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener">Rasuwa Flood Update Portal ↗</a>
+        <button type="button" class="btn btn-ghost hero-games-cta" id="hero-games-cta" aria-expanded="false" aria-controls="hero-play-panel" title="Optional mini-games">Play games</button>
+      </div>
+      <div class="hero-play" id="hero-play-panel" hidden>
+        <p class="hero-play-kicker">Mini-games <span class="meta">· quiet · Esc closes · does not block reading</span></p>
+        <div class="hero-play-chips" role="group" aria-label="Choose a mini-game">
+          <button type="button" class="hero-play-chip" data-open-game="orbit">Orbit Dodge</button>
+          <button type="button" class="hero-play-chip" data-open-game="basketball">Basketball</button>
+          <button type="button" class="hero-play-chip" data-open-game="cricket">Cricket</button>
+          <button type="button" class="hero-play-chip" data-open-game="football">Football</button>
+        </div>
+        <p class="hero-play-more meta"><a href="#play">Browse all in Games</a> · or use the floating Games control</p>
       </div>
     </section>
 
@@ -702,41 +713,41 @@
     </section>
 
     <section id="play" class="section reveal">
-      <h2>Play</h2>
-      <div class="play-grid">
-        <div class="card game-card">
+      <h2>Games</h2>
+      <p class="section-lede play-lede">Optional mini-games — play from home, here, or the floating Games control. Keyboard &amp; touch · Esc closes · reading stays clear when closed.</p>
+      <div class="play-grid games-category-grid">
+        <article class="card game-launch-card">
+          <div class="game-launch-icon" aria-hidden="true">◎</div>
           <h3>Orbit Dodge</h3>
-          <p class="meta">WASD / arrows · dash · waves · high score saved locally — or use the floating Play control anytime</p>
-          <canvas id="orbit-dodge" width="640" height="400" role="img" aria-label="Orbit Dodge mini-game"></canvas>
-          <div class="game-hud">
-            <span id="od-score">Score: 0</span>
-            <span id="od-wave">Wave: 1</span>
-            <span id="od-high">High: 0</span>
-          </div>
+          <p class="meta">WASD / arrows · dash · waves · high score saved locally</p>
           <div class="game-controls">
-            <button type="button" id="od-start" class="btn btn-primary">Start / Resume</button>
-            <button type="button" id="od-pause" class="btn btn-ghost">Pause</button>
-            <button type="button" id="od-open-modal" class="btn btn-ghost">Open overlay</button>
+            <button type="button" class="btn btn-primary" data-open-game="orbit">Play</button>
           </div>
-          <div class="touch-pad" id="touch-pad" aria-label="Touch controls">
-            <button type="button" data-dir="up" aria-label="Up">↑</button>
-            <div class="touch-mid">
-              <button type="button" data-dir="left" aria-label="Left">←</button>
-              <button type="button" data-dir="dash" aria-label="Dash">◆</button>
-              <button type="button" data-dir="right" aria-label="Right">→</button>
-            </div>
-            <button type="button" data-dir="down" aria-label="Down">↓</button>
+        </article>
+        <article class="card game-launch-card">
+          <div class="game-launch-icon" aria-hidden="true">◉</div>
+          <h3>Basketball</h3>
+          <p class="meta">Aim · charge · shoot · quiet overlay</p>
+          <div class="game-controls">
+            <button type="button" class="btn btn-primary" data-open-game="basketball">Play</button>
           </div>
-        </div>
-        <div class="card game-card sports-card">
-          <h3>Sports (optional)</h3>
-          <p class="meta">Quiet mini-games — open anytime from the Games control. Does not interrupt reading.</p>
-          <div class="sports-launch-row">
-            <button type="button" class="btn btn-ghost" data-open-game="basketball">Basketball</button>
-            <button type="button" class="btn btn-ghost" data-open-game="cricket">Cricket</button>
-            <button type="button" class="btn btn-ghost" data-open-game="football">Football</button>
+        </article>
+        <article class="card game-launch-card">
+          <div class="game-launch-icon" aria-hidden="true">◌</div>
+          <h3>Cricket</h3>
+          <p class="meta">Time the shot in the blue zone</p>
+          <div class="game-controls">
+            <button type="button" class="btn btn-primary" data-open-game="cricket">Play</button>
           </div>
-        </div>
+        </article>
+        <article class="card game-launch-card">
+          <div class="game-launch-icon" aria-hidden="true">○</div>
+          <h3>Football</h3>
+          <p class="meta">Aim · power · beat the keeper</p>
+          <div class="game-controls">
+            <button type="button" class="btn btn-primary" data-open-game="football">Play</button>
+          </div>
+        </article>
         <div class="card constellation-card">
           <h3>Constellation</h3>
           <p class="meta">Click a star for a fact</p>

@@ -504,48 +504,87 @@ function initSportsModal() {
   };
 }
 
+function openGame(orbitApi, sportsApi, game) {
+  if (!game) return;
+  if (game === 'orbit') {
+    sportsApi?.close?.();
+    orbitApi?.open?.();
+  } else {
+    orbitApi?.close?.();
+    sportsApi?.open?.(game);
+  }
+}
+
+function initHeroGamesPanel() {
+  const cta = document.getElementById('hero-games-cta');
+  const panel = document.getElementById('hero-play-panel');
+  if (!cta || !panel) return;
+
+  function setOpen(open) {
+    panel.hidden = !open;
+    cta.setAttribute('aria-expanded', open ? 'true' : 'false');
+    cta.classList.toggle('is-open', open);
+  }
+
+  cta.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setOpen(panel.hidden);
+  });
+
+  panel.querySelectorAll('[data-open-game]').forEach((btn) => {
+    btn.addEventListener('click', () => setOpen(false));
+  });
+
+  document.addEventListener('click', (e) => {
+    if (panel.hidden) return;
+    if (panel.contains(e.target) || cta.contains(e.target)) return;
+    setOpen(false);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !panel.hidden) setOpen(false);
+  });
+}
+
 function initGamesLauncher(orbitApi, sportsApi) {
   const fab = document.getElementById('games-fab');
   const menu = document.getElementById('games-menu');
   const launcher = document.getElementById('games-launcher');
-  if (!fab || !menu) return;
 
   function setMenu(open) {
+    if (!fab || !menu) return;
     menu.hidden = !open;
     fab.setAttribute('aria-expanded', open ? 'true' : 'false');
     launcher?.classList.toggle('is-open', open);
   }
 
-  fab.addEventListener('click', (e) => {
+  function launch(game) {
+    setMenu(false);
+    openGame(orbitApi, sportsApi, game);
+  }
+
+  fab?.addEventListener('click', (e) => {
     e.stopPropagation();
     setMenu(menu.hidden);
   });
 
-  menu.querySelectorAll('[data-game]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const game = btn.getAttribute('data-game');
-      setMenu(false);
-      if (game === 'orbit') orbitApi?.open?.();
-      else sportsApi?.open?.(game);
-    });
+  menu?.querySelectorAll('[data-game]').forEach((btn) => {
+    btn.addEventListener('click', () => launch(btn.getAttribute('data-game')));
   });
 
   document.querySelectorAll('[data-open-game]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const game = btn.getAttribute('data-open-game');
-      setMenu(false);
-      if (game === 'orbit') orbitApi?.open?.();
-      else sportsApi?.open?.(game);
-    });
+    btn.addEventListener('click', () => launch(btn.getAttribute('data-open-game')));
   });
 
   document.addEventListener('click', (e) => {
-    if (!menu.hidden && launcher && !launcher.contains(e.target)) setMenu(false);
+    if (menu && !menu.hidden && launcher && !launcher.contains(e.target)) setMenu(false);
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !menu.hidden) setMenu(false);
+    if (e.key === 'Escape' && menu && !menu.hidden) setMenu(false);
   });
+
+  initHeroGamesPanel();
 }
 
 function syncSoundButton(btn, ambient) {
@@ -744,13 +783,16 @@ initAmbientAndGate(cosmo);
 const starCanvas = document.getElementById('starfield');
 if (starCanvas) initStarfield(starCanvas);
 
-const sectionGame = wireGame(
-  document.getElementById('orbit-dodge'),
-  { score: 'od-score', wave: 'od-wave', high: 'od-high' },
-  'touch-pad',
-  'od-start',
-  'od-pause'
-);
+const sectionCanvas = document.getElementById('orbit-dodge');
+const sectionGame = sectionCanvas
+  ? wireGame(
+      sectionCanvas,
+      { score: 'od-score', wave: 'od-wave', high: 'od-high' },
+      'touch-pad',
+      'od-start',
+      'od-pause'
+    )
+  : null;
 const orbitApi = initOrbitModal(sectionGame);
 const sportsApi = initSportsModal();
 initGamesLauncher(orbitApi, sportsApi);
