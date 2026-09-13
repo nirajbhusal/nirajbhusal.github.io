@@ -1,7 +1,13 @@
-import { getGyro, gyroPixels } from './gyro.js';
-
 const prefersReduced = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function isCoarseDevice() {
+  try {
+    return window.matchMedia('(pointer: coarse), (hover: none)').matches;
+  } catch {
+    return 'ontouchstart' in window;
+  }
+}
 
 function todDensity() {
   const tod = document.documentElement.getAttribute('data-tod') || 'night';
@@ -28,8 +34,7 @@ export function initStarfield(canvas) {
   let visible = true;
   let pageVisible = true;
   let pointer = { x: 0.5, y: 0.5 };
-  const gyro = getGyro();
-  const usePointerParallax = !gyro.isCoarseDevice();
+  const usePointerParallax = !isCoarseDevice();
   let dpr = 1;
   let t0 = performance.now();
   let lastTod = '';
@@ -68,9 +73,8 @@ export function initStarfield(canvas) {
     const theme = document.documentElement.getAttribute('data-theme');
     const elapsed = (now - t0) / 1000;
     ctx.clearRect(0, 0, w, h);
-    const g = gyroPixels(gyro.getOffset(), prefersReduced() ? 5 : 18);
-    const px = usePointerParallax ? (pointer.x - 0.5) * 32 + g.x * 0.4 : g.x;
-    const py = usePointerParallax ? (pointer.y - 0.5) * 32 + g.y * 0.4 : g.y;
+    const px = usePointerParallax ? (pointer.x - 0.5) * 32 : 0;
+    const py = usePointerParallax ? (pointer.y - 0.5) * 32 : 0;
     const baseAlpha = todAlpha(theme);
     for (const s of stars) {
       const driftX = Math.sin(elapsed * s.drift + s.tw) * 6 * s.z;

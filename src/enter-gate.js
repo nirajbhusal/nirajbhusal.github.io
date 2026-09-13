@@ -4,10 +4,16 @@
  * (no white flash / bleach). Respects prefers-reduced-motion (short dark fade).
  */
 
-import { getGyro, gyroPixels } from './gyro.js';
-
 const prefersReduced = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function isCoarseDevice() {
+  try {
+    return window.matchMedia('(pointer: coarse), (hover: none)').matches;
+  } catch {
+    return 'ontouchstart' in window;
+  }
+}
 
 function clamp(n, a, b) {
   return Math.max(a, Math.min(b, n));
@@ -49,8 +55,7 @@ export function initEnterGateVista(canvas) {
   let t0 = performance.now();
   let pointer = { x: 0.5, y: 0.5 };
   let targetPointer = { x: 0.5, y: 0.5 };
-  const gyro = getGyro();
-  const usePointerParallax = !gyro.isCoarseDevice();
+  const usePointerParallax = !isCoarseDevice();
   let stars = [];
   let dust = [];
   let nebulae = [];
@@ -191,13 +196,12 @@ export function initEnterGateVista(canvas) {
       pointer.x += (targetPointer.x - pointer.x) * 0.04;
       pointer.y += (targetPointer.y - pointer.y) * 0.04;
     }
-    const g = gyroPixels(gyro.getOffset(), reduced ? 6 : 22);
     const px = usePointerParallax
-      ? (pointer.x - 0.5) * (reduced ? 8 : 28) + g.x * 0.35
-      : g.x;
+      ? (pointer.x - 0.5) * (reduced ? 8 : 28)
+      : 0;
     const py = usePointerParallax
-      ? (pointer.y - 0.5) * (reduced ? 6 : 22) + g.y * 0.35
-      : g.y;
+      ? (pointer.y - 0.5) * (reduced ? 6 : 22)
+      : 0;
 
     let warpP = 0;
     let speed = 1;
