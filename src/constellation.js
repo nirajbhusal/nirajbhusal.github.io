@@ -4,8 +4,8 @@ const FACTS = [
     text: 'Niraj Bhusal is a civil servant with the Government of Nepal (since September 2013), focused on public digital systems.',
   },
   {
-    label: 'Ministry of Finance',
-    text: 'Currently at the Ministry of Finance (Dec 2019 – Present), working on digital transformation, GovTech, and AI use-cases.',
+    label: 'Hon. FM Office',
+    text: 'Currently at the Office of the Hon. Finance Minister, Ministry of Finance (within MoF, Dec 2019 – Present), working on digital transformation, GovTech, and AI use-cases.',
   },
   {
     label: 'GovTech & DPI',
