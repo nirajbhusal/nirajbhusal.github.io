@@ -431,7 +431,15 @@ h3 {
 .tagline {
   font-size: 1.15rem;
   color: var(--muted);
+  margin: 0 0 0.4rem;
+}
+
+.hero-posting {
+  font-size: 1.02rem;
+  color: var(--fg);
   margin: 0 0 1rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .lede {
@@ -753,6 +761,13 @@ h3 {
   font-weight: 500;
   font-size: 1.05rem;
   letter-spacing: -0.01em;
+}
+
+.role-now {
+  display: block;
+  margin: 0.4rem 0 0.55rem;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 .current-tag {
