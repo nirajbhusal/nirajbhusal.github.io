@@ -96,7 +96,13 @@ export function initAmbientGame(deps = {}) {
 
   function syncChip() {
     const spec = AMBIENT_GAME_CATALOG[gameId] || AMBIENT_GAME_CATALOG.basketball;
-    if (chipLabel) chipLabel.textContent = expanded ? spec.title : spec.chip;
+    if (chipLabel) {
+      chipLabel.textContent = expanded
+        ? spec.title
+        : gameId === 'basketball'
+          ? 'Orbit ball · play'
+          : spec.chip;
+    }
     chip.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     root.dataset.state = expanded ? 'expanded' : 'collapsed';
     root.dataset.game = gameId;
@@ -132,7 +138,7 @@ export function initAmbientGame(deps = {}) {
     const makesKey = root.querySelector('.ambient-hud-makes-k');
     if (makesKey) {
       makesKey.textContent =
-        stats.game === 'cricket' ? 'Runs' : stats.game === 'football' ? 'Goals' : 'Makes';
+        stats.game === 'cricket' ? 'Hits' : stats.game === 'football' ? 'Goals' : 'Makes';
     }
     syncChip();
   }
