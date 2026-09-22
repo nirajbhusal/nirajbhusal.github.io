@@ -186,6 +186,100 @@ export function initAmbientGame(deps = {}) {
     syncChip();
   }
 
+  function dockNear(el) {
+    if (!el || !root) return;
+    const rect = el.getBoundingClientRect();
+    const pad = 12;
+    const panelW = Math.min(320, window.innerWidth - pad * 2);
+    const panelH = 280;
+    let left = rect.left + rect.width / 2 - panelW / 2;
+    let bottom = window.innerHeight - rect.top + 10;
+    left = Math.max(pad, Math.min(left, window.innerWidth - panelW - pad));
+    bottom = Math.max(pad, Math.min(bottom, window.innerHeight - panelH - pad));
+    // Prefer bottom-left ambient home if object is on the right edge
+    if (rect.left > window.innerWidth * 0.55) {
+      left = pad;
+      bottom = Math.max(pad, window.innerHeight - rect.bottom - 8);
+      bottom = Math.min(bottom, window.innerHeight * 0.42);
+    }
+    root.classList.add('is-docked');
+    root.style.setProperty('--ambient-left', `${Math.round(left)}px`);
+    root.style.setProperty('--ambient-bottom', `${Math.round(bottom)}px`);
+  }
+
+  function clearDock() {
+    root.classList.remove('is-docked');
+    root.style.removeProperty('--ambient-left');
+    root.style.removeProperty('--ambient-bottom');
+  }
+
+  /**
+   * Open ambient court from a cosmic space icon.
+   * @param {string} id
+   * @param {{ el?: HTMLElement, role?: string }} [opts]
+   */
+  function playFromSpace(id, opts = {}) {
+    const game = AMBIENT_GAME_CATALOG[id] ? id : 'basketball';
+    if (suppressed) return;
+    if (opts.el) dockNear(opts.el);
+    if (gameId !== game || !current) {
+      mountGame(game);
+    }
+    setExpanded(true);
+    // Soft pulse on source icon handled by caller
+    canvas.focus?.({ preventScroll: true });
+  }
+
+  /** Background fling of orbit ball into cosmic rim — updates basketball HUD/chip. */
+  function recordSpaceThrow(made) {
+    const ensureBb = () => {
+      if (gameId === 'basketball' && current?.applyExternalShot) {
+        current.applyExternalShot(!!made);
+        return;
+      }
+      // Persist + HUD without requiring expanded court
+      if (gameId !== 'basketball' || !current) {
+        // Lightweight score bump via remount basketball stats
+        const key = AMBIENT_GAME_CATALOG.basketball.persistKey;
+        let data = { score: 0, attempts: 0, streak: 0, bestStreak: 0 };
+        try {
+          data = { ...data, ...(JSON.parse(sessionStorage.getItem(key) || '{}') || {}) };
+        } catch {
+          /* ignore */
+        }
+        data.attempts = (Number(data.attempts) || 0) + 1;
+        if (made) {
+          data.score = (Number(data.score) || 0) + 1;
+          data.streak = (Number(data.streak) || 0) + 1;
+          data.bestStreak = Math.max(Number(data.bestStreak) || 0, data.streak);
+        } else {
+          data.streak = 0;
+        }
+        try {
+          sessionStorage.setItem(key, JSON.stringify(data));
+        } catch {
+          /* ignore */
+        }
+        onStats({
+          game: 'basketball',
+          score: data.score,
+          attempts: data.attempts,
+          makes: data.score,
+          streak: data.streak,
+          bestStreak: data.bestStreak,
+        });
+        // Keep chip discoverable after a background make
+        if (made && chipScore) {
+          chipScore.hidden = false;
+          chipScore.textContent = String(data.score);
+        }
+        return;
+      }
+      current.applyExternalShot?.(!!made);
+    };
+    ensureBb();
+  }
+
   function rotateShuffle(_reason) {
     if (mode !== 'shuffle' || shuffleIds.length < 2) return;
     const idx = shuffleIds.indexOf(gameId);
@@ -229,6 +323,7 @@ export function initAmbientGame(deps = {}) {
       current?.pause?.(true);
       clearShuffleTimer();
       root.classList.remove('is-active');
+      clearDock();
       chip.focus?.({ preventScroll: true });
     }
   }
@@ -325,5 +420,7 @@ export function initAmbientGame(deps = {}) {
     isExpanded: () => expanded,
     syncMute: syncMuteBtn,
     setMode,
+    playFromSpace,
+    recordSpaceThrow,
   };
 }

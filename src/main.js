@@ -759,6 +759,15 @@ const ambientGameApi = initAmbientGame({
 });
 wireVolumeControls._onChange = () => ambientGameApi?.syncMute?.();
 
+cosmo?.setHooks?.({
+  onPlayTap: ({ game, el }) => {
+    ambientGameApi?.playFromSpace?.(game || 'basketball', { el });
+  },
+  onSpaceThrow: ({ made }) => {
+    ambientGameApi?.recordSpaceThrow?.(!!made);
+  },
+});
+
 const starCanvas = document.getElementById('starfield');
 if (starCanvas) initStarfield(starCanvas);
 

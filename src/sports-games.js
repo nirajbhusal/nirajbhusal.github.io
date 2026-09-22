@@ -408,10 +408,28 @@ export function initBasketball(canvas, hud, options = {}) {
     canvas.removeEventListener('pointercancel', onPointerUp);
   }
 
+  function applyExternalShot(made) {
+    attempts += 1;
+    if (made) {
+      score += 1;
+      streak += 1;
+      bestStreak = Math.max(bestStreak, streak);
+      msg = 'Swish';
+      msgT = 1.2;
+    } else {
+      streak = 0;
+      msg = 'Miss — try again';
+      msgT = 0.9;
+    }
+    updateHud();
+    options.onShotComplete?.(stats(), !!made);
+    if (running) draw();
+  }
+
   resetBall();
   draw();
   updateHud();
-  return { start, pause, getStats: stats, draw };
+  return { start, pause, getStats: stats, draw, applyExternalShot };
 }
 
 /** Cricket timing — press when ball enters the hitting zone */
@@ -935,7 +953,7 @@ export const AMBIENT_GAME_CATALOG = {
     id: 'basketball',
     title: 'Basketball',
     chip: 'Play basketball',
-    hint: 'Drag to aim & charge · release to shoot · Esc hides',
+    hint: 'Drag orbit ball into the rim · or aim on court · Esc hides',
     init: initBasketball,
     persistKey: 'nb-ambient-bb',
   },
