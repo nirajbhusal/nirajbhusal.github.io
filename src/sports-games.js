@@ -108,10 +108,16 @@ export function initBasketball(canvas, hud, options = {}) {
   let pointerY0 = 0;
   let shotResolved = false;
 
+  function scale() {
+    // Modal court is ~640 wide; ambient is smaller — keep feel consistent
+    return canvas.width / 640;
+  }
+
   function hoop() {
     const w = canvas.width;
     const h = canvas.height;
-    return { x: w * 0.72, y: h * 0.28, r: Math.max(16, Math.min(22, w * 0.07)) };
+    const s = scale();
+    return { x: w * 0.72, y: h * 0.28, r: Math.max(14, 22 * s) };
   }
 
   function persist() {
@@ -135,7 +141,7 @@ export function initBasketball(canvas, hud, options = {}) {
   }
 
   function updateHud() {
-    if (hud?.score) hud.score.textContent = ambient ? `Score ${score}` : `Score: ${score}`;
+    if (hud?.score) hud.score.textContent = ambient ? String(score) : `Score: ${score}`;
     if (hud?.extra) {
       hud.extra.textContent = ambient
         ? `Shots ${attempts} · Streak ${streak}`
@@ -148,12 +154,13 @@ export function initBasketball(canvas, hud, options = {}) {
   }
 
   function resetBall() {
+    const s = scale();
     ball = {
       x: canvas.width * 0.22,
       y: canvas.height * 0.78,
       vx: 0,
       vy: 0,
-      r: Math.max(8, Math.min(11, canvas.width * 0.035)),
+      r: Math.max(7, 11 * s),
       flying: false,
       scored: false,
     };
@@ -176,9 +183,10 @@ export function initBasketball(canvas, hud, options = {}) {
   function shoot() {
     if (!ball || ball.flying) return;
     const p = clamp(power, 0.25, 1);
+    const s = scale();
     ball.flying = true;
-    ball.vx = Math.cos(angle) * (7.2 + p * 9.5);
-    ball.vy = Math.sin(angle) * (7.2 + p * 9.5);
+    ball.vx = Math.cos(angle) * (7.2 + p * 9.5) * s;
+    ball.vy = Math.sin(angle) * (7.2 + p * 9.5) * s;
     attempts += 1;
     updateHud();
   }
@@ -193,11 +201,19 @@ export function initBasketball(canvas, hud, options = {}) {
       power = clamp(power + 0.55 * dt, 0.2, 1);
     }
     if (!ball?.flying) return;
-    ball.vy += 18 * dt;
+    const s = scale();
+    ball.vy += 18 * dt * s;
     ball.x += ball.vx * dt * 60;
     ball.y += ball.vy * dt * 60;
     const hp = hoop();
-    if (!ball.scored && Math.hypot(ball.x - hp.x, ball.y - hp.y) < hp.r - 4 && ball.vy > 0) {
+    const hitR = hp.r + (ambient ? 3 : 0);
+    if (
+      !ball.scored &&
+      Math.hypot(ball.x - hp.x, ball.y - hp.y) < hitR - 2 &&
+      ball.vy > 0 &&
+      ball.x > hp.x - hp.r &&
+      ball.x < hp.x + hp.r
+    ) {
       ball.scored = true;
       score += 1;
       msg = 'Swish';
