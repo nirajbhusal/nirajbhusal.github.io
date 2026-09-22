@@ -1,6 +1,7 @@
 /**
  * Lightweight optional sports mini-games (canvas).
  * Quiet, dismissible, keyboard + touch friendly. Cosmic dark + blue accent only.
+ * Supports full modal play and compact ambient background shell.
  */
 
 const prefersReduced = () =>
@@ -31,96 +32,212 @@ function drawField(ctx, w, h) {
   ctx.fillRect(0, 0, w, h);
 }
 
-function hudText(ctx, lines, w) {
+function hudText(ctx, lines, w, ambient) {
   ctx.fillStyle = 'rgba(180, 200, 230, 0.85)';
-  ctx.font = '12px "IBM Plex Mono", monospace';
+  ctx.font = ambient ? '11px "IBM Plex Mono", monospace' : '12px "IBM Plex Mono", monospace';
   ctx.textAlign = 'left';
-  lines.forEach((t, i) => ctx.fillText(t, 12, 18 + i * 16));
-  ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(140, 160, 190, 0.7)';
-  ctx.font = '11px "IBM Plex Mono", monospace';
-  ctx.fillText('Esc / close to dismiss', w / 2, hSafe(ctx.canvas) - 10);
+  lines.forEach((t, i) => ctx.fillText(t, 10, 16 + i * 14));
+  if (!ambient) {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(140, 160, 190, 0.7)';
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.fillText('Esc / close to dismiss', w / 2, hSafe(ctx.canvas) - 10);
+  }
 }
 
 function hSafe(canvas) {
   return canvas.height;
 }
 
+function readPersist(key) {
+  if (!key) return null;
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return data && typeof data === 'object' ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+function writePersist(key, data) {
+  if (!key) return;
+  try {
+    sessionStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    /* quota / private mode */
+  }
+}
+
+function keyTarget(options) {
+  return options?.keyRoot || window;
+}
+
+function shouldHandleKeys(options, running) {
+  if (!running) return false;
+  if (!options?.requireFocus) return true;
+  const root = options.keyRoot;
+  if (!root) return true;
+  const ae = document.activeElement;
+  return root === ae || root.contains?.(ae);
+}
+
 /** Basketball throw — aim with arrows/drag, shoot with Space/tap */
-export function initBasketball(canvas, hud) {
+export function initBasketball(canvas, hud, options = {}) {
   const ctx = canvas.getContext('2d');
+  const ambient = !!options.ambient;
+  const persistKey = options.persistKey || null;
   let running = false;
   let raf = 0;
-  let score = 0;
-  let attempts = 0;
+  const saved = readPersist(persistKey);
+  let score = Number(saved?.score) || 0;
+  let attempts = Number(saved?.attempts) || 0;
+  let streak = Number(saved?.streak) || 0;
+  let bestStreak = Number(saved?.bestStreak) || 0;
   let angle = -1.15;
   let power = 0.55;
   let charging = false;
   let ball = null;
-  let msg = 'Hold Space / tap to charge · release to shoot';
-  let msgT = 0;
+  let msg = ambient
+    ? 'Hold / drag to charge · release to shoot'
+    : 'Hold Space / tap to charge · release to shoot';
+  let msgT = ambient ? 0 : 0;
   const keys = new Set();
   let pointerId = null;
   let pointerY0 = 0;
+  let shotResolved = false;
+
+  function scale() {
+    // Modal court is ~640 wide; ambient is smaller — keep feel consistent
+    return canvas.width / 640;
+  }
 
   function hoop() {
     const w = canvas.width;
     const h = canvas.height;
-    return { x: w * 0.72, y: h * 0.28, r: 22 };
+    const s = scale();
+    return { x: w * 0.72, y: h * 0.28, r: Math.max(14, 22 * s) };
+  }
+
+  function persist() {
+    writePersist(persistKey, { score, attempts, streak, bestStreak });
+  }
+
+  function stats() {
+    return {
+      game: 'basketball',
+      score,
+      attempts,
+      makes: score,
+      streak,
+      bestStreak,
+    };
+  }
+
+  function emitStats() {
+    persist();
+    options.onStats?.(stats());
+  }
+
+  function updateHud() {
+    if (hud?.score) hud.score.textContent = ambient ? String(score) : `Score: ${score}`;
+    if (hud?.extra) {
+      hud.extra.textContent = ambient
+        ? `Shots ${attempts} · Streak ${streak}`
+        : `Shots: ${attempts}`;
+    }
+    if (hud?.makes) hud.makes.textContent = String(score);
+    if (hud?.shots) hud.shots.textContent = String(attempts);
+    if (hud?.streak) hud.streak.textContent = String(streak);
+    emitStats();
   }
 
   function resetBall() {
+    const s = scale();
     ball = {
       x: canvas.width * 0.22,
       y: canvas.height * 0.78,
       vx: 0,
       vy: 0,
-      r: 11,
+      r: Math.max(7, 11 * s),
       flying: false,
       scored: false,
     };
+    shotResolved = false;
   }
 
-  function updateHud() {
-    if (hud?.score) hud.score.textContent = `Score: ${score}`;
-    if (hud?.extra) hud.extra.textContent = `Shots: ${attempts}`;
+  function finishShot(made) {
+    if (shotResolved) return;
+    shotResolved = true;
+    if (made) {
+      streak += 1;
+      bestStreak = Math.max(bestStreak, streak);
+    } else {
+      streak = 0;
+    }
+    updateHud();
+    options.onShotComplete?.(stats(), made);
   }
 
   function shoot() {
     if (!ball || ball.flying) return;
     const p = clamp(power, 0.25, 1);
+    const s = scale();
     ball.flying = true;
-    ball.vx = Math.cos(angle) * (7.2 + p * 9.5);
-    ball.vy = Math.sin(angle) * (7.2 + p * 9.5);
+    if (ambient) {
+      // Curated ambient arcs — tuned so medium Space/drag charges can score
+      const a = clamp(angle, -1.35, -0.75);
+      const speed = (9 + p * 4) * s;
+      ball.vx = Math.cos(a) * speed;
+      ball.vy = Math.sin(a) * speed;
+    } else {
+      ball.vx = Math.cos(angle) * (7.2 + p * 9.5) * s;
+      ball.vy = Math.sin(angle) * (7.2 + p * 9.5) * s;
+    }
     attempts += 1;
     updateHud();
   }
 
   function step(dt) {
-    if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) angle -= 1.2 * dt;
-    if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) angle += 1.2 * dt;
+    if (shouldHandleKeys(options, running)) {
+      if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) angle -= 1.2 * dt;
+      if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) angle += 1.2 * dt;
+    }
     angle = clamp(angle, -1.55, -0.25);
     if (charging && (!ball || !ball.flying)) {
       power = clamp(power + 0.55 * dt, 0.2, 1);
     }
     if (!ball?.flying) return;
-    ball.vy += 18 * dt;
+    const s = scale();
+    ball.vy += (ambient ? 14 : 18) * dt * s;
     ball.x += ball.vx * dt * 60;
     ball.y += ball.vy * dt * 60;
     const hp = hoop();
-    if (!ball.scored && Math.hypot(ball.x - hp.x, ball.y - hp.y) < hp.r - 4 && ball.vy > 0) {
+    const hitR = hp.r + (ambient ? 6 : 0);
+    if (
+      !ball.scored &&
+      Math.hypot(ball.x - hp.x, ball.y - hp.y) < hitR &&
+      ball.vy > -0.2 &&
+      ball.x > hp.x - hp.r - 2 &&
+      ball.x < hp.x + hp.r + 2
+    ) {
       ball.scored = true;
       score += 1;
       msg = 'Swish';
       msgT = 1.2;
-      updateHud();
+      finishShot(true);
     }
     if (ball.y > canvas.height + 40 || ball.x < -40 || ball.x > canvas.width + 40) {
+      const missed = !ball.scored;
       resetBall();
       power = 0.55;
-      if (!ball.scored && msgT <= 0) {
-        msg = 'Miss — try again';
-        msgT = 1;
+      if (missed) {
+        if (msgT <= 0) {
+          msg = 'Miss — try again';
+          msgT = 1;
+        }
+        finishShot(false);
       }
     }
   }
@@ -130,17 +247,14 @@ export function initBasketball(canvas, hud) {
     const h = canvas.height;
     drawField(ctx, w, h);
     const hp = hoop();
-    // backboard
     ctx.fillStyle = 'rgba(200, 220, 255, 0.2)';
     roundRect(ctx, hp.x + 18, hp.y - 28, 8, 56, 2);
     ctx.fill();
-    // rim
     ctx.strokeStyle = 'rgba(59, 158, 255, 0.95)';
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(hp.x, hp.y, hp.r, 0.15, Math.PI - 0.15);
     ctx.stroke();
-    // net hint
     ctx.strokeStyle = 'rgba(160, 190, 230, 0.35)';
     ctx.lineWidth = 1;
     for (let i = -2; i <= 2; i++) {
@@ -149,7 +263,6 @@ export function initBasketball(canvas, hud) {
       ctx.lineTo(hp.x + i * 4, hp.y + 26);
       ctx.stroke();
     }
-    // aim
     if (ball && !ball.flying) {
       const len = 40 + power * 50;
       ctx.strokeStyle = `rgba(110, 192, 255, ${0.35 + power * 0.45})`;
@@ -158,12 +271,11 @@ export function initBasketball(canvas, hud) {
       ctx.moveTo(ball.x, ball.y);
       ctx.lineTo(ball.x + Math.cos(angle) * len, ball.y + Math.sin(angle) * len);
       ctx.stroke();
-      // power bar
       ctx.fillStyle = 'rgba(255,255,255,0.08)';
-      roundRect(ctx, 12, h - 36, 100, 8, 4);
+      roundRect(ctx, 12, h - 28, 90, 7, 4);
       ctx.fill();
       ctx.fillStyle = 'rgba(59, 158, 255, 0.85)';
-      roundRect(ctx, 12, h - 36, 100 * power, 8, 4);
+      roundRect(ctx, 12, h - 28, 90 * power, 7, 4);
       ctx.fill();
     }
     if (ball) {
@@ -182,11 +294,20 @@ export function initBasketball(canvas, hud) {
     }
     if (msgT > 0) {
       ctx.fillStyle = 'rgba(110, 192, 255, 0.9)';
-      ctx.font = '600 16px "IBM Plex Sans", sans-serif';
+      ctx.font = ambient
+        ? '600 14px "IBM Plex Sans", sans-serif'
+        : '600 16px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(msg, w / 2, h * 0.55);
     }
-    hudText(ctx, [`Basketball · ${score} made`, '←→ aim · hold Space charge · release shoot'], w);
+    hudText(
+      ctx,
+      ambient
+        ? [`◉ ${score} · streak ${streak}`]
+        : [`Basketball · ${score} made`, '←→ aim · hold Space charge · release shoot'],
+      w,
+      ambient
+    );
   }
 
   let last = 0;
@@ -195,13 +316,13 @@ export function initBasketball(canvas, hud) {
     const dt = Math.min(0.033, (now - last) / 1000 || 0.016);
     last = now;
     if (msgT > 0) msgT -= dt;
-    step(dt);
+    if (!prefersReduced() || running) step(dt);
     draw();
     raf = requestAnimationFrame(frame);
   }
 
   function onKeyDown(e) {
-    if (!running) return;
+    if (!shouldHandleKeys(options, running)) return;
     keys.add(e.key);
     if (e.key === ' ' || e.code === 'Space') {
       e.preventDefault();
@@ -210,9 +331,11 @@ export function initBasketball(canvas, hud) {
         power = 0.25;
       }
     }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') e.preventDefault();
   }
   function onKeyUp(e) {
     keys.delete(e.key);
+    if (!shouldHandleKeys(options, running)) return;
     if ((e.key === ' ' || e.code === 'Space') && charging) {
       charging = false;
       shoot();
@@ -223,6 +346,7 @@ export function initBasketball(canvas, hud) {
     pointerId = e.pointerId;
     pointerY0 = e.clientY;
     canvas.setPointerCapture?.(pointerId);
+    canvas.focus?.({ preventScroll: true });
     if (ball && !ball.flying) {
       charging = true;
       power = 0.25;
@@ -233,14 +357,16 @@ export function initBasketball(canvas, hud) {
     const dy = pointerY0 - e.clientY;
     power = clamp(0.25 + dy / 120, 0.2, 1);
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
     if (ball && !ball.flying) {
-      angle = Math.atan2(my - ball.y * (rect.height / canvas.height), mx - ball.x * (rect.width / canvas.width));
-      // map to canvas space more carefully
       const sx = (e.clientX - rect.left) * (canvas.width / rect.width);
       const sy = (e.clientY - rect.top) * (canvas.height / rect.height);
-      angle = clamp(Math.atan2(sy - ball.y, sx - ball.x), -1.55, -0.25);
+      if (ambient) {
+        // Ambient: horizontal aim within a makeable arc; vertical drag is power only
+        const t = clamp(sx / canvas.width, 0.15, 0.95);
+        angle = clamp(-1.35 + t * 0.55, -1.45, -0.7);
+      } else {
+        angle = clamp(Math.atan2(sy - ball.y, sx - ball.x), -1.55, -0.25);
+      }
     }
   }
   function onPointerUp(e) {
@@ -252,14 +378,16 @@ export function initBasketball(canvas, hud) {
     }
   }
 
+  const kt = () => keyTarget(options);
+
   function start() {
     if (running) return;
     running = true;
     resetBall();
     updateHud();
     last = performance.now();
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
+    kt().addEventListener('keydown', onKeyDown);
+    kt().addEventListener('keyup', onKeyUp);
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerup', onPointerUp);
@@ -272,8 +400,8 @@ export function initBasketball(canvas, hud) {
     running = false;
     cancelAnimationFrame(raf);
     charging = false;
-    window.removeEventListener('keydown', onKeyDown);
-    window.removeEventListener('keyup', onKeyUp);
+    kt().removeEventListener('keydown', onKeyDown);
+    kt().removeEventListener('keyup', onKeyUp);
     canvas.removeEventListener('pointerdown', onPointerDown);
     canvas.removeEventListener('pointermove', onPointerMove);
     canvas.removeEventListener('pointerup', onPointerUp);
@@ -282,21 +410,46 @@ export function initBasketball(canvas, hud) {
 
   resetBall();
   draw();
-  return { start, pause };
+  updateHud();
+  return { start, pause, getStats: stats, draw };
 }
 
 /** Cricket timing — press when ball enters the hitting zone */
-export function initCricket(canvas, hud) {
+export function initCricket(canvas, hud, options = {}) {
   const ctx = canvas.getContext('2d');
+  const ambient = !!options.ambient;
+  const persistKey = options.persistKey || null;
   let running = false;
   let raf = 0;
-  let score = 0;
-  let streak = 0;
+  const saved = readPersist(persistKey);
+  let score = Number(saved?.score) || 0;
+  let streak = Number(saved?.streak) || 0;
+  let attempts = Number(saved?.attempts) || 0;
   let ball = null;
   let cooldown = 0;
   let flash = 0;
   let msg = 'Space / tap when the ball reaches the bat zone';
-  let msgT = 2;
+  let msgT = ambient ? 0 : 2;
+
+  function persist() {
+    writePersist(persistKey, { score, streak, attempts });
+  }
+
+  function stats() {
+    return {
+      game: 'cricket',
+      score,
+      attempts,
+      makes: score,
+      streak,
+      bestStreak: streak,
+    };
+  }
+
+  function emitStats() {
+    persist();
+    options.onStats?.(stats());
+  }
 
   function spawn() {
     const speed = 2.4 + Math.min(3, streak * 0.15) + Math.random() * 0.8;
@@ -310,8 +463,12 @@ export function initCricket(canvas, hud) {
   }
 
   function updateHud() {
-    if (hud?.score) hud.score.textContent = `Runs: ${score}`;
-    if (hud?.extra) hud.extra.textContent = `Streak: ${streak}`;
+    if (hud?.score) hud.score.textContent = ambient ? `Runs ${score}` : `Runs: ${score}`;
+    if (hud?.extra) hud.extra.textContent = ambient ? `Streak ${streak}` : `Streak: ${streak}`;
+    if (hud?.makes) hud.makes.textContent = String(score);
+    if (hud?.shots) hud.shots.textContent = String(attempts);
+    if (hud?.streak) hud.streak.textContent = String(streak);
+    emitStats();
   }
 
   function swing() {
@@ -319,6 +476,7 @@ export function initCricket(canvas, hud) {
     const zoneX = canvas.width * 0.28;
     const dist = Math.abs(ball.x - zoneX);
     cooldown = 0.35;
+    attempts += 1;
     if (dist < 28) {
       ball.hit = true;
       ball.vx = 8 + Math.random() * 3;
@@ -330,11 +488,13 @@ export function initCricket(canvas, hud) {
       msg = pts === 6 ? 'Six!' : pts === 4 ? 'Four' : 'Shot';
       msgT = 0.9;
       updateHud();
+      options.onShotComplete?.(stats(), true);
     } else {
       streak = 0;
       msg = 'Early / late';
       msgT = 0.8;
       updateHud();
+      options.onShotComplete?.(stats(), false);
     }
   }
 
@@ -351,9 +511,11 @@ export function initCricket(canvas, hud) {
     if (ball.hit && ball.vy != null) ball.vy += 12 * dt;
     if (!ball.hit && ball.x < -30) {
       streak = 0;
+      attempts += 1;
       msg = 'Wicket missed';
       msgT = 0.8;
       updateHud();
+      options.onShotComplete?.(stats(), false);
       spawn();
     } else if (ball.hit && (ball.x > canvas.width + 40 || ball.y > canvas.height + 40)) {
       spawn();
@@ -364,18 +526,15 @@ export function initCricket(canvas, hud) {
     const w = canvas.width;
     const h = canvas.height;
     drawField(ctx, w, h);
-    // pitch
     ctx.fillStyle = 'rgba(90, 120, 80, 0.18)';
     roundRect(ctx, w * 0.12, h * 0.52, w * 0.76, h * 0.14, 8);
     ctx.fill();
-    // hitting zone
     const zx = w * 0.28;
     ctx.fillStyle = flash > 0 ? 'rgba(59, 158, 255, 0.35)' : 'rgba(59, 158, 255, 0.12)';
     roundRect(ctx, zx - 26, h * 0.48, 52, h * 0.22, 6);
     ctx.fill();
     ctx.strokeStyle = 'rgba(110, 192, 255, 0.5)';
     ctx.strokeRect(zx - 26, h * 0.48, 52, h * 0.22);
-    // bat
     ctx.save();
     ctx.translate(zx - 8, h * 0.62);
     ctx.rotate(-0.4 + (flash > 0 ? -0.5 : 0));
@@ -395,11 +554,18 @@ export function initCricket(canvas, hud) {
     }
     if (msgT > 0) {
       ctx.fillStyle = 'rgba(110, 192, 255, 0.95)';
-      ctx.font = '600 16px "IBM Plex Sans", sans-serif';
+      ctx.font = ambient
+        ? '600 14px "IBM Plex Sans", sans-serif'
+        : '600 16px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(msg, w / 2, h * 0.35);
     }
-    hudText(ctx, [`Cricket · ${score} runs`, 'Space / tap in the blue zone'], w);
+    hudText(
+      ctx,
+      ambient ? [`◌ ${score} runs`] : [`Cricket · ${score} runs`, 'Space / tap in the blue zone'],
+      w,
+      ambient
+    );
   }
 
   let last = 0;
@@ -413,7 +579,7 @@ export function initCricket(canvas, hud) {
   }
 
   function onKey(e) {
-    if (!running) return;
+    if (!shouldHandleKeys(options, running)) return;
     if (e.key === ' ' || e.code === 'Space') {
       e.preventDefault();
       swing();
@@ -422,18 +588,24 @@ export function initCricket(canvas, hud) {
   function onPointer(e) {
     if (!running) return;
     e.preventDefault();
+    canvas.focus?.({ preventScroll: true });
     swing();
   }
+
+  const kt = () => keyTarget(options);
 
   function start() {
     if (running) return;
     running = true;
-    score = 0;
-    streak = 0;
+    if (!ambient) {
+      score = 0;
+      streak = 0;
+      attempts = 0;
+    }
     spawn();
     updateHud();
     last = performance.now();
-    window.addEventListener('keydown', onKey);
+    kt().addEventListener('keydown', onKey);
     canvas.addEventListener('pointerdown', onPointer);
     raf = requestAnimationFrame(frame);
   }
@@ -441,21 +613,26 @@ export function initCricket(canvas, hud) {
   function pause() {
     running = false;
     cancelAnimationFrame(raf);
-    window.removeEventListener('keydown', onKey);
+    kt().removeEventListener('keydown', onKey);
     canvas.removeEventListener('pointerdown', onPointer);
   }
 
   draw();
-  return { start, pause };
+  updateHud();
+  return { start, pause, getStats: stats, draw };
 }
 
 /** Football penalty — aim + power, beat the keeper */
-export function initFootball(canvas, hud) {
+export function initFootball(canvas, hud, options = {}) {
   const ctx = canvas.getContext('2d');
+  const ambient = !!options.ambient;
+  const persistKey = options.persistKey || null;
   let running = false;
   let raf = 0;
-  let score = 0;
-  let shots = 0;
+  const saved = readPersist(persistKey);
+  let score = Number(saved?.score) || 0;
+  let shots = Number(saved?.attempts) || 0;
+  let streak = Number(saved?.streak) || 0;
   let aim = 0;
   let power = 0.5;
   let charging = false;
@@ -464,9 +641,30 @@ export function initFootball(canvas, hud) {
   let keeper = 0;
   let keeperTarget = 0;
   let msg = '←→ aim · hold Space / drag up to power · release';
-  let msgT = 2;
+  let msgT = ambient ? 0 : 2;
   const keys = new Set();
   let pointerId = null;
+  let resetTimer = 0;
+
+  function persist() {
+    writePersist(persistKey, { score, attempts: shots, streak });
+  }
+
+  function stats() {
+    return {
+      game: 'football',
+      score,
+      attempts: shots,
+      makes: score,
+      streak,
+      bestStreak: streak,
+    };
+  }
+
+  function emitStats() {
+    persist();
+    options.onStats?.(stats());
+  }
 
   function placeBall() {
     ball = {
@@ -485,8 +683,12 @@ export function initFootball(canvas, hud) {
   }
 
   function updateHud() {
-    if (hud?.score) hud.score.textContent = `Goals: ${score}`;
-    if (hud?.extra) hud.extra.textContent = `Shots: ${shots}`;
+    if (hud?.score) hud.score.textContent = ambient ? `Goals ${score}` : `Goals: ${score}`;
+    if (hud?.extra) hud.extra.textContent = ambient ? `Shots ${shots}` : `Shots: ${shots}`;
+    if (hud?.makes) hud.makes.textContent = String(score);
+    if (hud?.shots) hud.shots.textContent = String(shots);
+    if (hud?.streak) hud.streak.textContent = String(streak);
+    emitStats();
   }
 
   function kick() {
@@ -497,14 +699,29 @@ export function initFootball(canvas, hud) {
     ball.vx = aim * 5.5;
     ball.vy = -(5.5 + p * 6.5);
     ball.t = 0;
-    // keeper dives toward a guessed side
     keeperTarget = clamp(aim * 1.6 + (Math.random() - 0.5) * 0.7, -1.5, 1.5);
     updateHud();
   }
 
+  function resolveKick(made, label) {
+    msg = label;
+    msgT = 1.1;
+    if (made) streak += 1;
+    else streak = 0;
+    updateHud();
+    options.onShotComplete?.(stats(), made);
+    phase = 'reset';
+    window.clearTimeout(resetTimer);
+    resetTimer = window.setTimeout(() => {
+      if (running) placeBall();
+    }, 700);
+  }
+
   function step(dt) {
-    if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) aim -= 1.6 * dt;
-    if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) aim += 1.6 * dt;
+    if (shouldHandleKeys(options, running)) {
+      if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) aim -= 1.6 * dt;
+      if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) aim += 1.6 * dt;
+    }
     aim = clamp(aim, -1.2, 1.2);
     if (charging && phase === 'aim') power = clamp(power + 0.5 * dt, 0.2, 1);
     if (msgT > 0) msgT -= dt;
@@ -521,33 +738,19 @@ export function initFootball(canvas, hud) {
     const goalL = canvas.width * 0.28;
     const goalR = canvas.width * 0.72;
     if (ball.y <= goalY + 8 && ball.vy < 0) {
-      // crossing goal line
       const kx = canvas.width * 0.5 + keeper * 55;
-      const saved = Math.abs(ball.x - kx) < 28;
+      const savedKick = Math.abs(ball.x - kx) < 28;
       const inGoal = ball.x > goalL + 8 && ball.x < goalR - 8;
-      if (inGoal && !saved) {
+      if (inGoal && !savedKick) {
         score += 1;
-        msg = 'Goal!';
-        msgT = 1.1;
-      } else if (saved) {
-        msg = 'Saved';
-        msgT = 1.1;
+        resolveKick(true, 'Goal!');
+      } else if (savedKick) {
+        resolveKick(false, 'Saved');
       } else {
-        msg = 'Wide';
-        msgT = 1.1;
+        resolveKick(false, 'Wide');
       }
-      updateHud();
-      phase = 'reset';
-      window.setTimeout(() => {
-        if (running) placeBall();
-      }, 700);
     } else if (ball.y > canvas.height + 30 || ball.x < -40 || ball.x > canvas.width + 40) {
-      msg = 'Miss';
-      msgT = 0.9;
-      phase = 'reset';
-      window.setTimeout(() => {
-        if (running) placeBall();
-      }, 600);
+      resolveKick(false, 'Miss');
     }
   }
 
@@ -555,11 +758,9 @@ export function initFootball(canvas, hud) {
     const w = canvas.width;
     const h = canvas.height;
     drawField(ctx, w, h);
-    // box
     ctx.strokeStyle = 'rgba(180, 210, 255, 0.25)';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(w * 0.22, h * 0.28, w * 0.56, h * 0.42);
-    // goal
     const goalY = h * 0.28;
     const goalL = w * 0.28;
     const goalR = w * 0.72;
@@ -571,7 +772,6 @@ export function initFootball(canvas, hud) {
     ctx.lineTo(goalR, goalY);
     ctx.lineTo(goalR, goalY + 48);
     ctx.stroke();
-    // net
     ctx.strokeStyle = 'rgba(140, 170, 210, 0.2)';
     ctx.lineWidth = 1;
     for (let i = 1; i < 6; i++) {
@@ -581,7 +781,6 @@ export function initFootball(canvas, hud) {
       ctx.lineTo(x, goalY + 48);
       ctx.stroke();
     }
-    // keeper
     const kx = w * 0.5 + keeper * 55;
     const ky = goalY + 28;
     ctx.fillStyle = 'rgba(59, 158, 255, 0.85)';
@@ -600,10 +799,10 @@ export function initFootball(canvas, hud) {
       ctx.lineTo(ball.x + aim * 40, ball.y - len);
       ctx.stroke();
       ctx.fillStyle = 'rgba(255,255,255,0.08)';
-      roundRect(ctx, 12, h - 36, 100, 8, 4);
+      roundRect(ctx, 12, h - 28, 90, 7, 4);
       ctx.fill();
       ctx.fillStyle = 'rgba(59, 158, 255, 0.85)';
-      roundRect(ctx, 12, h - 36, 100 * power, 8, 4);
+      roundRect(ctx, 12, h - 28, 90 * power, 7, 4);
       ctx.fill();
     }
     if (ball) {
@@ -617,11 +816,20 @@ export function initFootball(canvas, hud) {
     }
     if (msgT > 0) {
       ctx.fillStyle = 'rgba(110, 192, 255, 0.95)';
-      ctx.font = '600 16px "IBM Plex Sans", sans-serif';
+      ctx.font = ambient
+        ? '600 14px "IBM Plex Sans", sans-serif'
+        : '600 16px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(msg, w / 2, h * 0.5);
     }
-    hudText(ctx, [`Football · ${score} goals`, '←→ aim · hold Space power · release kick'], w);
+    hudText(
+      ctx,
+      ambient
+        ? [`○ ${score} goals`]
+        : [`Football · ${score} goals`, '←→ aim · hold Space power · release kick'],
+      w,
+      ambient
+    );
   }
 
   let last = 0;
@@ -635,7 +843,7 @@ export function initFootball(canvas, hud) {
   }
 
   function onKeyDown(e) {
-    if (!running) return;
+    if (!shouldHandleKeys(options, running)) return;
     keys.add(e.key);
     if (e.key === ' ' || e.code === 'Space') {
       e.preventDefault();
@@ -644,9 +852,11 @@ export function initFootball(canvas, hud) {
         power = 0.25;
       }
     }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') e.preventDefault();
   }
   function onKeyUp(e) {
     keys.delete(e.key);
+    if (!shouldHandleKeys(options, running)) return;
     if ((e.key === ' ' || e.code === 'Space') && charging) {
       charging = false;
       kick();
@@ -656,6 +866,7 @@ export function initFootball(canvas, hud) {
     if (!running || phase !== 'aim') return;
     pointerId = e.pointerId;
     canvas.setPointerCapture?.(pointerId);
+    canvas.focus?.({ preventScroll: true });
     charging = true;
     power = 0.25;
   }
@@ -676,14 +887,21 @@ export function initFootball(canvas, hud) {
     }
   }
 
+  const kt = () => keyTarget(options);
+
   function start() {
     if (running) return;
     running = true;
+    if (!ambient) {
+      score = 0;
+      shots = 0;
+      streak = 0;
+    }
     placeBall();
     updateHud();
     last = performance.now();
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
+    kt().addEventListener('keydown', onKeyDown);
+    kt().addEventListener('keyup', onKeyUp);
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerup', onPointerUp);
@@ -695,8 +913,9 @@ export function initFootball(canvas, hud) {
     running = false;
     cancelAnimationFrame(raf);
     charging = false;
-    window.removeEventListener('keydown', onKeyDown);
-    window.removeEventListener('keyup', onKeyUp);
+    window.clearTimeout(resetTimer);
+    kt().removeEventListener('keydown', onKeyDown);
+    kt().removeEventListener('keyup', onKeyUp);
     canvas.removeEventListener('pointerdown', onPointerDown);
     canvas.removeEventListener('pointermove', onPointerMove);
     canvas.removeEventListener('pointerup', onPointerUp);
@@ -705,6 +924,36 @@ export function initFootball(canvas, hud) {
 
   placeBall();
   draw();
+  updateHud();
   void prefersReduced;
-  return { start, pause };
+  return { start, pause, getStats: stats, draw };
 }
+
+/** Ambient-capable quiet games for the background shell / shuffle list. */
+export const AMBIENT_GAME_CATALOG = {
+  basketball: {
+    id: 'basketball',
+    title: 'Basketball',
+    chip: 'Play basketball',
+    hint: 'Drag to aim & charge · release to shoot · Esc hides',
+    init: initBasketball,
+    persistKey: 'nb-ambient-bb',
+  },
+  cricket: {
+    id: 'cricket',
+    title: 'Cricket',
+    chip: 'Play cricket',
+    hint: 'Tap / Space in the blue zone · Esc hides',
+    init: initCricket,
+    persistKey: 'nb-ambient-cricket',
+  },
+  football: {
+    id: 'football',
+    title: 'Football',
+    chip: 'Play football',
+    hint: 'Drag to aim & power · release to kick · Esc hides',
+    init: initFootball,
+    persistKey: 'nb-ambient-fb',
+  },
+  // TODO: Orbit Dodge needs dedicated touch-pad chrome; keep it modal-only for now.
+};

@@ -2277,3 +2277,216 @@ body.orbit-open .games-menu {
     grid-column: 1 / -1;
   }
 }
+
+/* —— Ambient corner court (background-friendly) —— */
+.ambient-game {
+  position: fixed;
+  left: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 115;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  pointer-events: none;
+  max-width: min(22rem, calc(100vw - 2rem));
+}
+.ambient-game > * {
+  pointer-events: auto;
+}
+.ambient-game.is-suppressed {
+  opacity: 0.35;
+  pointer-events: none;
+}
+body.gate-locked .ambient-game {
+  opacity: 0;
+  pointer-events: none;
+}
+body:not(.gate-locked) .ambient-game {
+  transition: opacity 1.2s ease 0.2s;
+}
+.ambient-game-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--bg-elevated) 90%, var(--accent) 10%);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 14px var(--accent-soft);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.ambient-game-chip:hover,
+.ambient-game-chip:focus-visible,
+.ambient-game-chip.is-open {
+  border-color: var(--accent);
+  color: var(--accent-bright);
+  outline: none;
+}
+.ambient-game:not(.is-reduced) .ambient-game-chip:not(.is-open) {
+  animation: ambient-chip-breathe 4.5s ease-in-out infinite;
+}
+@keyframes ambient-chip-breathe {
+  0%,
+  100% {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 10px var(--accent-soft);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 18px var(--accent-glow);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-game:not(.is-reduced) .ambient-game-chip:not(.is-open),
+  .ambient-game.is-reduced .ambient-game-chip {
+    animation: none;
+  }
+}
+.ambient-game-chip-icon {
+  color: var(--accent-bright);
+  line-height: 1;
+}
+.ambient-game-chip-score {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--accent-bright);
+  min-width: 1.1rem;
+  text-align: center;
+}
+.ambient-game-panel {
+  width: min(20rem, calc(100vw - 2rem));
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border));
+  background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45), 0 0 18px var(--accent-soft);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+.ambient-game-panel[hidden] {
+  display: none !important;
+}
+.ambient-game-chrome {
+  padding: 0.55rem 0.6rem 0.5rem;
+}
+.ambient-game-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+.ambient-game-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--fg);
+  letter-spacing: 0.01em;
+}
+.ambient-game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+.ambient-game-btn {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 0.28rem 0.45rem;
+  font: inherit;
+  font-size: 0.68rem;
+  font-family: var(--mono);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ambient-game-btn:hover,
+.ambient-game-btn:focus-visible {
+  color: var(--accent-bright);
+  border-color: var(--accent);
+  outline: none;
+}
+.ambient-game-btn[aria-pressed='true'] {
+  color: var(--accent-bright);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.ambient-game-hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+.ambient-game-hud strong {
+  color: var(--fg);
+  font-weight: 500;
+}
+.ambient-hud-k {
+  opacity: 0.7;
+}
+#ambient-game-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #060912;
+  touch-action: none;
+  cursor: crosshair;
+}
+#ambient-game-canvas:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.ambient-game-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+.text-link-btn {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  color: var(--accent-bright);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.text-link-btn:hover,
+.text-link-btn:focus-visible {
+  color: var(--accent);
+  outline: none;
+}
+body.orbit-open .ambient-game {
+  opacity: 0.25;
+  pointer-events: none;
+}
+@media (max-width: 900px) {
+  .ambient-game {
+    left: max(0.75rem, env(safe-area-inset-left));
+    bottom: max(4.6rem, calc(env(safe-area-inset-bottom) + 4.2rem));
+  }
+}
+@media (max-width: 480px) {
+  .ambient-game-chip-label {
+    max-width: 7.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ambient-game-hud {
+    gap: 0.35rem 0.55rem;
+  }
+}
+
