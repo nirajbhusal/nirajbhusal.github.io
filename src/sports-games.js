@@ -185,8 +185,16 @@ export function initBasketball(canvas, hud, options = {}) {
     const p = clamp(power, 0.25, 1);
     const s = scale();
     ball.flying = true;
-    ball.vx = Math.cos(angle) * (7.2 + p * 9.5) * s;
-    ball.vy = Math.sin(angle) * (7.2 + p * 9.5) * s;
+    if (ambient) {
+      // Curated ambient arcs — tuned so medium Space/drag charges can score
+      const a = clamp(angle, -1.35, -0.75);
+      const speed = (9 + p * 4) * s;
+      ball.vx = Math.cos(a) * speed;
+      ball.vy = Math.sin(a) * speed;
+    } else {
+      ball.vx = Math.cos(angle) * (7.2 + p * 9.5) * s;
+      ball.vy = Math.sin(angle) * (7.2 + p * 9.5) * s;
+    }
     attempts += 1;
     updateHud();
   }
@@ -202,17 +210,17 @@ export function initBasketball(canvas, hud, options = {}) {
     }
     if (!ball?.flying) return;
     const s = scale();
-    ball.vy += 18 * dt * s;
+    ball.vy += (ambient ? 14 : 18) * dt * s;
     ball.x += ball.vx * dt * 60;
     ball.y += ball.vy * dt * 60;
     const hp = hoop();
-    const hitR = hp.r + (ambient ? 3 : 0);
+    const hitR = hp.r + (ambient ? 6 : 0);
     if (
       !ball.scored &&
-      Math.hypot(ball.x - hp.x, ball.y - hp.y) < hitR - 2 &&
-      ball.vy > 0 &&
-      ball.x > hp.x - hp.r &&
-      ball.x < hp.x + hp.r
+      Math.hypot(ball.x - hp.x, ball.y - hp.y) < hitR &&
+      ball.vy > -0.2 &&
+      ball.x > hp.x - hp.r - 2 &&
+      ball.x < hp.x + hp.r + 2
     ) {
       ball.scored = true;
       score += 1;
@@ -352,7 +360,13 @@ export function initBasketball(canvas, hud, options = {}) {
     if (ball && !ball.flying) {
       const sx = (e.clientX - rect.left) * (canvas.width / rect.width);
       const sy = (e.clientY - rect.top) * (canvas.height / rect.height);
-      angle = clamp(Math.atan2(sy - ball.y, sx - ball.x), -1.55, -0.25);
+      if (ambient) {
+        // Ambient: horizontal aim within a makeable arc; vertical drag is power only
+        const t = clamp(sx / canvas.width, 0.15, 0.95);
+        angle = clamp(-1.35 + t * 0.55, -1.45, -0.7);
+      } else {
+        angle = clamp(Math.atan2(sy - ball.y, sx - ball.x), -1.55, -0.25);
+      }
     }
   }
   function onPointerUp(e) {
