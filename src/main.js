@@ -6,6 +6,7 @@ import { createAmbient } from './ambient.js';
 import { initSpaceObjects } from './space-objects.js';
 import { initEnterGateVista } from './enter-gate.js';
 import { initBasketball, initCricket, initFootball } from './sports-games.js';
+import { initAmbientGame } from './ambient-game.js';
 
 const THEME_KEY = 'theme';
 const GATE_KEY = 'nb-entered';
@@ -363,7 +364,7 @@ function wireGame(canvas, hudIds, padId, startId, pauseId) {
   return game;
 }
 
-function initOrbitModal(sectionGame) {
+function initOrbitModal(sectionGame, ambientGameApi) {
   const modal = document.getElementById('orbit-modal');
   const closeBtns = document.querySelectorAll('[data-orbit-close]');
   const openFromSection = document.getElementById('od-open-modal');
@@ -387,12 +388,14 @@ function initOrbitModal(sectionGame) {
     if (open && !wasOpen) {
       lastFocus = document.activeElement;
       sectionGame?.pause?.(true);
+      ambientGameApi?.pause?.();
       window.setTimeout(() => {
         document.getElementById('odm-start')?.focus();
         modalGame?.start();
       }, 40);
     } else if (!open && wasOpen) {
       modalGame?.pause?.(true);
+      ambientGameApi?.resume?.();
       lastFocus?.focus?.();
     }
   }
@@ -414,7 +417,7 @@ function initOrbitModal(sectionGame) {
   };
 }
 
-function initSportsModal() {
+function initSportsModal(ambientGameApi) {
   const modal = document.getElementById('sports-modal');
   const canvas = document.getElementById('sports-canvas');
   const title = document.getElementById('sports-modal-title');
@@ -469,6 +472,7 @@ function initSportsModal() {
       lastFocus = document.activeElement;
       document.body.classList.add('orbit-open');
       modal.hidden = false;
+      ambientGameApi?.pause?.();
       window.setTimeout(() => {
         document.getElementById('sp-start')?.focus();
         current?.start();
@@ -480,6 +484,7 @@ function initSportsModal() {
       if (!orbitModal || orbitModal.hidden) {
         document.body.classList.remove('orbit-open');
       }
+      ambientGameApi?.resume?.();
       lastFocus?.focus?.();
     }
   }
@@ -545,7 +550,7 @@ function initHeroGamesPanel() {
   });
 }
 
-function initGamesLauncher(orbitApi, sportsApi) {
+function initGamesLauncher(orbitApi, sportsApi, ambientGameApi) {
   const fab = document.getElementById('games-fab');
   const menu = document.getElementById('games-menu');
   const launcher = document.getElementById('games-launcher');
@@ -573,6 +578,14 @@ function initGamesLauncher(orbitApi, sportsApi) {
 
   document.querySelectorAll('[data-open-game]').forEach((btn) => {
     btn.addEventListener('click', () => launch(btn.getAttribute('data-open-game')));
+  });
+
+  document.querySelectorAll('[data-ambient-open]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      setMenu(false);
+      document.getElementById('hero-play-panel')?.setAttribute('hidden', '');
+      ambientGameApi?.expand?.();
+    });
   });
 
   document.addEventListener('click', (e) => {
@@ -617,17 +630,20 @@ function wireVolumeControls(ambient) {
     await ensureStarted();
     ambient.volumeDown();
     syncSoundButton(btn, ambient);
+    wireVolumeControls._onChange?.();
   });
   up?.addEventListener('click', async () => {
     await ensureStarted();
     ambient.volumeUp();
     syncSoundButton(btn, ambient);
+    wireVolumeControls._onChange?.();
   });
   btn?.addEventListener('click', async () => {
     await ensureStarted();
     if (ambient.isMuted()) ambient.volumeUp();
     else ambient.setVolume(0);
     syncSoundButton(btn, ambient);
+    wireVolumeControls._onChange?.();
   });
 }
 
@@ -733,7 +749,15 @@ initContactCards();
 initNav();
 initReveal();
 const cosmo = initSpaceObjects(document.getElementById('cosmo-layer'));
-initAmbientAndGate(cosmo);
+const ambient = initAmbientAndGate(cosmo);
+
+const ambientGameApi = initAmbientGame({
+  ambient,
+  onMuteChange: () => {
+    syncSoundButton(document.getElementById('sound-toggle'), ambient);
+  },
+});
+wireVolumeControls._onChange = () => ambientGameApi?.syncMute?.();
 
 const starCanvas = document.getElementById('starfield');
 if (starCanvas) initStarfield(starCanvas);
@@ -748,9 +772,9 @@ const sectionGame = sectionCanvas
       'od-pause'
     )
   : null;
-const orbitApi = initOrbitModal(sectionGame);
-const sportsApi = initSportsModal();
-initGamesLauncher(orbitApi, sportsApi);
+const orbitApi = initOrbitModal(sectionGame, ambientGameApi);
+const sportsApi = initSportsModal(ambientGameApi);
+initGamesLauncher(orbitApi, sportsApi, ambientGameApi);
 
 const constCanvas = document.getElementById('constellation');
 const factPanel = document.getElementById('fact-panel');

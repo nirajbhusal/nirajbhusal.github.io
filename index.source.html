@@ -99,6 +99,35 @@
     <a href="#contact">Contact</a>
   </nav>
 
+  <aside id="ambient-game" class="ambient-game is-reduced-check" data-state="collapsed" data-mode="fixed" data-game="basketball" aria-label="Ambient mini-game">
+    <button type="button" id="ambient-game-chip" class="ambient-game-chip" aria-expanded="false" aria-controls="ambient-game-panel" title="Optional ambient basketball — does not block reading">
+      <span class="ambient-game-chip-icon" aria-hidden="true">◉</span>
+      <span id="ambient-game-chip-label" class="ambient-game-chip-label">Play basketball</span>
+      <span id="ambient-chip-score" class="ambient-game-chip-score" hidden>0</span>
+    </button>
+    <div id="ambient-game-panel" class="ambient-game-panel" hidden>
+      <div class="ambient-game-chrome">
+        <div class="ambient-game-top">
+          <span id="ambient-game-title" class="ambient-game-title">Basketball</span>
+          <div class="ambient-game-actions" role="group" aria-label="Ambient game controls">
+            <button type="button" id="ambient-mode-toggle" class="ambient-game-btn" aria-pressed="false" title="Fixed basketball or shuffle quiet games">Fixed</button>
+            <button type="button" id="ambient-mute" class="ambient-game-btn" aria-pressed="false" title="Mute site ambient sound">Mute</button>
+            <button type="button" id="ambient-hide" class="ambient-game-btn ambient-game-btn-hide" aria-label="Hide ambient game">Hide</button>
+          </div>
+        </div>
+        <div class="ambient-game-hud" aria-live="polite">
+          <span><span class="ambient-hud-k ambient-hud-score-k">Score</span> <strong id="ag-score">0</strong></span>
+          <span><span class="ambient-hud-k">Shots</span> <strong id="ag-shots">0</strong></span>
+          <span><span class="ambient-hud-k ambient-hud-makes-k">Makes</span> <strong id="ag-makes">0</strong></span>
+          <span><span class="ambient-hud-k">Streak</span> <strong id="ag-streak">0</strong></span>
+          <span id="ag-extra" class="ambient-hud-extra" hidden></span>
+        </div>
+        <canvas id="ambient-game-canvas" width="300" height="186" tabindex="0" role="img" aria-label="Ambient basketball court — drag to aim and shoot"></canvas>
+        <p class="ambient-game-hint meta" id="ambient-game-hint">Drag to aim &amp; charge · release to shoot · Esc hides</p>
+      </div>
+    </div>
+  </aside>
+
   <div class="games-launcher" id="games-launcher">
     <button type="button" id="games-fab" class="orbit-fab games-fab" aria-haspopup="true" aria-controls="games-menu" aria-expanded="false" title="Optional mini-games">
       <span class="orbit-fab-icon" aria-hidden="true">◎</span>
@@ -109,6 +138,7 @@
       <button type="button" class="games-menu-item" role="menuitem" data-game="basketball">Basketball</button>
       <button type="button" class="games-menu-item" role="menuitem" data-game="cricket">Cricket</button>
       <button type="button" class="games-menu-item" role="menuitem" data-game="football">Football</button>
+      <button type="button" class="games-menu-item" role="menuitem" id="ambient-expand" data-ambient-open>Ambient court</button>
     </div>
   </div>
 
@@ -215,7 +245,7 @@
           <button type="button" class="hero-play-chip" data-open-game="cricket">Cricket</button>
           <button type="button" class="hero-play-chip" data-open-game="football">Football</button>
         </div>
-        <p class="hero-play-more meta"><a href="#play">Browse all in Games</a> · or use the floating Games control</p>
+        <p class="hero-play-more meta"><a href="#play">Browse all in Games</a> · floating Games · or the corner <button type="button" class="text-link-btn" data-ambient-open>ambient court</button></p>
       </div>
     </section>
 
@@ -741,7 +771,7 @@
 
     <section id="play" class="section reveal">
       <h2>Games</h2>
-      <p class="section-lede play-lede">Optional mini-games — play from home, here, or the floating Games control. Keyboard &amp; touch · Esc closes · reading stays clear when closed.</p>
+      <p class="section-lede play-lede">Optional mini-games — play from home, the corner ambient court, here, or the floating Games control. Keyboard &amp; touch · Esc hides · reading stays clear when closed.</p>
       <div class="play-grid games-category-grid">
         <article class="card game-launch-card">
           <div class="game-launch-icon" aria-hidden="true">◎</div>
@@ -754,9 +784,10 @@
         <article class="card game-launch-card">
           <div class="game-launch-icon" aria-hidden="true">◉</div>
           <h3>Basketball</h3>
-          <p class="meta">Aim · charge · shoot · quiet overlay</p>
+          <p class="meta">Aim · charge · shoot · also available as ambient corner court</p>
           <div class="game-controls">
-            <button type="button" class="btn btn-primary" data-open-game="basketball">Play</button>
+            <button type="button" class="btn btn-primary" data-open-game="basketball">Play overlay</button>
+            <button type="button" class="btn btn-ghost" data-ambient-open>Ambient</button>
           </div>
         </article>
         <article class="card game-launch-card">
