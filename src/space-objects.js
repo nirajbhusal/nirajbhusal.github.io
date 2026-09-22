@@ -1,7 +1,5 @@
 /**
  * Floating interactive cosmic objects — continuous drift, tap facts, drag + inertia.
- * Some objects are playable sports affordances (basketball ball/hoop, etc.) that
- * open the ambient court or score a space-throw into a drifting hoop.
  * Mobile/iOS: document-level pointers, tap-vs-drag threshold, layer above content/canvas
  * but below menus; stays interactive after Enter gate; menu open disables hits.
  */
@@ -17,25 +15,30 @@ const OBJECTS = [
     depth: 0.35,
   },
   {
-    kind: 'basketball',
-    play: 'basketball',
-    playRole: 'ball',
-    label: 'Orbit ball',
-    fact: 'Drag me toward the rim — or tap to open the ambient court.',
-    x: 78,
-    y: 28,
-    size: 42,
-    depth: 0.75,
+    kind: 'moon',
+    label: 'Crescent',
+    fact: 'Quiet light is enough — official channels stay the source of truth.',
+    x: 72,
+    y: 16,
+    size: 34,
+    depth: 0.62,
   },
   {
-    kind: 'hoop',
-    play: 'basketball',
-    playRole: 'hoop',
-    label: 'Cosmic rim',
-    fact: 'Fling the orange orbit ball this way for a quiet background swish.',
+    kind: 'nebula',
+    label: 'Veil',
+    fact: 'A nebula is mostly empty space with a little light — clarity over noise.',
+    x: 62,
+    y: 38,
+    size: 72,
+    depth: 0.22,
+  },
+  {
+    kind: 'satellite',
+    label: 'Relay-7',
+    fact: 'A good civic tool relays citizens toward official channels — never replaces them.',
     x: 88,
     y: 18,
-    size: 48,
+    size: 30,
     depth: 0.7,
   },
   {
@@ -57,33 +60,27 @@ const OBJECTS = [
     depth: 0.45,
   },
   {
-    kind: 'cricket',
-    play: 'cricket',
-    playRole: 'launch',
-    label: 'Pitch moon',
-    fact: 'Tap to open quiet cricket in the ambient court.',
+    kind: 'planet',
+    label: 'Ice giant',
+    fact: 'DPI is the quiet gravity underneath services people barely notice — until it fails.',
     x: 4,
     y: 42,
-    size: 34,
+    size: 36,
     depth: 0.55,
   },
   {
-    kind: 'football',
-    play: 'football',
-    playRole: 'launch',
-    label: 'Goal node',
-    fact: 'Tap to open quiet football in the ambient court.',
+    kind: 'satellite',
+    label: 'CubeSat',
+    fact: 'Small personal civic experiments can still cast a useful signal in a flood of noise.',
     x: 85,
     y: 78,
-    size: 32,
+    size: 26,
     depth: 0.85,
   },
 ];
 
 const TAP_PX = 12;
 const DRAG_PX = 10;
-/** Ball must land within this % of hoop center for a space-throw make */
-const HOOP_HIT_PCT = 7.5;
 
 function pointersBlocked() {
   const b = document.body;
@@ -95,15 +92,8 @@ function pointersBlocked() {
   );
 }
 
-/**
- * @param {HTMLElement} root
- * @param {{ onPlayTap?: Function, onSpaceThrow?: Function }} [hooks]
- */
-export function initSpaceObjects(root, hooks = {}) {
-  if (!root) return { refresh: () => {}, destroy: () => {}, setHooks: () => {} };
-
-  let onPlayTap = hooks.onPlayTap || null;
-  let onSpaceThrow = hooks.onSpaceThrow || null;
+export function initSpaceObjects(root) {
+  if (!root) return { refresh: () => {}, destroy: () => {} };
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const coarse = window.matchMedia('(pointer: coarse)').matches;
@@ -166,7 +156,7 @@ export function initSpaceObjects(root, hooks = {}) {
     for (const body of bodies) {
       body.el.disabled = block;
       body.el.setAttribute('aria-hidden', block ? 'true' : 'false');
-      if (block) body.el.classList.remove('is-dragging', 'is-glow', 'is-swish');
+      if (block) body.el.classList.remove('is-dragging', 'is-glow');
     }
     if (block) {
       tip.hidden = true;
@@ -175,66 +165,18 @@ export function initSpaceObjects(root, hooks = {}) {
     }
   }
 
-  function findHoop() {
-    return bodies.find((b) => b.spec.playRole === 'hoop') || null;
-  }
-
-  function trySpaceThrow(ballBody) {
-    if (!ballBody || ballBody.spec.playRole !== 'ball') return false;
-    const hoop = findHoop();
-    if (!hoop) return false;
-    const dist = Math.hypot(ballBody.x - hoop.x, ballBody.y - hoop.y);
-    const made = dist <= HOOP_HIT_PCT;
-    hoop.el.classList.add(made ? 'is-swish' : 'is-miss-flash');
-    ballBody.el.classList.add(made ? 'is-swish' : 'is-miss-flash');
-    window.setTimeout(() => {
-      hoop.el.classList.remove('is-swish', 'is-miss-flash');
-      ballBody.el.classList.remove('is-swish', 'is-miss-flash');
-    }, made ? 900 : 500);
-    showTip(
-      made ? 'Swish — background make!' : 'Near miss — fling the ball into the rim',
-      made ? hoop.el : ballBody.el
-    );
-    onSpaceThrow?.({
-      made,
-      game: ballBody.spec.play || 'basketball',
-      ballEl: ballBody.el,
-      hoopEl: hoop.el,
-      dist,
-    });
-    return made;
-  }
-
   OBJECTS.forEach((spec, i) => {
     const el = document.createElement('button');
     el.type = 'button';
-    const playClass = spec.play
-      ? ` cosmo-play cosmo-play-${spec.playRole || 'launch'} cosmo-${spec.kind}`
-      : ` cosmo-${spec.kind}`;
-    el.className = `cosmo-obj${playClass} cosmo-depth-${Math.round(spec.depth * 10)} is-physics${reduced ? ' is-static' : ''}`;
+    el.className = `cosmo-obj cosmo-${spec.kind} cosmo-depth-${Math.round(spec.depth * 10)} is-physics${reduced ? ' is-static' : ''}`;
     el.style.setProperty('--x', `${spec.x}%`);
     el.style.setProperty('--y', `${spec.y}%`);
     el.style.setProperty('--size', `${spec.size}px`);
     el.style.setProperty('--delay', `${i * 0.7}s`);
     el.style.setProperty('--depth', String(spec.depth));
-    if (spec.play) {
-      el.dataset.play = spec.play;
-      el.dataset.playRole = spec.playRole || 'launch';
-      const verb =
-        spec.playRole === 'ball'
-          ? 'Playable basketball — drag toward the rim to shoot, or tap for ambient court'
-          : spec.playRole === 'hoop'
-            ? 'Basketball rim — fling the orbit ball here, or tap for ambient court'
-            : `Play ${spec.play} — tap for ambient court`;
-      el.setAttribute('aria-label', `${spec.label}: ${verb}`);
-    } else {
-      el.setAttribute('aria-label', `${spec.label}: ${spec.fact}`);
-    }
+    el.setAttribute('aria-label', `${spec.label}: ${spec.fact}`);
     el.innerHTML =
-      '<span class="cosmo-glow" aria-hidden="true"></span><span class="cosmo-core" aria-hidden="true"></span>' +
-      (spec.play
-        ? '<span class="cosmo-play-badge" aria-hidden="true">play</span>'
-        : '');
+      '<span class="cosmo-glow" aria-hidden="true"></span><span class="cosmo-core" aria-hidden="true"></span>';
 
     const body = {
       el,
@@ -264,6 +206,7 @@ export function initSpaceObjects(root, hooks = {}) {
     el.addEventListener('pointerdown', (e) => {
       if (pointersBlocked()) return;
       if (e.button !== undefined && e.button !== 0) return;
+      // Only one active drag/tap at a time
       if (dragging && dragging !== body) return;
 
       dragging = body;
@@ -283,6 +226,8 @@ export function initSpaceObjects(root, hooks = {}) {
       el.classList.remove('is-spin');
       tip.hidden = true;
 
+      // Capture immediately on touch so iOS delivers move/up reliably.
+      // Tap vs drag is decided by movement threshold, not by capture timing.
       if (coarse || e.pointerType === 'touch') {
         try {
           el.setPointerCapture(e.pointerId);
@@ -294,6 +239,7 @@ export function initSpaceObjects(root, hooks = {}) {
     });
 
     el.addEventListener('click', (e) => {
+      // Synthetic click after drag — suppress navigation quirks
       if (body.moved) {
         e.preventDefault();
         e.stopPropagation();
@@ -331,6 +277,7 @@ export function initSpaceObjects(root, hooks = {}) {
 
     if (!body.moved) return;
 
+    // Once dragging, prevent scroll / page gesture
     if (e.cancelable) e.preventDefault();
 
     const xPct = (e.clientX / window.innerWidth) * 100;
@@ -350,6 +297,7 @@ export function initSpaceObjects(root, hooks = {}) {
     body.vy = body.vy * 0.55 + (body.y - prevY) * 0.45;
     body.ox = 0;
     body.oy = 0;
+    // Wander home toward release point so they don't snap back hard
     body.baseX = body.x;
     body.baseY = body.y;
   }
@@ -391,28 +339,12 @@ export function initSpaceObjects(root, hooks = {}) {
     const isTap = !wasMoved && dist < TAP_PX;
     if (isTap) {
       el.classList.add('is-spin');
-      window.setTimeout(() => el.classList.remove('is-spin'), 900);
-
-      if (body.spec.play && onPlayTap) {
-        showTip(body.spec.fact, el);
-        onPlayTap({
-          game: body.spec.play,
-          role: body.spec.playRole || 'launch',
-          el,
-          label: body.spec.label,
-        });
-        return;
-      }
-
       showTip(body.spec.fact, el);
+      window.setTimeout(() => el.classList.remove('is-spin'), 900);
       return;
     }
 
-    // Fling: if this is the basketball, test hoop proximity at release
-    if (body.spec.playRole === 'ball') {
-      trySpaceThrow(body);
-    }
-
+    // Resume drift with inertia from fling
     const boost = reduced ? 1.15 : 1.85;
     const maxV = reduced ? 1.2 : 3.2;
     body.vx *= boost;
@@ -429,6 +361,7 @@ export function initSpaceObjects(root, hooks = {}) {
     endDrag(e, true);
   }
 
+  // Document-level listeners: reliable on iOS Safari after Enter + during drag
   document.addEventListener('pointermove', onPointerMove, { passive: false });
   document.addEventListener('pointerup', onPointerUp, { passive: true });
   document.addEventListener('pointercancel', onPointerCancel, { passive: true });
@@ -446,6 +379,7 @@ export function initSpaceObjects(root, hooks = {}) {
     'pointermove',
     (e) => {
       if (e.pointerType === 'touch' && !dragging) {
+        // Don't treat finger resting as magnetic hover target after lift
         return;
       }
       pointer.x = e.clientX;
@@ -463,6 +397,7 @@ export function initSpaceObjects(root, hooks = {}) {
     { passive: true }
   );
 
+  // Hover facts only when fine pointer available
   for (const body of bodies) {
     body.el.addEventListener('pointerenter', () => {
       if (pointersBlocked() || dragging) return;
@@ -489,10 +424,12 @@ export function initSpaceObjects(root, hooks = {}) {
     const t = now / 1000;
     const magStrength = coarse ? 0 : 26;
     const magRadius = 160;
+    // Continuous gentle drift — never freezes when “idle” or after touch ends
     const driftAmp = reduced ? 0.035 : 0.11;
     const damp = reduced ? 0.985 : 0.962;
     const homeK = reduced ? 0.06 : 0.16;
 
+    // Soft collisions
     for (let i = 0; i < bodies.length; i++) {
       for (let j = i + 1; j < bodies.length; j++) {
         const a = bodies[i];
@@ -522,11 +459,13 @@ export function initSpaceObjects(root, hooks = {}) {
 
     for (const body of bodies) {
       if (dragging === body) {
+        // Keep CSS vars fresh while held
         body.el.style.setProperty('--mx', '0px');
         body.el.style.setProperty('--my', '0px');
         continue;
       }
 
+      // Ambient wander (sine) so motion never dies when idle
       const driftX =
         Math.sin(t * (0.22 + body.depth * 0.08) + body.phase) * driftAmp;
       const driftY =
@@ -536,6 +475,7 @@ export function initSpaceObjects(root, hooks = {}) {
       body.vx += driftX * dt * 60 * 0.02;
       body.vy += driftY * dt * 60 * 0.02;
 
+      // Soft leash toward a slowly drifting home
       const homeX =
         body.baseX +
         Math.sin(t * 0.07 + body.phase) * (reduced ? 1.2 : 3.5) * body.depth;
@@ -547,6 +487,7 @@ export function initSpaceObjects(root, hooks = {}) {
       body.vx += (homeX - body.x) * homeK * dt;
       body.vy += (homeY - body.y) * homeK * dt;
 
+      // Magnetic nudge (desktop mouse only)
       if (pointer.active && magStrength > 0) {
         const cx = (body.x / 100) * w;
         const cy = (body.y / 100) * h;
@@ -600,9 +541,12 @@ export function initSpaceObjects(root, hooks = {}) {
     }
   });
 
+  // After Enter gate closes, force a hit-test refresh (iOS Safari)
   function refresh() {
     syncHitState();
+    // Nudge compositing so objects receive taps after overlay removal
     root.style.display = 'none';
+    // force reflow
     void root.offsetHeight;
     root.style.display = '';
     startLoop();
@@ -618,10 +562,5 @@ export function initSpaceObjects(root, hooks = {}) {
     tip.remove();
   }
 
-  function setHooks(next = {}) {
-    if (next.onPlayTap !== undefined) onPlayTap = next.onPlayTap;
-    if (next.onSpaceThrow !== undefined) onSpaceThrow = next.onSpaceThrow;
-  }
-
-  return { refresh, destroy, syncHitState, setHooks };
+  return { refresh, destroy, syncHitState };
 }
