@@ -604,6 +604,51 @@ h3 {
   margin-top: 0.25rem;
 }
 
+.portal-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.55rem;
+  margin: 0;
+  color: var(--fg);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.featured-mof-copy > p.portal-links,
+.featured-civic > .portal-links {
+  color: var(--fg);
+  margin: 0;
+}
+
+.portal-links-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.portal-links-label::after {
+  content: ":";
+}
+
+.portal-links a {
+  color: var(--accent-bright);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.portal-links a:hover,
+.portal-links a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.portal-links-sep {
+  color: var(--muted);
+}
+
 .badge-official {
   color: var(--accent-bright);
   background: var(--accent-soft);
