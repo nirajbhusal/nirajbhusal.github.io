@@ -17,6 +17,10 @@
   --radius: 14px;
   --max: 1080px;
   --header-h: 3.6rem;
+  /* Editorial notebook accents — faint on the starfield, readable as captions. */
+  --mark: rgba(232, 233, 237, 0.28);
+  --sheet: rgba(176, 181, 192, 0.72);
+  --mark-x: 0.62rem;
 }
 
 [data-theme="light"] {
@@ -32,6 +36,8 @@
   --border: rgba(18, 20, 26, 0.12);
   --card: rgba(18, 20, 26, 0.035);
   --shadow: 0 16px 40px rgba(18, 20, 26, 0.08);
+  --mark: rgba(18, 20, 26, 0.22);
+  --sheet: rgba(70, 74, 86, 0.72);
 }
 
 *,
@@ -79,6 +85,7 @@ body {
   line-height: 1.65;
   letter-spacing: 0.01em;
   transition: background-color 1.2s ease, color 1.2s ease;
+  position: relative;
 }
 
 body.nav-open,
@@ -359,9 +366,11 @@ main,
 }
 
 .section {
+  --section-pad-top: 5.75rem;
+  position: relative;
   max-width: var(--max);
   margin: 0 auto;
-  padding: 5.75rem 1.25rem 1rem;
+  padding: var(--section-pad-top) 1.25rem 1rem;
 }
 
 .reveal {
@@ -376,7 +385,7 @@ main,
 }
 
 .hero {
-  padding-top: 7.25rem;
+  --section-pad-top: 7.25rem;
   padding-bottom: 4.25rem;
 }
 
@@ -1308,11 +1317,11 @@ h3 {
   }
 
   .section {
-    padding-top: 4rem;
+    --section-pad-top: 4rem;
   }
 
   .hero {
-    padding-top: 5rem;
+    --section-pad-top: 5rem;
   }
 
   /* Above page content for taps; still under header/nav/overlay */
@@ -2325,5 +2334,95 @@ body.orbit-open .games-menu {
   .games-category-grid .constellation-card {
     grid-column: 1 / -1;
   }
+}
+
+/* —— Editorial notebook accents (sheet labels, name contrast, construction marks) —— */
+body::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: var(--header-h);
+  bottom: 0;
+  left: max(var(--mark-x), calc((100% - var(--max)) / 2 + var(--mark-x)));
+  width: 1px;
+  background: var(--mark);
+  pointer-events: none;
+}
+
+.section::before,
+.section::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--section-pad-top) + 0.22rem);
+  width: 9px;
+  height: 9px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--mark), var(--mark)) center / 9px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) center / 1px 9px no-repeat;
+}
+
+.section::before {
+  left: calc(var(--mark-x) - 4.5px);
+}
+
+.section::after {
+  right: calc(var(--mark-x) - 4.5px);
+}
+
+.sheet-label {
+  margin: 0 0 0.42rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  line-height: 1.45;
+  color: var(--sheet);
+}
+
+h1.hero-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.28em;
+  row-gap: 0.02em;
+  font-weight: 300;
+}
+
+.hero-given {
+  font-weight: 700;
+  letter-spacing: -0.045em;
+}
+
+.hero-family {
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: color-mix(in srgb, var(--fg) 46%, transparent);
+}
+
+.hero .tagline {
+  margin-top: 0.15rem;
+  font-size: 0.92rem;
+  font-weight: 300;
+  letter-spacing: 0.055em;
+  color: color-mix(in srgb, var(--muted) 82%, transparent);
+}
+
+.utility-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.7rem;
+  margin: 0 0 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+  color: var(--sheet);
+}
+
+.utility-meta time {
+  font-variant-numeric: tabular-nums;
 }
 

@@ -80,7 +80,8 @@ function initHeroChrono() {
   const dayFills = [...document.querySelectorAll('[data-chrono="day-fill"]')];
   const dayPcts = [...document.querySelectorAll('[data-chrono="day-pct"]')];
   const dayLabels = [...document.querySelectorAll('[data-chrono="day-label"]')];
-  if (!timeEls.length && !yearBars.length) return;
+  const kathmanduEls = [...document.querySelectorAll('[data-chrono="kathmandu"]')];
+  if (!timeEls.length && !yearBars.length && !kathmanduEls.length) return;
 
   const timeFmt = new Intl.DateTimeFormat(undefined, {
     weekday: 'short',
@@ -90,6 +91,13 @@ function initHeroChrono() {
     minute: '2-digit',
     second: '2-digit',
   });
+  const kathmanduFmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kathmandu',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  });
 
   function tick() {
     const now = new Date();
@@ -98,6 +106,11 @@ function initHeroChrono() {
     for (const el of timeEls) {
       el.dateTime = iso;
       el.textContent = stamp;
+    }
+    const ktm = `Kathmandu · ${kathmanduFmt.format(now)} NPT`;
+    for (const el of kathmanduEls) {
+      el.dateTime = iso;
+      el.textContent = ktm;
     }
 
     const diy = daysInYear(now.getFullYear());
