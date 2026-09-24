@@ -12,7 +12,7 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <script type="module" crossorigin src="/assets/index-1-DFVMFP.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-sGrLLEnh.css">
 </head>
@@ -132,7 +132,7 @@
   <main>
     <section id="hero" class="section hero reveal">
       <p class="eyebrow">Kathmandu · Nepal</p>
-      <h1>Niraj Bhusal</h1>
+      <h1 class="hero-name"><span class="hero-given">Niraj</span><span class="hero-family">Bhusal</span></h1>
       <p class="tagline">GovTech &amp; AI Governance · Digital Transformation</p>
       <p class="hero-posting">Office of the Hon. Finance Minister · Ministry of Finance, Nepal</p>
       <p class="lede">Building clearer public systems — and the occasional personal civic tool when the moment demands it.</p>
@@ -172,6 +172,7 @@
     </section>
 
     <section id="about" class="section reveal">
+      <p class="sheet-label">◇ SHEET 01 · ABOUT</p>
       <h2>About</h2>
       <div class="about-grid">
         <div class="about-copy">
@@ -192,6 +193,7 @@
     </section>
 
     <section id="built" class="section reveal">
+      <p class="sheet-label">◇ SHEET 02 · BUILT</p>
       <h2>What I’ve Built</h2>
       <article class="card featured featured-mof" aria-labelledby="mof-portal-title">
         <div class="featured-mof-layout">
@@ -289,6 +291,7 @@
     </section>
 
     <section id="experience" class="section reveal">
+      <p class="sheet-label">◇ SHEET 03 · EXPERIENCE</p>
       <h2>Experience</h2>
       <div class="card experience-intro">
         <h3>Civil Servant, Government of Nepal</h3>
@@ -348,6 +351,7 @@
     </section>
 
     <section id="education" class="section reveal">
+      <p class="sheet-label">◇ SHEET 04 · EDUCATION</p>
       <h2>Education</h2>
       <article class="card featured education-card">
         <span class="badge">Master’s</span>
@@ -367,6 +371,7 @@
     </section>
 
     <section id="trainings" class="section reveal">
+      <p class="sheet-label">◇ SHEET 05 · TRAININGS</p>
       <h2>Trainings</h2>
       <div class="chip-grid" role="list">
         <span class="chip" role="listitem"><span class="chip-name">Oxford AI &amp; Digital Transformation for Government</span><span class="chip-when">Dec 2025</span></span>
@@ -387,6 +392,7 @@
     </section>
 
     <section id="speaking" class="section reveal">
+      <p class="sheet-label">◇ SHEET 06 · SPEAKING</p>
       <h2>Speaking</h2>
       <div class="event-grid">
         <article class="card event-card">
@@ -482,6 +488,7 @@
     </section>
 
     <section id="presentations" class="section reveal">
+      <p class="sheet-label">◇ SHEET 07 · PRESENTATIONS</p>
       <h2>Presentations</h2>
       <div class="event-grid">
         <article class="card event-card">
@@ -506,6 +513,7 @@
     </section>
 
     <section id="community" class="section reveal">
+      <p class="sheet-label">◇ SHEET 08 · COMMUNITY</p>
       <h2>Community</h2>
       <div class="card-grid">
         <article class="card">
@@ -532,6 +540,7 @@
     </section>
 
     <section id="media" class="section reveal">
+      <p class="sheet-label">◇ SHEET 09 · MEDIA</p>
       <h2>Awards &amp; Media</h2>
 
       <div class="media-group">
@@ -729,6 +738,7 @@
     </section>
 
     <section id="play" class="section reveal">
+      <p class="sheet-label">◇ SHEET 10 · GAMES</p>
       <h2>Games</h2>
       <p class="section-lede play-lede">One quiet game. The sky stays space — planets, a moon, a nebula. Play opens the same basketball popup. Esc closes.</p>
       <div class="play-grid games-category-grid">
@@ -750,6 +760,7 @@
     </section>
 
     <section id="contact" class="section reveal">
+      <p class="sheet-label">◇ SHEET 11 · CONTACT</p>
       <h2>Contact</h2>
       <div class="contact-grid" role="list">
         <a class="contact-card" role="listitem" href="mailto:niraj.bhusal@icloud.com" id="contact-email-card" aria-label="Contact by email" data-email-card>
@@ -804,8 +815,40 @@
   </main>
 
   <footer class="site-footer">
+    <p class="utility-meta">
+      <time id="kathmandu-clock" data-chrono="kathmandu" datetime="" aria-label="Kathmandu local time">Kathmandu · --:--:-- NPT</time>
+      <span class="utility-sep" aria-hidden="true">·</span>
+      <span>Updated September 2026</span>
+    </p>
     <p>© <span id="year"></span> Niraj Bhusal · Personal site · Ministry of Finance (MoF) portal is official; personal Rasuwa Flood Update Portal is a civic project, not a government website.</p>
   </footer>
+
+  <script>
+    (function () {
+      if (document.querySelector('script[type="module"][src="/src/main.js"]')) return;
+      var nodes = document.querySelectorAll('[data-chrono="kathmandu"]');
+      if (!nodes.length) return;
+      var fmt = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Kathmandu",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23"
+      });
+      var slow = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function tick() {
+        var now = new Date();
+        var iso = now.toISOString();
+        var text = "Kathmandu · " + fmt.format(now) + " NPT";
+        for (var i = 0; i < nodes.length; i++) {
+          nodes[i].dateTime = iso;
+          nodes[i].textContent = text;
+        }
+      }
+      tick();
+      window.setInterval(tick, slow ? 30000 : 1000);
+    })();
+  </script>
 
 </body>
 </html>
