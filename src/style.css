@@ -59,9 +59,9 @@ html {
   .nebula,
   .reveal,
   .orbit-fab,
-  .cosmo-obj,
   .enter-gate-canvas,
-  .enter-gate-veil {
+  .enter-gate-veil,
+  .enter-gate-inner {
     animation: none !important;
     transition: none !important;
   }
@@ -69,9 +69,9 @@ html {
     opacity: 1 !important;
     transform: none !important;
   }
-  /* Keep objects tappable; JS may still apply a very slow drift via left/top */
-  .cosmo-obj {
-    cursor: pointer;
+  .enter-gate-inner {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 
@@ -975,8 +975,6 @@ h3 {
   font-size: 0.85rem;
 }
 
-#orbit-dodge,
-#orbit-dodge-modal,
 #constellation {
   width: 100%;
   height: auto;
@@ -988,8 +986,6 @@ h3 {
   touch-action: none;
 }
 
-[data-theme="light"] #orbit-dodge,
-[data-theme="light"] #orbit-dodge-modal,
 [data-theme="light"] #constellation {
   background: rgba(18, 20, 26, 0.05);
 }
@@ -1002,34 +998,6 @@ h3 {
   font-size: 0.8rem;
   color: var(--muted);
   margin-bottom: 0.75rem;
-}
-
-.touch-pad {
-  display: none;
-  margin-top: 0.85rem;
-  justify-items: center;
-  gap: 0.4rem;
-}
-
-.touch-pad .touch-mid {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.touch-pad button {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
-  color: var(--fg);
-  font-size: 1rem;
-}
-
-@media (pointer: coarse) {
-  .touch-pad {
-    display: grid;
-  }
 }
 
 .fact-panel {
@@ -1323,22 +1291,6 @@ h3 {
   .hero {
     --section-pad-top: 5rem;
   }
-
-  /* Above page content for taps; still under header/nav/overlay */
-  .cosmo-layer {
-    z-index: 2;
-  }
-
-  body.nav-open .cosmo-layer,
-  body.nav-open .cosmo-obj,
-  body.orbit-open .cosmo-layer,
-  body.orbit-open .cosmo-obj,
-  body.gate-locked .cosmo-layer,
-  body.gate-locked .cosmo-obj,
-  body.is-entering .cosmo-layer,
-  body.is-entering .cosmo-obj {
-    pointer-events: none !important;
-  }
 }
 
 
@@ -1517,8 +1469,16 @@ h3 {
   }
 }
 
-/* —— Enter / universe gate —— */
+/* —— Enter gate —— */
 .enter-gate {
+  --fg: #e8e9ed;
+  --muted: #9aa0ad;
+  --accent: #3b9eff;
+  --accent-bright: #6ec0ff;
+  --accent-soft: rgba(59, 158, 255, 0.16);
+  --border: rgba(232, 233, 237, 0.16);
+  --sheet: rgba(176, 181, 192, 0.82);
+  --mark: rgba(232, 233, 237, 0.55);
   position: fixed;
   inset: 0;
   z-index: 500;
@@ -1555,137 +1515,131 @@ h3 {
   z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(40, 70, 140, 0.12), transparent 62%),
-    radial-gradient(ellipse 45% 40% at 78% 28%, rgba(90, 50, 130, 0.1), transparent 55%),
-    radial-gradient(ellipse 50% 45% at 18% 70%, rgba(25, 55, 110, 0.1), transparent 58%),
-    radial-gradient(ellipse 90% 80% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
-  opacity: 0.85;
-  animation: gate-veil-breathe 11s ease-in-out infinite alternate;
-}
-@keyframes gate-veil-breathe {
-  from { opacity: 0.65; }
-  to { opacity: 0.95; }
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(40, 80, 150, 0.16), transparent 64%),
+    radial-gradient(ellipse 90% 80% at 50% 50%, transparent 42%, rgba(0, 0, 0, 0.62) 100%);
 }
 .enter-gate-inner {
   position: relative;
   z-index: 2;
-  text-align: center;
-  padding: 2.5rem 1.25rem;
-  max-width: min(30rem, 96vw);
-  width: 100%;
+  width: min(42rem, calc(100vw - 2.25rem));
+  max-height: calc(100dvh - 1.5rem);
+  overflow: auto;
+  padding:
+    max(0.75rem, env(safe-area-inset-top))
+    max(0.25rem, env(safe-area-inset-right))
+    max(0.75rem, env(safe-area-inset-bottom))
+    max(0.25rem, env(safe-area-inset-left));
   box-sizing: border-box;
   opacity: 0;
-  transform: translateY(10px);
-  animation: gate-settle 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
-  transition: opacity 0.55s ease, transform 0.55s ease, filter 0.55s ease;
+  transform: translateY(8px);
+  animation: gate-settle 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.12s forwards;
+  transition: opacity 0.45s ease, transform 0.45s ease, filter 0.45s ease;
 }
 .enter-gate.is-crossing .enter-gate-inner {
   opacity: 0 !important;
-  transform: scale(1.08) translateY(-6px);
-  filter: blur(2px);
+  transform: translateY(-4px);
+  filter: none;
   pointer-events: none;
   animation: none;
-}
-.enter-gate.is-crossing .enter-gate-veil {
-  animation: none;
-  opacity: 0.35;
-  transition: opacity 0.8s ease;
 }
 @keyframes gate-settle {
   to { opacity: 1; transform: none; }
 }
-.enter-gate-inner h1 {
-  font-size: clamp(1.65rem, 4.5vw, 2.35rem);
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  margin: 0 0 0.85rem;
-}
-.enter-gate-copy {
-  color: color-mix(in srgb, var(--muted) 88%, transparent);
-  margin: 0 0 1.35rem;
-  font-size: 0.88rem;
-  letter-spacing: 0.04em;
-  font-family: var(--mono);
-}
-.enter-gate-card {
-  margin: 0 auto 1.65rem;
-  max-width: 22rem;
-  padding: 0.95rem 1.15rem 1.05rem;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.12));
-  background:
-    radial-gradient(ellipse 80% 70% at 12% 0%, rgba(59, 158, 255, 0.14), transparent 55%),
-    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(110, 192, 255, 0.08), transparent 50%),
-    color-mix(in srgb, rgba(6, 10, 22, 0.72) 88%, transparent);
-  box-shadow:
-    0 0 40px rgba(59, 158, 255, 0.08),
-    0 8px 32px rgba(0, 0, 0, 0.35);
+.enter-gate-sheet {
+  position: relative;
+  text-align: left;
+  padding: clamp(1.6rem, 4vw, 2.5rem) clamp(1.25rem, 4vw, 2.35rem) clamp(1.4rem, 3vw, 2rem);
+  border: 1px solid color-mix(in srgb, var(--mark) 55%, transparent);
+  background: color-mix(in srgb, #05070d 78%, transparent);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
-.enter-gate-caption {
-  margin: 0 0 0.85rem;
-  font-family: var(--mono);
-  font-size: clamp(0.92rem, 2.6vw, 1.12rem);
-  font-weight: 400;
-  letter-spacing: 0.035em;
-  text-transform: lowercase;
-  color: color-mix(in srgb, var(--fg) 82%, var(--accent-bright));
-  line-height: 1.55;
-  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.45);
-  text-wrap: balance;
-  overflow: visible;
-  white-space: normal;
-  max-width: 100%;
+.enter-gate-mark {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--mark), var(--mark)) center / 13px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) center / 1px 13px no-repeat;
+}
+.enter-gate-mark-tl { top: -6.5px; left: -6.5px; }
+.enter-gate-mark-tr { top: -6.5px; right: -6.5px; }
+.enter-gate-mark-bl { bottom: -6.5px; left: -6.5px; }
+.enter-gate-mark-br { bottom: -6.5px; right: -6.5px; }
+.enter-gate-kicker {
+  margin: 0 0 1.15rem;
+}
+.enter-gate-name {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.28em;
+  row-gap: 0.02em;
+  margin: 0 0 1.05rem;
+  font-size: clamp(2.5rem, 8vw, 4.35rem);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
 }
-.enter-gate-caption-line {
-  display: block;
-  overflow: visible;
-  white-space: normal;
+.enter-gate-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0;
+  row-gap: 0.35rem;
+  margin: 0 0 1.35rem;
+  padding-left: 0.85rem;
+  border-left: 2px solid var(--accent);
+  max-width: 36rem;
+  font-family: var(--mono);
+  font-size: clamp(0.78rem, 2.15vw, 0.95rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--fg) 92%, var(--accent-bright));
 }
-.enter-gate-chrono {
-  text-align: left;
-  max-width: min(26rem, 94vw);
-  width: 100%;
-  padding: 1.1rem 1.25rem 1.15rem;
-  box-sizing: border-box;
+.enter-gate-area {
+  white-space: nowrap;
 }
-.enter-gate-chrono .enter-gate-clock {
-  margin: 0 0 0.9rem;
-  text-align: left;
+.enter-gate-dot {
+  color: var(--accent-bright);
 }
-.enter-gate-chrono .progress-stack {
-  gap: 0.65rem;
-}
-.enter-gate-chrono .progress-meta {
+.enter-gate-time {
+  margin: 0 0 1.45rem;
+  font-family: var(--mono);
   font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+  color: var(--sheet);
 }
-.enter-gate-chrono .year-progress .progress-meta {
-  font-size: 0.78rem;
+.enter-gate-time time {
+  font-variant-numeric: tabular-nums;
 }
 .enter-gate .btn-gate {
-  min-width: 7.5rem;
-  background: transparent;
-  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
-  color: color-mix(in srgb, var(--fg) 82%, var(--accent-bright));
+  min-width: 8.5rem;
+  min-height: 44px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #041018;
   box-shadow: none;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   font-size: 0.78rem;
+  font-weight: 500;
   font-family: var(--mono);
-  padding: 0.7rem 1.4rem;
-  transition: border-color 0.35s ease, color 0.35s ease, background 0.35s ease;
+  padding: 0.7rem 1.45rem;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 .enter-gate .btn-gate:hover,
 .enter-gate .btn-gate:focus-visible {
-  border-color: var(--accent);
-  color: var(--accent-bright);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  outline: none;
+  background: var(--accent-bright);
+  border-color: var(--accent-bright);
+  color: #041018;
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 3px;
 }
 .enter-gate .btn-gate:disabled {
   opacity: 0.55;
@@ -1695,7 +1649,6 @@ h3 {
 body.gate-locked {
   overflow: hidden;
 }
-/* Warp → site: keep deep space; never bleach to white during handoff */
 body.is-entering,
 body.is-entering .enter-gate {
   background: #020308 !important;
@@ -1707,7 +1660,6 @@ body.is-entering .enter-gate.is-leaving {
   background: #020308;
 }
 .enter-gate.is-leaving {
-  /* fade the gate away over dark void — opacity only, no lighten */
   background: #020308;
 }
 body.gate-locked .site-header,
@@ -1723,246 +1675,45 @@ body:not(.gate-locked) .games-launcher {
   transition: opacity 1.2s ease 0.2s;
 }
 
-/* —— Floating cosmic objects —— */
-.cosmo-layer {
-  position: fixed;
-  inset: 0;
-  /* Above main/starfield canvas, below menus/header */
-  z-index: 2;
-  pointer-events: none;
-  overflow: hidden;
-}
-.cosmo-layer.cosmo-layer--blocked .cosmo-obj,
-.cosmo-layer.cosmo-layer--blocked {
-  pointer-events: none !important;
-}
-.cosmo-obj {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  width: var(--size);
-  height: var(--size);
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: grab;
-  pointer-events: auto;
-  touch-action: none;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-user-select: none;
-  user-select: none;
-  --mx: 0px;
-  --my: 0px;
-  --zscale: 1;
-  --depth: 0.5;
-  animation: cosmo-drift 28s ease-in-out infinite alternate;
-  animation-delay: var(--delay);
-  opacity: calc(0.28 + var(--depth) * 0.22);
-  z-index: calc(2 + var(--depth) * 4);
-  transform: translate3d(var(--mx), var(--my), 0) scale(var(--zscale));
-  will-change: transform, left, top, filter;
-  transition: filter 0.55s ease, opacity 0.55s ease;
-}
-/* JS physics drives continuous drift — avoid CSS animation fighting transforms */
-.cosmo-obj.is-physics {
-  animation: none;
-}
-.cosmo-glow {
-  position: absolute;
-  inset: -35%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(59, 158, 255, 0.35), transparent 68%);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 0;
-}
-.cosmo-obj:hover .cosmo-glow,
-.cosmo-obj:focus-visible .cosmo-glow,
-.cosmo-obj.is-glow .cosmo-glow,
-.cosmo-obj.is-dragging .cosmo-glow {
-  opacity: 1;
-}
-.cosmo-obj:hover,
-.cosmo-obj:focus-visible,
-.cosmo-obj.is-glow {
-  opacity: 0.82;
-  outline: none;
-  z-index: 6;
-  filter: drop-shadow(0 0 10px rgba(59, 158, 255, 0.35));
-}
-.cosmo-obj.is-dragging {
-  cursor: grabbing;
-  opacity: 0.95;
-  z-index: 8;
-  animation: none;
-  touch-action: none;
-  filter: drop-shadow(0 0 12px rgba(59, 158, 255, 0.42));
-}
-body.is-idle .cosmo-obj:not(.is-dragging) {
-  opacity: calc(0.38 + var(--depth) * 0.28);
-  /* never pause drift when idle — motion continues via JS physics */
-  animation-play-state: running;
-}
-.cosmo-obj.is-static {
-  animation: none;
-  cursor: pointer;
-  /* still tappable; slow JS drift may still run */
-  touch-action: manipulation;
-}
-.cosmo-obj.is-spin .cosmo-core {
-  animation: cosmo-spin 0.85s ease;
-}
-.cosmo-core {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  box-shadow: 0 0 10px rgba(59, 158, 255, 0.14);
-}
-.cosmo-planet .cosmo-core {
-  background:
-    radial-gradient(circle at 35% 30%, #9ecfff, #3b9eff 45%, #1a3a5c 100%);
-  box-shadow: inset -6px -4px 12px rgba(0,0,0,0.35), 0 0 12px rgba(59,158,255,0.16);
-}
-.cosmo-satellite .cosmo-core {
-  border-radius: 4px;
-  background: linear-gradient(135deg, #c8d0dc, #6a7384);
-  box-shadow: 0 0 10px rgba(200, 210, 230, 0.35);
-  position: relative;
-}
-.cosmo-satellite .cosmo-core::before {
-  content: "";
-  position: absolute;
-  left: -35%;
-  right: -35%;
-  top: 42%;
-  height: 2px;
-  background: rgba(232, 233, 237, 0.55);
-}
-.cosmo-asteroid .cosmo-core {
-  border-radius: 40% 55% 45% 60%;
-  background: linear-gradient(145deg, #7a7e88, #3a3d46);
-  box-shadow: 0 0 8px rgba(0,0,0,0.4);
-}
-.cosmo-cluster .cosmo-core {
-  background:
-    radial-gradient(1.5px 1.5px at 30% 40%, #fff, transparent),
-    radial-gradient(1.5px 1.5px at 60% 35%, #cfe4ff, transparent),
-    radial-gradient(1px 1px at 45% 65%, #fff, transparent),
-    radial-gradient(1px 1px at 70% 60%, #cfe4ff, transparent),
-    radial-gradient(1.5px 1.5px at 50% 50%, #fff, transparent);
-  box-shadow: 0 0 20px rgba(190, 220, 255, 0.35);
-}
-.cosmo-moon .cosmo-core {
-  background:
-    radial-gradient(circle at 62% 42%, transparent 46%, #d7e2f0 47%),
-    radial-gradient(circle at 32% 30%, #f4f7fb, #b7c6d8 55%, #7d8ea3);
-  box-shadow: inset -8px -4px 10px rgba(0, 0, 0, 0.28), 0 0 14px rgba(200, 220, 240, 0.22);
-}
-.cosmo-nebula {
-  opacity: 0.5;
-}
-.cosmo-nebula .cosmo-core {
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 40% 45%, rgba(110, 160, 255, 0.28), transparent 42%),
-    radial-gradient(circle at 62% 58%, rgba(90, 70, 180, 0.22), transparent 48%),
-    radial-gradient(circle at 50% 50%, rgba(59, 158, 255, 0.12), transparent 70%);
-  box-shadow: none;
-  filter: blur(0.4px);
-}
-.cosmo-nebula .cosmo-glow {
-  opacity: 0.55;
-  background: radial-gradient(circle, rgba(80, 120, 220, 0.22), transparent 70%);
-}
-
-@keyframes cosmo-drift {
-  from { transform: translate3d(var(--mx, 0px), var(--my, 0px), 0) scale(var(--zscale, 1)); }
-  to { transform: translate3d(calc(var(--mx, 0px) + 12px), calc(var(--my, 0px) - 16px), 0) scale(var(--zscale, 1)); }
-}
-@keyframes cosmo-spin {
-  from { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.12); }
-  to { transform: rotate(360deg) scale(1); }
-}
-.cosmo-tip {
-  position: fixed;
-  z-index: 130;
-  max-width: min(280px, 80vw);
-  padding: 0.65rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
-  color: var(--fg);
-  font-size: 0.82rem;
-  line-height: 1.45;
-  box-shadow: var(--shadow);
-  pointer-events: none;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-.cosmo-tip[hidden] {
-  display: none !important;
-}
-
-@media (max-width: 720px) {
-  .cosmo-obj {
-    opacity: 0.6;
-    --zscale: 0.88;
+@media (max-width: 640px) {
+  .enter-gate-inner {
+    width: min(42rem, calc(100vw - 1.25rem));
   }
-  .hero-chrono {
-    padding: 0.9rem 0.95rem 1rem;
+  .enter-gate-sheet {
+    padding: 1.35rem 1.05rem 1.2rem;
   }
-  .hero-caption {
-    letter-spacing: 0.04em;
+  .enter-gate-name {
+    font-size: clamp(2.15rem, 12vw, 3.1rem);
   }
-  .enter-gate-caption {
+  .enter-gate-line {
+    font-size: 0.76rem;
     letter-spacing: 0.02em;
-    font-size: clamp(0.9rem, 3.6vw, 1.05rem);
+    padding-left: 0.7rem;
+    row-gap: 0.3rem;
+  }
+}
+@media (max-width: 380px) {
+  .enter-gate-area {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter-gate,
+  .enter-gate-inner,
+  .enter-gate-veil {
+    transition: none !important;
+    animation: none !important;
   }
   .enter-gate-inner {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    opacity: 1;
+    transform: none;
   }
-  .enter-gate-card,
-  .enter-gate-chrono {
-    padding: 0.85rem 0.95rem 0.95rem;
-  }
-  .enter-gate-chrono .progress-meta {
-    font-size: 0.68rem;
-  }
-
-  /* keep clear of FAB / content gutters */
-  .cosmo-obj[style*="--x: 88%"],
-  .cosmo-obj[style*="--x: 92%"],
-  .cosmo-obj[style*="--x: 85%"] {
-    --x: 94% !important;
+  .enter-gate.is-crossing .enter-gate-inner {
+    transform: none;
+    filter: none;
   }
 }
-
-[data-theme="light"] .enter-gate {
-  background: #f4f2ee;
-}
-[data-theme="light"] .enter-gate-card {
-  background:
-    radial-gradient(ellipse 80% 70% at 12% 0%, rgba(59, 158, 255, 0.1), transparent 55%),
-    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(110, 192, 255, 0.06), transparent 50%),
-    color-mix(in srgb, var(--card) 90%, transparent);
-  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
-  box-shadow: 0 0 40px rgba(59, 158, 255, 0.06);
-}
-[data-theme="light"] .enter-gate-caption {
-  text-shadow: none;
-  color: color-mix(in srgb, var(--fg) 72%, var(--accent-bright));
-}
-[data-theme="light"] .cosmo-planet .cosmo-core {
-  background: radial-gradient(circle at 35% 30%, #b3d9ff, #3b9eff 50%, #4a6a8a 100%);
-}
-
 
 /* —— Hero chronometer / year progress —— */
 .hero-chrono {
@@ -2144,16 +1895,6 @@ html:not([data-theme="light"])[data-tod="night"] .nebula {
   .enter-gate.is-crossing .enter-gate-inner {
     transform: none;
     filter: none;
-  }
-  .cosmo-obj {
-    touch-action: manipulation;
-    animation: none !important;
-    filter: none !important;
-    opacity: 0.5;
-    cursor: pointer;
-  }
-  .cosmo-glow {
-    display: none;
   }
   .hero-chrono {
     box-shadow: none;

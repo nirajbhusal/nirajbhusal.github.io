@@ -973,5 +973,4 @@ export const AMBIENT_GAME_CATALOG = {
     init: initFootball,
     persistKey: 'nb-ambient-fb',
   },
-  // TODO: Orbit Dodge needs dedicated touch-pad chrome; keep it modal-only for now.
 };
