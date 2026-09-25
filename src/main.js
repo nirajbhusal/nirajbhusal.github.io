@@ -2,7 +2,6 @@ import './style.css';
 import { initStarfield } from './starfield.js';
 import { initConstellation } from './constellation.js';
 import { createAmbient } from './ambient.js';
-import { initSpaceObjects } from './space-objects.js';
 import { initEnterGateVista } from './enter-gate.js';
 import { initBasketball } from './sports-games.js';
 
@@ -462,7 +461,14 @@ function wireVolumeControls(ambient) {
   });
 }
 
-function initAmbientAndGate(cosmo) {
+function setGateInert(blocked) {
+  document.querySelectorAll('[data-gate-inert]').forEach((el) => {
+    if (blocked) el.setAttribute('inert', '');
+    else el.removeAttribute('inert');
+  });
+}
+
+function initAmbientAndGate() {
   const ambient = createAmbient();
   const soundBtn = document.getElementById('sound-toggle');
   const gate = document.getElementById('enter-gate');
@@ -498,20 +504,19 @@ function initAmbientAndGate(cosmo) {
       gate.style.pointerEvents = 'none';
       gate.classList.remove('is-leaving', 'is-crossing');
       document.body.classList.remove('is-entering', 'gate-locked');
+      setGateInert(false);
       vista.destroy();
       if (gateCanvas && gateCanvas.parentNode) {
         gateCanvas.width = 0;
         gateCanvas.height = 0;
         gateCanvas.remove();
       }
-      cosmo?.refresh?.();
-      cosmo?.syncHitState?.();
     };
     if (reduced) {
       window.setTimeout(done, 320);
       return;
     }
-    await vista.warp(4800);
+    await vista.warp(1400);
     gate.classList.add('is-leaving');
     window.setTimeout(done, 560);
   }
@@ -521,16 +526,24 @@ function initAmbientAndGate(cosmo) {
     gate?.setAttribute('aria-hidden', 'true');
     if (gate) gate.style.pointerEvents = 'none';
     document.body.classList.remove('gate-locked');
+    setGateInert(false);
     vista.destroy();
     if (gateCanvas && gateCanvas.parentNode) gateCanvas.remove();
-    cosmo?.refresh?.();
   } else {
+    setGateInert(true);
     enterBtn?.focus();
     enterBtn?.addEventListener('click', () => dismissGate(true));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !gate.hidden) {
+      if (gate.hidden || dismissing) return;
+      if (e.key === 'Escape') {
         e.preventDefault();
         dismissGate(false);
+        return;
+      }
+      // A focused Enter button already activates on Enter; handle the key elsewhere.
+      if (e.key === 'Enter' && e.target !== enterBtn) {
+        e.preventDefault();
+        dismissGate(true);
       }
     });
   }
@@ -563,8 +576,7 @@ initHeroChrono();
 initContactCards();
 initNav();
 initReveal();
-const cosmo = initSpaceObjects(document.getElementById('cosmo-layer'));
-initAmbientAndGate(cosmo);
+initAmbientAndGate();
 
 const starCanvas = document.getElementById('starfield');
 if (starCanvas) initStarfield(starCanvas);

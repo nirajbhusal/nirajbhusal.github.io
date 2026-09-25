@@ -1,7 +1,7 @@
 /**
- * Galactic Enter gate — dense starfield, nebula, distant spiral, parallax.
- * On Enter: warp/zoom through stars, then soft deep-space dissolve into the site
- * (no white flash / bleach). Respects prefers-reduced-motion (short dark fade).
+ * Enter gate backdrop — quiet starfield and nebula wash, no illustrated objects.
+ * On Enter: a short starfield drift, then a dark dissolve into the site.
+ * Respects prefers-reduced-motion (short dark fade, no warp).
  */
 
 const prefersReduced = () =>
@@ -117,57 +117,6 @@ export function initEnterGateVista(canvas) {
     rebuild();
   }
 
-  function drawSpiral(cx, cy, scale, rot, alpha) {
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(rot);
-    ctx.globalAlpha = alpha;
-    ctx.scale(scale, scale * 0.62);
-
-    const g = ctx.createRadialGradient(0, 0, 2, 0, 0, 120);
-    g.addColorStop(0, 'rgba(255, 245, 230, 0.55)');
-    g.addColorStop(0.12, 'rgba(190, 210, 255, 0.28)');
-    g.addColorStop(0.45, 'rgba(90, 80, 160, 0.12)');
-    g.addColorStop(1, 'rgba(10, 12, 30, 0)');
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(0, 0, 120, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = 'rgba(180, 200, 255, 0.22)';
-    ctx.lineWidth = 1.2;
-    for (let arm = 0; arm < 3; arm++) {
-      ctx.beginPath();
-      const phase = (arm / 3) * Math.PI * 2;
-      for (let i = 0; i <= 90; i++) {
-        const t = i / 90;
-        const ang = phase + t * 3.4;
-        const rad = 8 + t * 110;
-        const x = Math.cos(ang) * rad;
-        const y = Math.sin(ang) * rad * 0.55;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    }
-
-    // arm sparkle dust
-    ctx.fillStyle = 'rgba(210, 225, 255, 0.35)';
-    for (let i = 0; i < 48; i++) {
-      const t = hash(i * 3.7);
-      const ang = t * Math.PI * 6 + rot * 0.2;
-      const rad = 12 + hash(i * 5.1) * 95;
-      const x = Math.cos(ang) * rad;
-      const y = Math.sin(ang) * rad * 0.55;
-      const rr = 0.4 + hash(i * 8.3) * 1.1;
-      ctx.globalAlpha = alpha * (0.15 + hash(i * 9.1) * 0.35);
-      ctx.beginPath();
-      ctx.arc(x, y, rr, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
-  }
-
   function drawNebula(elapsed, px, py, warpP) {
     const drift = reduced ? 0 : Math.sin(elapsed * 0.05) * 8;
     for (const n of nebulae) {
@@ -242,28 +191,6 @@ export function initEnterGateVista(canvas) {
     ctx.fillRect(0, 0, w, h);
 
     drawNebula(elapsed, px, py, warpP);
-
-    // distant spiral galaxy
-    const gScale =
-      (Math.min(w, h) / 900) * (0.85 + (reduced ? 0 : Math.sin(elapsed * 0.08) * 0.03));
-    const gRot = elapsed * 0.015 + warpP * 0.8;
-    const gAlpha = (0.55 + (reduced ? 0 : Math.sin(elapsed * 0.2) * 0.06)) * (1 - warpP * 0.35);
-    drawSpiral(
-      w * 0.62 + px * 0.35,
-      h * 0.38 + py * 0.25,
-      gScale * (1 + warpP * 3.6),
-      gRot,
-      gAlpha
-    );
-
-    // soft secondary glow galaxy remnant
-    drawSpiral(
-      w * 0.18 + px * 0.2,
-      h * 0.68 + py * 0.15,
-      gScale * 0.35 * (1 + warpP * 1.2),
-      -gRot * 0.6,
-      gAlpha * 0.35
-    );
 
     // dust
     for (const d of dust) {
@@ -451,7 +378,7 @@ export function initEnterGateVista(canvas) {
     // But keep a very slow redraw optional? Spec says simpler fade on enter; idle can be static.
   }
 
-  function warpToSite(durationMs = 4800) {
+  function warpToSite(durationMs = 1400) {
     return new Promise((resolve) => {
       if (destroyed) {
         resolve();
