@@ -2156,19 +2156,7 @@ body.orbit-open .games-menu {
   }
 }
 
-/* —— Editorial notebook accents (sheet labels, name contrast, construction marks) —— */
-body::before {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  top: var(--header-h);
-  bottom: 0;
-  left: max(var(--mark-x), calc((100% - var(--max)) / 2 + var(--mark-x)));
-  width: 1px;
-  background: var(--mark);
-  pointer-events: none;
-}
-
+/* —— Editorial notebook accents (sheet labels, name contrast, corner marks) —— */
 .section::before,
 .section::after {
   content: "";
