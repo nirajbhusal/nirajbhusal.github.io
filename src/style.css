@@ -446,7 +446,7 @@ h3 {
 .hero-posting {
   font-size: 1.02rem;
   color: var(--fg);
-  margin: 0.1rem 0 0.9rem;
+  margin: 0 0 1rem;
   font-weight: 500;
   letter-spacing: -0.01em;
 }
@@ -1587,12 +1587,13 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: flex-start;
   column-gap: 0;
   row-gap: 0.35rem;
   margin: 0 0 0.95rem;
-  padding-left: 0.85rem;
-  border-left: 2px solid var(--accent);
-  max-width: 36rem;
+  padding: 0;
+  border: 0;
+  max-width: none;
   font-family: var(--mono);
   font-size: clamp(0.78rem, 2.15vw, 0.95rem);
   font-weight: 400;
@@ -1765,7 +1766,8 @@ body:not(.gate-locked) .games-launcher {
   .enter-gate-line {
     font-size: 0.76rem;
     letter-spacing: 0.02em;
-    padding-left: 0.7rem;
+    padding: 0;
+    border: 0;
     row-gap: 0.3rem;
   }
 }
@@ -2204,7 +2206,6 @@ h1.hero-name {
   align-items: baseline;
   column-gap: 0.28em;
   row-gap: 0.02em;
-  margin-bottom: 0.4rem;
   font-weight: 300;
 }
 
