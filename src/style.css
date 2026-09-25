@@ -1587,12 +1587,13 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: flex-start;
   column-gap: 0;
   row-gap: 0.35rem;
-  margin: 0 0 1.35rem;
-  padding-left: 0.85rem;
-  border-left: 2px solid var(--accent);
-  max-width: 36rem;
+  margin: 0 0 0.95rem;
+  padding: 0;
+  border: 0;
+  max-width: none;
   font-family: var(--mono);
   font-size: clamp(0.78rem, 2.15vw, 0.95rem);
   font-weight: 400;
@@ -1617,6 +1618,83 @@ h3 {
 }
 .enter-gate-time time {
   font-variant-numeric: tabular-nums;
+}
+.enter-gate-chrono {
+  margin: 0 0 1.15rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  text-align: center;
+  max-width: 100%;
+}
+.enter-gate-chrono .hero-caption {
+  margin: 0 auto 0.35rem;
+  max-width: 22rem;
+  font-size: clamp(0.7rem, 2.5vw, 0.82rem);
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  text-align: center;
+}
+.enter-gate-chrono .hero-clock {
+  margin: 0 0 0.5rem;
+  font-size: clamp(0.68rem, 2.35vw, 0.78rem);
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+.enter-gate-chrono .hero-clock time {
+  font-variant-numeric: tabular-nums;
+}
+.enter-gate-chrono .progress-stack {
+  gap: 0.4rem;
+  width: min(100%, 26rem);
+  margin: 0 auto;
+  text-align: left;
+}
+.enter-gate-chrono .year-track {
+  height: 6px;
+  box-shadow: none;
+}
+.enter-gate-chrono .progress-meta {
+  margin-top: 0.26rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.035em;
+}
+.enter-gate-chrono .year-progress .progress-meta {
+  font-size: 0.7rem;
+}
+.enter-gate-chrono .day-meta {
+  font-size: 0.62rem;
+}
+[data-theme="light"] .enter-gate {
+  --fg: #12141a;
+  --muted: #5c6170;
+  --accent: #1a73c7;
+  --accent-bright: #2b86db;
+  --accent-soft: rgba(26, 115, 199, 0.12);
+  --accent-glow: rgba(26, 115, 199, 0.22);
+  --border: rgba(18, 20, 26, 0.14);
+  --sheet: rgba(70, 74, 86, 0.78);
+  --mark: rgba(18, 20, 26, 0.42);
+  background: #f4f2ee;
+  color: var(--fg);
+}
+[data-theme="light"] .enter-gate-sheet {
+  background: color-mix(in srgb, #ffffff 88%, transparent);
+  border-color: color-mix(in srgb, var(--mark) 70%, transparent);
+  box-shadow: 0 18px 44px rgba(18, 20, 26, 0.08);
+}
+[data-theme="light"] .enter-gate-veil {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(26, 115, 199, 0.07), transparent 64%),
+    radial-gradient(ellipse 90% 80% at 50% 50%, transparent 48%, rgba(244, 242, 238, 0.2) 100%);
+}
+[data-theme="light"] body.is-entering,
+[data-theme="light"] body.is-entering .enter-gate,
+[data-theme="light"] body.is-entering .enter-gate.is-leaving,
+[data-theme="light"] .enter-gate.is-crossing,
+[data-theme="light"] .enter-gate.is-leaving {
+  background: #f4f2ee !important;
 }
 .enter-gate .btn-gate {
   min-width: 8.5rem;
@@ -1688,7 +1766,8 @@ body:not(.gate-locked) .games-launcher {
   .enter-gate-line {
     font-size: 0.76rem;
     letter-spacing: 0.02em;
-    padding-left: 0.7rem;
+    padding: 0;
+    border: 0;
     row-gap: 0.3rem;
   }
 }
