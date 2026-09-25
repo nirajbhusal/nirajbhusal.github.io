@@ -27,9 +27,32 @@
         <p class="sheet-label enter-gate-kicker">◇ PORTFOLIO</p>
         <h1 id="enter-gate-title" class="enter-gate-name"><span class="hero-given">Niraj</span><span class="hero-family">Bhusal</span></h1>
         <p class="enter-gate-line" id="enter-gate-focus"><span class="enter-gate-area">GovTech</span><span class="enter-gate-dot"> • </span><span class="enter-gate-area">AI Governance</span><span class="enter-gate-dot"> • </span><span class="enter-gate-area">Digital Public Infrastructure</span></p>
-        <p class="enter-gate-time">
-          <time data-chrono="kathmandu" datetime="" aria-label="Kathmandu local time">Kathmandu · --:--:-- NPT</time>
-        </p>
+        <div class="enter-gate-chrono" aria-label="Local time and year progress">
+          <p class="hero-caption">move with time, understand the universe</p>
+          <p class="hero-clock" aria-live="polite">
+            <time data-chrono="datetime" datetime=""></time>
+          </p>
+          <div class="progress-stack">
+            <div class="year-progress" role="progressbar" aria-labelledby="gate-year-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-chrono="year-bar">
+              <div class="progress-track year-track">
+                <div class="progress-fill year-fill" data-chrono="year-fill"></div>
+              </div>
+              <div class="progress-meta">
+                <span id="gate-year-label" data-chrono="year-label">Day 1 · 0% of 2026</span>
+                <span class="progress-pct" data-chrono="year-pct">0%</span>
+              </div>
+            </div>
+            <div class="day-progress" role="progressbar" aria-labelledby="gate-day-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-chrono="day-bar">
+              <div class="progress-track day-track">
+                <div class="progress-fill day-fill" data-chrono="day-fill"></div>
+              </div>
+              <div class="progress-meta day-meta">
+                <span id="gate-day-label" data-chrono="day-label">Today</span>
+                <span class="progress-pct" data-chrono="day-pct">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
         <button type="button" id="enter-gate-btn" class="btn btn-gate">Enter</button>
       </div>
     </div>
@@ -114,7 +137,6 @@
     <section id="hero" class="section hero reveal">
       <p class="eyebrow">Kathmandu · Nepal</p>
       <h1 class="hero-name"><span class="hero-given">Niraj</span><span class="hero-family">Bhusal</span></h1>
-      <p class="tagline">GovTech &amp; AI Governance · Digital Transformation</p>
       <p class="hero-posting">Office of the Hon. Finance Minister · Ministry of Finance, Nepal</p>
       <p class="lede">Building clearer public systems — and the occasional personal civic tool when the moment demands it.</p>
       <div class="hero-chrono" aria-label="Local time and year progress">

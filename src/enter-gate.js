@@ -171,8 +171,10 @@ export function initEnterGateVista(canvas) {
       dissolve = 0;
     }
 
-    // deep space backdrop
-    ctx.fillStyle = '#020308';
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+
+    // Backdrop follows the theme so the gate and the page share one palette.
+    ctx.fillStyle = light ? '#f4f2ee' : '#020308';
     ctx.fillRect(0, 0, w, h);
 
     // vignette base
@@ -184,9 +186,15 @@ export function initEnterGateVista(canvas) {
       h * 0.5,
       Math.max(w, h) * 0.72
     );
-    vg.addColorStop(0, 'rgba(8, 12, 28, 0.35)');
-    vg.addColorStop(0.55, 'rgba(3, 5, 14, 0.15)');
-    vg.addColorStop(1, 'rgba(0, 0, 0, 0.85)');
+    if (light) {
+      vg.addColorStop(0, 'rgba(26, 115, 199, 0.05)');
+      vg.addColorStop(0.55, 'rgba(244, 242, 238, 0)');
+      vg.addColorStop(1, 'rgba(18, 20, 26, 0.05)');
+    } else {
+      vg.addColorStop(0, 'rgba(8, 12, 28, 0.35)');
+      vg.addColorStop(0.55, 'rgba(3, 5, 14, 0.15)');
+      vg.addColorStop(1, 'rgba(0, 0, 0, 0.85)');
+    }
     ctx.fillStyle = vg;
     ctx.fillRect(0, 0, w, h);
 
@@ -206,7 +214,10 @@ export function initEnterGateVista(canvas) {
         y = cy + dy * push;
       }
       const tw = reduced ? 1 : 0.7 + 0.3 * Math.sin(elapsed * 0.9 + d.tw);
-      ctx.fillStyle = `rgba(170, 190, 230, ${d.a * tw * (1 - warpP * 0.4)})`;
+      const dustA = d.a * tw * (1 - warpP * 0.4);
+      ctx.fillStyle = light
+        ? `rgba(40, 62, 96, ${dustA * 1.6})`
+        : `rgba(170, 190, 230, ${dustA})`;
       ctx.beginPath();
       ctx.arc(x, y, d.r, 0, Math.PI * 2);
       ctx.fill();
@@ -261,12 +272,14 @@ export function initEnterGateVista(canvas) {
 
       const hue = 200 + s.hue * 50;
       const starA = alpha * (1 - dissolve * 0.75);
-      ctx.fillStyle = `hsla(${hue}, 70%, ${58 + s.z * 14}%, ${starA})`;
+      ctx.fillStyle = light
+        ? `rgba(36, 52, 78, ${Math.min(0.85, starA)})`
+        : `hsla(${hue}, 70%, ${58 + s.z * 14}%, ${starA})`;
       ctx.beginPath();
       ctx.arc(x, y, s.r * (1 + warpP * 0.5), 0, Math.PI * 2);
       ctx.fill();
 
-      if (s.z > 0.75 && s.bright > 0.7 && warpP < 0.85 && dissolve < 0.5) {
+      if (!light && s.z > 0.75 && s.bright > 0.7 && warpP < 0.85 && dissolve < 0.5) {
         ctx.fillStyle = `hsla(${hue}, 75%, 72%, ${starA * 0.2})`;
         ctx.beginPath();
         ctx.arc(x, y, s.r * 2.4, 0, Math.PI * 2);
@@ -301,9 +314,15 @@ export function initEnterGateVista(canvas) {
         cy,
         Math.max(w, h) * 0.75
       );
-      vg.addColorStop(0, `rgba(8, 14, 32, ${dissolve * 0.55})`);
-      vg.addColorStop(0.45, `rgba(3, 5, 14, ${dissolve * 0.78})`);
-      vg.addColorStop(1, `rgba(2, 3, 8, ${dissolve * 0.96})`);
+      if (light) {
+        vg.addColorStop(0, `rgba(244, 242, 238, ${dissolve * 0.45})`);
+        vg.addColorStop(0.45, `rgba(244, 242, 238, ${dissolve * 0.72})`);
+        vg.addColorStop(1, `rgba(244, 242, 238, ${dissolve * 0.94})`);
+      } else {
+        vg.addColorStop(0, `rgba(8, 14, 32, ${dissolve * 0.55})`);
+        vg.addColorStop(0.45, `rgba(3, 5, 14, ${dissolve * 0.78})`);
+        vg.addColorStop(1, `rgba(2, 3, 8, ${dissolve * 0.96})`);
+      }
       ctx.fillStyle = vg;
       ctx.fillRect(0, 0, w, h);
 
