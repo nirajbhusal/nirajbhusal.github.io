@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Build a flat illustrated portrait from the committed head-and-shoulders crop.
 
-The mark is derived from the photograph itself: background removal, edge-preserving
-smoothing, colour quantization, then potrace vectorization of each flat colour.
+The mark is derived from the photograph itself: background removal, bilateral
+smoothing, then a few luminance bands per material (skin, hair, shirt) plus
+separate eye and teeth shapes. Those flat regions are vector-traced with potrace.
 No generative image model is used.
 
 Regenerate from the repo root:
@@ -21,9 +22,9 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+import cv2
 import numpy as np
-from PIL import Image, ImageFilter
-from sklearn.cluster import MiniBatchKMeans
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 CROP_PATH = ROOT / "src" / "portrait" / "niraj-source-crop.jpg"
@@ -32,8 +33,7 @@ ICON_DIR = PUBLIC / "icons"
 
 # Studio backdrop in the source photo is a flat near-black gray.
 BG_LEVEL = 16
-MASTER = 640
-COLORS = 14
+MASTER = 480
 
 
 def load_rgb(path: Path) -> np.ndarray:
@@ -106,35 +106,170 @@ def background_mask(rgb: np.ndarray) -> np.ndarray:
     return bg
 
 
-def quantize(rgb: np.ndarray, foreground: np.ndarray, k: int) -> tuple[np.ndarray, np.ndarray]:
-    """Return a label map (-1 = background) and a (k, 3) palette."""
-    h, w, _ = rgb.shape
-    small = Image.fromarray(rgb).resize((MASTER, MASTER), Image.Resampling.LANCZOS)
-    small_rgb = np.asarray(small)
-    fg_img = Image.fromarray((foreground.astype(np.uint8) * 255), mode="L").resize(
-        (MASTER, MASTER), Image.Resampling.NEAREST
+def resize_nearest(mask: np.ndarray, size: int) -> np.ndarray:
+    img = Image.fromarray((mask.astype(np.uint8) * 255), mode="L").resize(
+        (size, size), Image.Resampling.NEAREST
     )
-    fg = np.asarray(fg_img) > 127
+    return np.asarray(img) > 127
 
-    # Edge-preserving flatten: median removes photo grain before clustering.
-    flat = np.asarray(Image.fromarray(small_rgb).filter(ImageFilter.MedianFilter(size=5)))
-    # A second, lighter pass keeps facial planes without smearing the eyes.
-    flat = np.asarray(Image.fromarray(flat).filter(ImageFilter.MedianFilter(size=3)))
 
-    samples = flat[fg]
-    if len(samples) < k:
-        raise SystemExit("foreground is too small to quantize")
-    model = MiniBatchKMeans(n_clusters=k, random_state=7, n_init=4, batch_size=4096)
-    model.fit(samples.astype(np.float32))
-    palette = np.clip(np.rint(model.cluster_centers_), 0, 255).astype(np.uint8)
+def smooth_photo(rgb: np.ndarray) -> np.ndarray:
+    """Heavy edge-preserving denoise so pores and shirt texture disappear."""
+    sm = cv2.bilateralFilter(rgb, 21, 95, 18)
+    sm = cv2.bilateralFilter(sm, 15, 75, 14)
+    # Mean shift flattens remaining local colour variation without moving edges.
+    sm = cv2.pyrMeanShiftFiltering(sm, sp=16, sr=24)
+    return sm
 
-    labels = np.full(flat.shape[:2], -1, dtype=np.int16)
-    pred = model.predict(flat[fg].astype(np.float32))
-    labels[fg] = pred.astype(np.int16)
 
-    labels = mode_filter_labels(labels, radius=2)
-    labels = drop_specks(labels, min_area=36)
-    return labels, palette
+def split_bands(mask: np.ndarray, field: np.ndarray, quantiles: list[float]) -> list[np.ndarray]:
+    vals = field[mask]
+    if vals.size < 40:
+        return []
+    edges = np.quantile(vals, quantiles)
+    bands = []
+    for i in range(len(edges) - 1):
+        lo, hi = float(edges[i]), float(edges[i + 1])
+        if i == 0:
+            band = mask & (field <= hi)
+        elif i == len(edges) - 2:
+            band = mask & (field > lo)
+        else:
+            band = mask & (field > lo) & (field <= hi)
+        bands.append(band)
+    return bands
+
+
+def tidy_mask(mask: np.ndarray, open_px: int, close_px: int) -> np.ndarray:
+    m = mask.astype(np.uint8)
+    if open_px > 0:
+        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (open_px, open_px))
+        m = cv2.morphologyEx(m, cv2.MORPH_OPEN, k)
+    if close_px > 0:
+        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (close_px, close_px))
+        m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, k)
+    return m > 0
+
+
+def keep_components(mask: np.ndarray, min_area: int, limit: int | None = None) -> np.ndarray:
+    n, comp = cv2.connectedComponents(mask.astype(np.uint8))
+    areas = [(int((comp == i).sum()), i) for i in range(1, n)]
+    areas.sort(reverse=True)
+    if limit is not None:
+        areas = areas[:limit]
+    out = np.zeros(mask.shape, dtype=bool)
+    for area, i in areas:
+        if area < min_area:
+            continue
+        out |= comp == i
+    return out
+
+
+def fill_foreground_gaps(labels: np.ndarray, foreground: np.ndarray) -> np.ndarray:
+    """Give opened-away pixels the neighbouring flat colour."""
+    unknown = foreground & (labels < 0)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    for _ in range(12):
+        if not unknown.any():
+            break
+        claim = np.full(labels.shape, -1, dtype=np.int16)
+        for lab in range(int(labels.max()) + 1):
+            dil = cv2.dilate((labels == lab).astype(np.uint8), kernel) > 0
+            take = unknown & dil & (claim < 0)
+            claim[take] = lab
+        labels = np.where(claim >= 0, claim, labels)
+        unknown = foreground & (labels < 0)
+    return labels
+
+
+def quantize(rgb: np.ndarray, foreground: np.ndarray, _k: int = 0) -> tuple[np.ndarray, np.ndarray]:
+    """Flat illustration labels: 3 skin, 2 hair, 3 shirt, plus eyes and teeth.
+
+    Colours are medians of the smoothed photograph, not a generated palette.
+    """
+    small = cv2.resize(rgb, (MASTER, MASTER), interpolation=cv2.INTER_AREA)
+    fg = resize_nearest(foreground, MASTER)
+    fg = tidy_mask(fg, open_px=0, close_px=5)
+    smooth = smooth_photo(small)
+
+    r = smooth[:, :, 0].astype(np.int16)
+    g = smooth[:, :, 1].astype(np.int16)
+    b = smooth[:, :, 2].astype(np.int16)
+    lum = (r.astype(np.float32) + g + b) / 3.0
+    # Broad shading planes. Pores and fabric noise are gone before the bands.
+    planes = cv2.GaussianBlur(lum, (0, 0), 11)
+
+    skin = fg & (r > g + 12) & (r > b + 18) & (lum > 42)
+    shirt = fg & ~skin & (g + 8 >= r) & (g > b - 18) & (lum > 48) & (r > 60)
+    hair = fg & ~skin & ~shirt
+
+    labels = np.full((MASTER, MASTER), -1, dtype=np.int16)
+    palette: list[np.ndarray] = []
+
+    def paint(mask: np.ndarray, color: np.ndarray | None = None, open_px: int = 5, close_px: int = 7) -> None:
+        mask = tidy_mask(mask, open_px, close_px)
+        if int(mask.sum()) < 40:
+            return
+        if color is None:
+            color = np.median(smooth[mask], axis=0)
+        palette.append(np.clip(np.rint(color), 0, 255).astype(np.uint8))
+        labels[mask] = len(palette) - 1
+
+    for band in split_bands(hair, planes, [0.0, 0.58, 1.0]):
+        paint(band, open_px=5, close_px=9)
+    for band in split_bands(shirt, planes, [0.0, 0.42, 0.8, 1.0]):
+        paint(band, open_px=7, close_px=11)
+    for band in split_bands(skin, planes, [0.0, 0.34, 0.8, 1.0]):
+        paint(band, open_px=7, close_px=11)
+
+    labels = fill_foreground_gaps(labels, fg)
+    labels = mode_filter_labels(labels, radius=3)
+    labels = drop_specks(labels, min_area=280)
+    labels = fill_foreground_gaps(labels, fg)
+
+    if not skin.any():
+        raise SystemExit("could not find the face in the source crop")
+    ys, xs = np.where(skin)
+    y0, y1 = int(ys.min()), int(ys.max())
+    x0, x1 = int(xs.min()), int(xs.max())
+    face_h, face_w = max(1, y1 - y0), max(1, x1 - x0)
+
+    eye_band = np.zeros((MASTER, MASTER), dtype=bool)
+    eye_band[
+        y0 + int(0.12 * face_h) : y0 + int(0.30 * face_h),
+        x0 + int(0.14 * face_w) : x1 - int(0.12 * face_w),
+    ] = True
+    eyes = eye_band & fg & (lum < 58)
+    eyes = tidy_mask(eyes, open_px=0, close_px=5)
+    eyes = keep_components(eyes, min_area=50)
+    if eyes.any():
+        eye_color = np.median(smooth[eyes], axis=0) * 0.7
+        palette.append(np.clip(np.rint(eye_color), 0, 255).astype(np.uint8))
+        labels[eyes] = len(palette) - 1
+
+    mouth = np.zeros((MASTER, MASTER), dtype=bool)
+    mouth[
+        y0 + int(0.40 * face_h) : y0 + int(0.50 * face_h),
+        x0 + int(0.36 * face_w) : x1 - int(0.30 * face_w),
+    ] = True
+    chroma = np.maximum(np.maximum(r, g), b) - np.minimum(np.minimum(r, g), b)
+    teeth = mouth & (lum > 158) & (chroma < 80)
+    teeth = tidy_mask(teeth, open_px=0, close_px=0)
+    # Join the teeth into one smile, wide enough to read at favicon size.
+    smile_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 7))
+    teeth = cv2.morphologyEx(teeth.astype(np.uint8), cv2.MORPH_CLOSE, smile_kernel) > 0
+    teeth = keep_components(teeth, min_area=40, limit=1)
+    if teeth.any():
+        tooth_src = teeth & (lum > 158)
+        measured = np.median(smooth[tooth_src], axis=0) if tooth_src.any() else np.median(smooth[teeth], axis=0)
+        # Lift the measured tooth colour toward ivory so the smile separates
+        # from the cheek highlight, without inventing a new hue.
+        tooth_color = measured + (255.0 - measured) * 0.22
+        palette.append(np.clip(np.rint(tooth_color), 0, 255).astype(np.uint8))
+        labels[teeth] = len(palette) - 1
+
+    labels = np.where(fg, labels, -1)
+    return labels, np.stack(palette, axis=0)
 
 
 def mode_filter_labels(labels: np.ndarray, radius: int) -> np.ndarray:
@@ -224,11 +359,11 @@ def trace_mask(mask: np.ndarray, tmp: Path) -> str:
             "-o",
             str(svg),
             "-t",
-            "8",
+            "48",
             "-a",
-            "1.15",
+            "1.3",
             "-O",
-            "0.25",
+            "1.0",
             "--flat",
             str(bmp),
         ],
@@ -258,7 +393,7 @@ def build_svg(labels: np.ndarray, palette: np.ndarray) -> str:
         tmp = Path(td)
         for _, i in areas:
             mask = labels == i
-            if int(mask.sum()) < 24:
+            if int(mask.sum()) < 12:
                 continue
             group = trace_mask(mask, tmp)
             # Force this layer's fill. Potrace paints black.
@@ -348,7 +483,6 @@ def write_outputs(svg: str, poster: Image.Image) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--from-photo", type=Path, help="original headshot to crop before tracing")
-    parser.add_argument("--colors", type=int, default=COLORS)
     args = parser.parse_args()
     if args.from_photo:
         save_source_crop(args.from_photo, CROP_PATH)
@@ -357,18 +491,12 @@ def main() -> None:
         raise SystemExit(f"missing source crop: {CROP_PATH}")
     rgb = load_rgb(CROP_PATH)
     bg = background_mask(rgb)
-    labels, palette = quantize(rgb, ~bg, args.colors)
+    labels, palette = quantize(rgb, ~bg)
     svg = build_svg(labels, palette)
     poster = posterized_rgba(labels, palette)
     write_outputs(svg, poster)
-    # Contact sheet for visual QA at header size and a larger badge.
-    sheet = Image.new("RGB", (48 + 180 + 48, 200), (5, 6, 10))
-    sheet.paste(ring_png(poster, 48), (16, 76), ring_png(poster, 48))
-    big = ring_png(poster, 180)
-    sheet.paste(big, (80, 10), big)
-    preview = ROOT / "src" / "portrait" / "preview-sheet.png"
-    sheet.save(preview)
-    print(f"wrote {preview}")
+    counts = [(i, hex_color(palette[i]), int((labels == i).sum())) for i in range(len(palette))]
+    print("regions", counts)
 
 
 if __name__ == "__main__":
