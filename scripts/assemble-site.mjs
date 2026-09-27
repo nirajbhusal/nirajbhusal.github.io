@@ -214,11 +214,7 @@ function headHtml(page) {
   <meta property="og:description" content="${page.description}" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${url}" />
-  <meta property="og:image" content="${ORIGIN}/og-image.png" />
-  <meta property="og:image:alt" content="Illustrated portrait of Niraj Bhusal" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />

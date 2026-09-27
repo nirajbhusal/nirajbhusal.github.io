@@ -37,7 +37,7 @@ if (fs.existsSync(presentationsIndex)) {
 const assetsDest = path.join(root, 'assets');
 fs.mkdirSync(assetsDest, { recursive: true });
 for (const name of fs.readdirSync(assetsDest)) {
-  if (/^index-.*\.(js|css)$/.test(name)) fs.unlinkSync(path.join(assetsDest, name));
+  if (/^(index|main)-.*\.(js|css)$/.test(name)) fs.unlinkSync(path.join(assetsDest, name));
 }
 const distAssets = path.join(dist, 'assets');
 if (fs.existsSync(distAssets)) {
@@ -46,18 +46,7 @@ if (fs.existsSync(distAssets)) {
   }
 }
 
-for (const name of ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'og-image.png']) {
-  const from = path.join(dist, name);
-  if (fs.existsSync(from)) copyFile(from, path.join(root, name));
-}
-
-const iconsFrom = path.join(dist, 'icons');
-const iconsDest = path.join(root, 'icons');
-if (fs.existsSync(iconsFrom)) {
-  fs.mkdirSync(iconsDest, { recursive: true });
-  for (const name of fs.readdirSync(iconsFrom)) {
-    copyFile(path.join(iconsFrom, name), path.join(iconsDest, name));
-  }
-}
+const faviconFrom = path.join(dist, 'favicon.svg');
+if (fs.existsSync(faviconFrom)) copyFile(faviconFrom, path.join(root, 'favicon.svg'));
 
 console.log('published dist onto the repository root');
