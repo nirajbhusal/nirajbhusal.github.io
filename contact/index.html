@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — Niraj Bhusal</title>
+  <meta name="description" content="Reach Niraj Bhusal through the Contact action, LinkedIn, X, and links to the official and personal Rasuwa flood portals." />
+  <link rel="canonical" href="https://nirajbhusal.github.io/contact/" />
+  <meta property="og:title" content="Contact — Niraj Bhusal" />
+  <meta property="og:description" content="Reach Niraj Bhusal through the Contact action, LinkedIn, X, and links to the official and personal Rasuwa flood portals." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://nirajbhusal.github.io/contact/" />
+  <meta property="og:image" content="https://nirajbhusal.github.io/og-image.png" />
+  <meta property="og:image:alt" content="Illustrated portrait of Niraj Bhusal" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    (function () {
+      var map = {"about":"/about/","built":"/built/","experience":"/experience/","education":"/education/","trainings":"/trainings/","speaking":"/speaking/","presentations":"/presentations/","community":"/community/","media":"/media/","play":"/games/","games":"/games/","contact":"/contact/","hero":"/"};
+      var hash = (location.hash || "").replace(/^#/, "").toLowerCase();
+      if (!map[hash]) return;
+      var target = map[hash];
+      var path = location.pathname.replace(/\/index\.html$/, "");
+      if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
+      var norm = target === "/" ? "/" : target.replace(/\/$/, "");
+      if (path !== norm) location.replace(target);
+    })();
+  </script>
+  <script type="module" crossorigin src="/assets/main-DYrj2vc6.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-Dz6AIC16.css">
+</head>
+<body data-page="contact">
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div id="nebula" class="nebula" aria-hidden="true"></div>
+  <div id="nav-overlay" class="nav-overlay" hidden></div>
+
+<header class="site-header">
+    <div class="site-header-glass" aria-hidden="true"></div>
+    <a class="logo" href="/" aria-label="Niraj Bhusal — home">
+      <img class="logo-mark" src="/icons/niraj-mark.svg" width="42" height="42" alt="" />
+    </a>
+    <button type="button" id="nav-toggle" class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-label" aria-hidden="true">Menu</span>
+    </button>
+    <div class="header-actions">
+      <div class="sound-control" role="group" aria-label="Ambient sound volume">
+        <button type="button" id="sound-vol-down" class="sound-vol-btn" aria-label="Decrease volume" title="Volume down">−</button>
+        <button type="button" id="sound-toggle" class="sound-toggle" aria-pressed="false" aria-label="Sound off" title="Ambient sound" data-vol-level="0">
+          <span class="sound-icon" aria-hidden="true">
+            <svg class="sound-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 10v4h3l4 3V7L7 10H4z"/>
+              <path class="sound-wave sound-wave-1" d="M14.5 9.5a3.5 3.5 0 0 1 0 5"/>
+              <path class="sound-wave sound-wave-2" d="M16.8 7.5a6.5 6.5 0 0 1 0 9"/>
+              <line class="sound-mute-slash" x1="4" y1="4" x2="20" y2="20"/>
+            </svg>
+          </span>
+          <span class="sound-label" id="sound-level-label">Vol</span>
+        </button>
+        <button type="button" id="sound-vol-up" class="sound-vol-btn" aria-label="Increase volume" title="Volume up">+</button>
+      </div>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle light mode" title="Toggle theme">
+        <span class="theme-icon" aria-hidden="true">◐</span>
+      </button>
+    </div>
+  </header>
+
+  <nav id="site-nav" class="nav" aria-label="Primary">
+    <a href="/about/">About</a>
+    <a href="/built/">Built</a>
+    <a href="/experience/">Experience</a>
+    <a href="/education/">Education</a>
+    <a href="/trainings/">Trainings</a>
+    <a href="/speaking/">Speaking</a>
+    <a href="/presentations/">Presentations</a>
+    <a href="/community/">Community</a>
+    <a href="/media/">Media</a>
+    <a href="/games/">Games</a>
+    <a href="/contact/" class="active" aria-current="page">Contact</a>
+  </nav>
+
+<div class="games-launcher" id="games-launcher">
+    <button type="button" id="games-fab" class="orbit-fab games-fab" data-open-game="basketball" title="Play basketball">
+      <span class="orbit-fab-icon" aria-hidden="true">◎</span>
+      <span class="orbit-fab-label">Play</span>
+    </button>
+  </div>
+
+  <div id="game-popup" class="orbit-modal sports-modal" role="dialog" aria-modal="true" aria-labelledby="game-popup-title" hidden>
+    <div class="orbit-modal-backdrop" data-game-close></div>
+    <div class="orbit-modal-panel card">
+      <div class="orbit-modal-head">
+        <h2 id="game-popup-title">Basketball</h2>
+        <button type="button" class="btn btn-ghost orbit-close" aria-label="Close game" data-game-close>×</button>
+      </div>
+      <p class="meta">Drag to aim and charge · release to shoot · Esc closes</p>
+      <canvas id="game-popup-canvas" width="640" height="400" role="img" aria-label="Basketball"></canvas>
+      <div class="game-hud">
+        <span id="gp-score">Score: 0</span>
+        <span id="gp-extra">Shots: 0</span>
+      </div>
+      <div class="game-controls">
+        <button type="button" id="gp-pause" class="btn btn-ghost">Pause</button>
+        <button type="button" class="btn btn-ghost" data-game-close>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+<section id="contact" class="section reveal">
+      <p class="sheet-label">◇ SHEET 11 · CONTACT</p>
+      <h1 class="page-title">Contact</h1>
+      <div class="contact-grid" role="list">
+        <a class="contact-card" role="listitem" href="mailto:niraj.bhusal@icloud.com" id="contact-email-card" aria-label="Contact by email" data-email-card>
+          <span class="contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg>
+          </span>
+          <span class="contact-label">Contact</span>
+          <span class="contact-hint">Email</span>
+        </a>
+        <a class="contact-card" role="listitem" href="https://linkedin.com/in/nirajbhusal" target="_blank" rel="noopener" aria-label="LinkedIn — nirajbhusal">
+          <span class="contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V23h-4V8.5zM8.5 8.5h3.8v2h.05c.53-1 1.82-2.05 3.75-2.05 4.01 0 4.75 2.64 4.75 6.07V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.54 1.72-2.54 3.49V23h-4V8.5z"/></svg>
+          </span>
+          <span class="contact-label">LinkedIn</span>
+          <span class="contact-hint">Profile</span>
+        </a>
+        <a class="contact-card" role="listitem" href="https://x.com/nirajbhusal" target="_blank" rel="noopener" aria-label="X — nirajbhusal">
+          <span class="contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M18.9 2H22l-6.78 7.75L23.5 22h-6.55l-5.13-6.7L6.1 22H3l7.25-8.28L.5 2h6.7l4.64 6.15L18.9 2zm-1.15 18h1.82L6.4 3.9H4.45L17.75 20z"/></svg>
+          </span>
+          <span class="contact-label">X</span>
+          <span class="contact-hint">@nirajbhusal</span>
+        </a>
+        <a class="contact-card" role="listitem" href="https://www.buymeacoffee.com/helloniraz" target="_blank" rel="noopener" aria-label="Buy Me a Coffee">
+          <span class="contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13a3 3 0 0 1 0 6h-1"/><path d="M5 8v7a4 4 0 0 0 4 4h3a4 4 0 0 0 4-4v-1"/><path d="M8 2v3M12 2v3"/></svg>
+          </span>
+          <span class="contact-label">Coffee</span>
+          <span class="contact-hint">Support</span>
+        </a>
+        <a class="contact-card" role="listitem" href="https://mofnepal.github.io/rasuwa-flood-update/" target="_blank" rel="noopener" aria-label="Ministry of Finance (MoF) Rasuwa Flood Update Portal — Official">
+          <span class="contact-icon lettermark wide" aria-hidden="true">MoF</span>
+          <span class="contact-label">MoF Portal</span>
+          <span class="contact-hint">Official</span>
+        </a>
+        <a class="contact-card" role="listitem" href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener" aria-label="Personal Rasuwa Flood Update Portal — civic">
+          <span class="contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14c2-1 3.5-4 4-7 1 3 2.5 5 5 6 1.5.6 3 2 3 4H4z"/><path d="M14 7c.5-2 1.5-3.5 3-4"/><path d="M3 20h18"/></svg>
+          </span>
+          <span class="contact-label">Rasuwa Portal</span>
+          <span class="contact-hint">Civic</span>
+        </a>
+      </div>
+      <div id="email-toast" class="email-toast" role="status" aria-live="polite" hidden>Copied</div>
+      <div class="card coffee-card">
+        <h3>Buy Me a Coffee</h3>
+        <p>Coffee supports time and hosting for personal civic tools — <strong>not</strong> disaster relief.</p>
+        <p>For flood / disaster relief, use official channels: <a href="https://donate.gov.np" target="_blank" rel="noopener">donate.gov.np</a> · <a href="https://mofnepal.github.io/rasuwa-flood-update/" target="_blank" rel="noopener">Ministry of Finance (MoF) flood update</a>.</p>
+        <a class="btn btn-primary" href="https://www.buymeacoffee.com/helloniraz" target="_blank" rel="noopener">Buy Me a Coffee ↗</a>
+      </div>
+    </section>
+  </main>
+
+<footer class="site-footer">
+    <p class="utility-meta">
+      <time id="kathmandu-clock" data-chrono="kathmandu" datetime="" aria-label="Kathmandu local time">Kathmandu · --:--:-- NPT</time>
+      <span class="utility-sep" aria-hidden="true">·</span>
+      <span>Updated September 2026</span>
+    </p>
+    <p>© <span id="year"></span> Niraj Bhusal · Personal site · Ministry of Finance (MoF) portal is official; personal Rasuwa Flood Update Portal is a civic project, not a government website.</p>
+  </footer>
+
+  <script>
+    (function () {
+      if (document.querySelector('script[type="module"][src="/src/main.js"]')) return;
+      var nodes = document.querySelectorAll('[data-chrono="kathmandu"]');
+      if (!nodes.length) return;
+      var fmt = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Kathmandu",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23"
+      });
+      var slow = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function tick() {
+        var now = new Date();
+        var iso = now.toISOString();
+        var text = "Kathmandu · " + fmt.format(now) + " NPT";
+        for (var i = 0; i < nodes.length; i++) {
+          nodes[i].dateTime = iso;
+          nodes[i].textContent = text;
+        }
+      }
+      tick();
+      window.setInterval(tick, slow ? 30000 : 1000);
+    })();
+  </script>
+
+</body>
+</html>

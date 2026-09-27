@@ -178,23 +178,31 @@ main,
 }
 
 .logo {
-  font-family: var(--mono);
-  font-weight: 500;
-  color: var(--accent);
-  text-decoration: none;
-  letter-spacing: 0.1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   margin-right: auto;
-  font-size: 0.95rem;
-  padding: 0.35rem 0.15rem;
-  border-radius: 8px;
-  transition: color 0.2s ease, text-shadow 0.2s ease;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  line-height: 0;
+  text-decoration: none;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 42%, transparent);
+  transition: box-shadow 0.2s ease;
 }
 .logo:hover,
 .logo:focus-visible {
-  color: var(--accent-bright);
-  text-shadow: 0 0 18px var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 18px var(--accent-soft);
   outline: none;
+}
+.logo-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: block;
+  object-fit: cover;
 }
 
 .header-actions {
@@ -219,7 +227,7 @@ main,
   right: 0;
   height: var(--header-h);
   margin: 0;
-  padding: 0.7rem clamp(9.5rem, 18vw, 12.5rem) 0.7rem 4.5rem;
+  padding: 0.7rem clamp(9.5rem, 18vw, 12.5rem) 0.7rem 5.4rem;
   justify-content: flex-end;
   box-sizing: border-box;
   z-index: 401;
@@ -415,7 +423,8 @@ h1 {
   margin: 0 0 0.75rem;
 }
 
-h2 {
+h2,
+h1.page-title {
   font-size: clamp(1.55rem, 3vw, 2.05rem);
   font-weight: 400;
   letter-spacing: -0.02em;
@@ -428,6 +437,10 @@ h2 {
   word-break: normal;
   overflow-wrap: anywhere;
   max-width: 100%;
+}
+
+h1.page-title {
+  line-height: 1.25;
 }
 
 h3 {
@@ -1291,6 +1304,59 @@ h3 {
   .hero {
     --section-pad-top: 5rem;
   }
+
+  .logo,
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+body[data-page]:not([data-page="home"]) .section {
+  --section-pad-top: 2.6rem;
+}
+
+@media (max-width: 900px) {
+  body[data-page]:not([data-page="home"]) .section {
+    --section-pad-top: 1.75rem;
+  }
+}
+
+.home-index {
+  padding-bottom: 3.5rem;
+}
+
+.index-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.75rem;
+}
+
+.index-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: inherit;
+  min-height: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.index-card h3 {
+  margin: 0;
+}
+
+.index-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.index-card:hover,
+.index-card:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: 0 0 20px var(--accent-soft);
+  outline: none;
 }
 
 

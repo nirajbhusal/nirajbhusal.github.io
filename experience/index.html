@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Experience — Niraj Bhusal</title>
+  <meta name="description" content="Niraj Bhusal’s civil service since 2013, including the Office of the Hon. Finance Minister, the Office of the Prime Minister, and earlier ministry postings." />
+  <link rel="canonical" href="https://nirajbhusal.github.io/experience/" />
+  <meta property="og:title" content="Experience — Niraj Bhusal" />
+  <meta property="og:description" content="Niraj Bhusal’s civil service since 2013, including the Office of the Hon. Finance Minister, the Office of the Prime Minister, and earlier ministry postings." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://nirajbhusal.github.io/experience/" />
+  <meta property="og:image" content="https://nirajbhusal.github.io/og-image.png" />
+  <meta property="og:image:alt" content="Illustrated portrait of Niraj Bhusal" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    (function () {
+      var map = {"about":"/about/","built":"/built/","experience":"/experience/","education":"/education/","trainings":"/trainings/","speaking":"/speaking/","presentations":"/presentations/","community":"/community/","media":"/media/","play":"/games/","games":"/games/","contact":"/contact/","hero":"/"};
+      var hash = (location.hash || "").replace(/^#/, "").toLowerCase();
+      if (!map[hash]) return;
+      var target = map[hash];
+      var path = location.pathname.replace(/\/index\.html$/, "");
+      if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
+      var norm = target === "/" ? "/" : target.replace(/\/$/, "");
+      if (path !== norm) location.replace(target);
+    })();
+  </script>
+  <script type="module" crossorigin src="/assets/main-DYrj2vc6.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-Dz6AIC16.css">
+</head>
+<body data-page="experience">
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div id="nebula" class="nebula" aria-hidden="true"></div>
+  <div id="nav-overlay" class="nav-overlay" hidden></div>
+
+<header class="site-header">
+    <div class="site-header-glass" aria-hidden="true"></div>
+    <a class="logo" href="/" aria-label="Niraj Bhusal — home">
+      <img class="logo-mark" src="/icons/niraj-mark.svg" width="42" height="42" alt="" />
+    </a>
+    <button type="button" id="nav-toggle" class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-label" aria-hidden="true">Menu</span>
+    </button>
+    <div class="header-actions">
+      <div class="sound-control" role="group" aria-label="Ambient sound volume">
+        <button type="button" id="sound-vol-down" class="sound-vol-btn" aria-label="Decrease volume" title="Volume down">−</button>
+        <button type="button" id="sound-toggle" class="sound-toggle" aria-pressed="false" aria-label="Sound off" title="Ambient sound" data-vol-level="0">
+          <span class="sound-icon" aria-hidden="true">
+            <svg class="sound-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 10v4h3l4 3V7L7 10H4z"/>
+              <path class="sound-wave sound-wave-1" d="M14.5 9.5a3.5 3.5 0 0 1 0 5"/>
+              <path class="sound-wave sound-wave-2" d="M16.8 7.5a6.5 6.5 0 0 1 0 9"/>
+              <line class="sound-mute-slash" x1="4" y1="4" x2="20" y2="20"/>
+            </svg>
+          </span>
+          <span class="sound-label" id="sound-level-label">Vol</span>
+        </button>
+        <button type="button" id="sound-vol-up" class="sound-vol-btn" aria-label="Increase volume" title="Volume up">+</button>
+      </div>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle light mode" title="Toggle theme">
+        <span class="theme-icon" aria-hidden="true">◐</span>
+      </button>
+    </div>
+  </header>
+
+  <nav id="site-nav" class="nav" aria-label="Primary">
+    <a href="/about/">About</a>
+    <a href="/built/">Built</a>
+    <a href="/experience/" class="active" aria-current="page">Experience</a>
+    <a href="/education/">Education</a>
+    <a href="/trainings/">Trainings</a>
+    <a href="/speaking/">Speaking</a>
+    <a href="/presentations/">Presentations</a>
+    <a href="/community/">Community</a>
+    <a href="/media/">Media</a>
+    <a href="/games/">Games</a>
+    <a href="/contact/">Contact</a>
+  </nav>
+
+<div class="games-launcher" id="games-launcher">
+    <button type="button" id="games-fab" class="orbit-fab games-fab" data-open-game="basketball" title="Play basketball">
+      <span class="orbit-fab-icon" aria-hidden="true">◎</span>
+      <span class="orbit-fab-label">Play</span>
+    </button>
+  </div>
+
+  <div id="game-popup" class="orbit-modal sports-modal" role="dialog" aria-modal="true" aria-labelledby="game-popup-title" hidden>
+    <div class="orbit-modal-backdrop" data-game-close></div>
+    <div class="orbit-modal-panel card">
+      <div class="orbit-modal-head">
+        <h2 id="game-popup-title">Basketball</h2>
+        <button type="button" class="btn btn-ghost orbit-close" aria-label="Close game" data-game-close>×</button>
+      </div>
+      <p class="meta">Drag to aim and charge · release to shoot · Esc closes</p>
+      <canvas id="game-popup-canvas" width="640" height="400" role="img" aria-label="Basketball"></canvas>
+      <div class="game-hud">
+        <span id="gp-score">Score: 0</span>
+        <span id="gp-extra">Shots: 0</span>
+      </div>
+      <div class="game-controls">
+        <button type="button" id="gp-pause" class="btn btn-ghost">Pause</button>
+        <button type="button" class="btn btn-ghost" data-game-close>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+<section id="experience" class="section reveal">
+      <p class="sheet-label">◇ SHEET 03 · EXPERIENCE</p>
+      <h1 class="page-title">Experience</h1>
+      <div class="card experience-intro">
+        <h3>Civil Servant, Government of Nepal</h3>
+        <p class="meta">September 2013 – Present</p>
+        <p class="current-line"><span class="eyebrow-inline">Currently</span> Office of the Hon. Finance Minister, Ministry of Finance</p>
+      </div>
+      <ol class="timeline">
+        <li>
+          <span class="when">Dec 2019 – Present</span>
+          <span class="org-name">Ministry of Finance</span>
+          <span class="current-tag">Current</span>
+          <p class="role-now">Current posting: Office of the Hon. Finance Minister</p>
+          <ul class="highlights">
+            <li>Digital transformation and technology support to senior leadership</li>
+            <li>High Level Economic Reform Committee — Digital Nepal Framework, IT as a growth engine, interoperable government IT</li>
+            <li>Founded the GovTech Nepal community</li>
+            <li>Trained 100+ civil servants on AI tools</li>
+            <li>Sovereign credit rating research with focus on IT exports and AI</li>
+            <li>Prepaid USD card initiative</li>
+            <li>AI use-cases across finance, tax, and customs</li>
+            <li>Finance Minister’s secretariat support (Oct 2025 – Mar 2026): AI dashboards, scheduling, and automation</li>
+            <li>Informed FM and forwarded the official <strong>Rasuwa Flood Update Portal</strong> (Ministry of Finance (MoF)) to MoF IT for mof.gov.np homepage banner linking</li>
+          </ul>
+        </li>
+        <li>
+          <span class="when">Jun 2017 – Dec 2019</span>
+          <span class="org-name">Office of the Prime Minister and Council of Ministers (OPMCM)</span>
+          <ul class="highlights">
+            <li>Technology policy work in a Prime Minister’s office environment</li>
+            <li>Government Centralized Email</li>
+            <li>Cabinet Automation System</li>
+            <li>OAS → GIOMS transition</li>
+            <li>Early Nagarik App</li>
+            <li>Cross-ministry digital coordination</li>
+          </ul>
+        </li>
+        <li>
+          <span class="when">Jan 2016 – Jun 2017</span>
+          <span class="org-name">Ministry of Water Supply</span>
+          <ul class="highlights">
+            <li>IT procurement</li>
+            <li>Ministry website and email systems</li>
+            <li>Inventory management</li>
+            <li>Digital document training for staff</li>
+          </ul>
+        </li>
+        <li>
+          <span class="when">Sept 2013 – Jan 2016</span>
+          <span class="org-name">Ministry of Urban Development</span>
+          <ul class="highlights">
+            <li>Joined the civil service in September 2013</li>
+            <li>Databases and digitization</li>
+            <li>2015 earthquake period — relief logistics support at Tribhuvan International Airport (TIA) and customs</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+<footer class="site-footer">
+    <p class="utility-meta">
+      <time id="kathmandu-clock" data-chrono="kathmandu" datetime="" aria-label="Kathmandu local time">Kathmandu · --:--:-- NPT</time>
+      <span class="utility-sep" aria-hidden="true">·</span>
+      <span>Updated September 2026</span>
+    </p>
+    <p>© <span id="year"></span> Niraj Bhusal · Personal site · Ministry of Finance (MoF) portal is official; personal Rasuwa Flood Update Portal is a civic project, not a government website.</p>
+  </footer>
+
+  <script>
+    (function () {
+      if (document.querySelector('script[type="module"][src="/src/main.js"]')) return;
+      var nodes = document.querySelectorAll('[data-chrono="kathmandu"]');
+      if (!nodes.length) return;
+      var fmt = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Kathmandu",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23"
+      });
+      var slow = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function tick() {
+        var now = new Date();
+        var iso = now.toISOString();
+        var text = "Kathmandu · " + fmt.format(now) + " NPT";
+        for (var i = 0; i < nodes.length; i++) {
+          nodes[i].dateTime = iso;
+          nodes[i].textContent = text;
+        }
+      }
+      tick();
+      window.setInterval(tick, slow ? 30000 : 1000);
+    })();
+  </script>
+
+</body>
+</html>
