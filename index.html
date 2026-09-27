@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    } catch (e) {}
+  </script>
   <title>Niraj Bhusal — GovTech • AI Governance • Digital Public Infrastructure</title>
   <meta name="description" content="Niraj Bhusal — civil servant at the Office of the Hon. Finance Minister, Ministry of Finance, Nepal. GovTech • AI Governance • Digital Public Infrastructure. Highlighting the official Ministry of Finance (MoF) Rasuwa Flood Update Portal and personal civic tools." />
   <link rel="canonical" href="https://nirajbhusal.github.io/" />

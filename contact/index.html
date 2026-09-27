@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    } catch (e) {}
+  </script>
   <title>Contact — Niraj Bhusal</title>
   <meta name="description" content="Reach Niraj Bhusal through the Contact action, LinkedIn, X, and links to the official and personal Rasuwa flood portals." />
   <link rel="canonical" href="https://nirajbhusal.github.io/contact/" />

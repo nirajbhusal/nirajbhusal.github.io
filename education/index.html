@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    } catch (e) {}
+  </script>
   <title>Education — Niraj Bhusal</title>
   <meta name="description" content="Niraj Bhusal’s education: an M.E. in Information and Communication Engineering at HUST, China, and a BICT from Tribhuvan University." />
   <link rel="canonical" href="https://nirajbhusal.github.io/education/" />

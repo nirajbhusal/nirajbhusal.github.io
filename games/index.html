@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    } catch (e) {}
+  </script>
   <title>Games — Niraj Bhusal</title>
   <meta name="description" content="A quiet basketball game and a clickable constellation of facts on Niraj Bhusal’s personal site." />
   <link rel="canonical" href="https://nirajbhusal.github.io/games/" />

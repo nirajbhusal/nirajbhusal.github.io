@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    } catch (e) {}
+  </script>
   <title>Presentations — Niraj Bhusal</title>
   <meta name="description" content="Slide decks by Niraj Bhusal, including Data From Disaster at Digital Nepal Conclave 2026 and AI: Aim, Act, Achieve for JCI Nepal." />
   <link rel="canonical" href="https://nirajbhusal.github.io/presentations/" />

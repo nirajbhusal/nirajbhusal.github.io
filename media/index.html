@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    } catch (e) {}
+  </script>
   <title>Awards & Media — Niraj Bhusal</title>
   <meta name="description" content="Awards, news coverage, and speaking mentions for Niraj Bhusal, including reporting on the 2026 flood response and Digital Nepal Conclave." />
   <link rel="canonical" href="https://nirajbhusal.github.io/media/" />

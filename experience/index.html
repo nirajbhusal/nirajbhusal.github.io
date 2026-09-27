@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    } catch (e) {}
+  </script>
   <title>Experience — Niraj Bhusal</title>
   <meta name="description" content="Niraj Bhusal’s civil service since 2013, including the Office of the Hon. Finance Minister, the Office of the Prime Minister, and earlier ministry postings." />
   <link rel="canonical" href="https://nirajbhusal.github.io/experience/" />
