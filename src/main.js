@@ -247,6 +247,13 @@ function initReveal() {
   nodes.forEach((n) => io.observe(n));
 }
 
+function normalizePath(pathname) {
+  let path = pathname || '/';
+  path = path.replace(/\/index\.html$/, '');
+  if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+  return path || '/';
+}
+
 function initNav() {
   const toggle = document.getElementById('nav-toggle');
   const nav = document.getElementById('site-nav');
@@ -254,7 +261,7 @@ function initNav() {
   if (!toggle || !nav) return;
 
   const MOBILE_MQ = '(max-width: 900px)';
-  const links = [...nav.querySelectorAll('a[href^="#"]')];
+  const links = [...nav.querySelectorAll('a[href]')];
   let lastFocus = null;
   let lockY = 0;
 
@@ -342,24 +349,29 @@ function initNav() {
     if (!isMobileNav()) setOpen(false);
   });
 
-  const sections = links
-    .map((a) => document.querySelector(a.getAttribute('href')))
-    .filter(Boolean);
-
-  function setActiveFromScroll() {
-    const marker = window.scrollY + 120;
-    let current = sections[0];
-    for (const section of sections) {
-      if (section.offsetTop <= marker) current = section;
-    }
-    const id = current?.id;
+  function setActiveFromPath() {
+    const path = normalizePath(location.pathname);
     links.forEach((a) => {
-      a.classList.toggle('active', a.getAttribute('href') === `#${id}`);
+      let href = '/';
+      try {
+        href = normalizePath(new URL(a.getAttribute('href'), location.origin).pathname);
+      } catch {
+        href = '/';
+      }
+      const on = href === path;
+      a.classList.toggle('active', on);
+      if (on) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
     });
+    const logo = document.querySelector('a.logo');
+    if (logo) {
+      const home = normalizePath(new URL(logo.getAttribute('href') || '/', location.origin).pathname);
+      if (home === path) logo.setAttribute('aria-current', 'page');
+      else logo.removeAttribute('aria-current');
+    }
   }
 
-  window.addEventListener('scroll', setActiveFromScroll, { passive: true });
-  setActiveFromScroll();
+  setActiveFromPath();
 }
 
 function initGamePopup() {

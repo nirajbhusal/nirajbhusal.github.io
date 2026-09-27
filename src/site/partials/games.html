@@ -1,0 +1,26 @@
+  <div class="games-launcher" id="games-launcher" data-gate-inert inert>
+    <button type="button" id="games-fab" class="orbit-fab games-fab" data-open-game="basketball" title="Play basketball">
+      <span class="orbit-fab-icon" aria-hidden="true">◎</span>
+      <span class="orbit-fab-label">Play</span>
+    </button>
+  </div>
+
+  <div id="game-popup" class="orbit-modal sports-modal" role="dialog" aria-modal="true" aria-labelledby="game-popup-title" hidden data-gate-inert inert>
+    <div class="orbit-modal-backdrop" data-game-close></div>
+    <div class="orbit-modal-panel card">
+      <div class="orbit-modal-head">
+        <h2 id="game-popup-title">Basketball</h2>
+        <button type="button" class="btn btn-ghost orbit-close" aria-label="Close game" data-game-close>×</button>
+      </div>
+      <p class="meta">Drag to aim and charge · release to shoot · Esc closes</p>
+      <canvas id="game-popup-canvas" width="640" height="400" role="img" aria-label="Basketball"></canvas>
+      <div class="game-hud">
+        <span id="gp-score">Score: 0</span>
+        <span id="gp-extra">Shots: 0</span>
+      </div>
+      <div class="game-controls">
+        <button type="button" id="gp-pause" class="btn btn-ghost">Pause</button>
+        <button type="button" class="btn btn-ghost" data-game-close>Close</button>
+      </div>
+    </div>
+  </div>

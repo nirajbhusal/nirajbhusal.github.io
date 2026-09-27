@@ -3,20 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    } catch (e) {}
+  </script>
   <title>Niraj Bhusal — GovTech • AI Governance • Digital Public Infrastructure</title>
   <meta name="description" content="Niraj Bhusal — civil servant at the Office of the Hon. Finance Minister, Ministry of Finance, Nepal. GovTech • AI Governance • Digital Public Infrastructure. Highlighting the official Ministry of Finance (MoF) Rasuwa Flood Update Portal and personal civic tools." />
+  <link rel="canonical" href="https://nirajbhusal.github.io/" />
   <meta property="og:title" content="Niraj Bhusal — GovTech • AI Governance • Digital Public Infrastructure" />
-  <meta property="og:description" content="GovTech • AI Governance • Digital Public Infrastructure | Office of the Hon. Finance Minister · Ministry of Finance, Nepal" />
+  <meta property="og:description" content="Niraj Bhusal — civil servant at the Office of the Hon. Finance Minister, Ministry of Finance, Nepal. GovTech • AI Governance • Digital Public Infrastructure. Highlighting the official Ministry of Finance (MoF) Rasuwa Flood Update Portal and personal civic tools." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://nirajbhusal.github.io/" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="/assets/index-CypJvQsc.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-BZ0W98AH.css">
+  <script>
+    (function () {
+      var map = {"about":"/about/","built":"/projects/","projects":"/projects/","experience":"/experience/","education":"/education/","trainings":"/training/","training":"/training/","speaking":"/speaking/","presentations":"/presentations/","community":"/community/","media":"/media/","play":"/games/","games":"/games/","contact":"/contact/","hero":"/"};
+      var hash = (location.hash || "").replace(/^#/, "").toLowerCase();
+      if (!map[hash]) return;
+      var target = map[hash];
+      var path = location.pathname.replace(/\/index\.html$/, "");
+      if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
+      var norm = target === "/" ? "/" : target.replace(/\/$/, "");
+      if (path !== norm) location.replace(target);
+    })();
+  </script>
+  <script type="module" crossorigin src="/assets/main-BpzqB4pk.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-BNUeEz3O.css">
 </head>
-<body class="gate-locked">
+<body class="gate-locked" data-page="home">
   <div id="enter-gate" class="enter-gate" role="dialog" aria-modal="true" aria-labelledby="enter-gate-title" aria-describedby="enter-gate-focus">
     <canvas id="enter-gate-canvas" class="enter-gate-canvas" aria-hidden="true"></canvas>
     <div class="enter-gate-veil" aria-hidden="true"></div>
@@ -63,9 +83,9 @@
   <div id="nebula" class="nebula" aria-hidden="true"></div>
   <div id="nav-overlay" class="nav-overlay" hidden data-gate-inert inert></div>
 
-  <header class="site-header" data-gate-inert inert>
+<header class="site-header" data-gate-inert inert>
     <div class="site-header-glass" aria-hidden="true"></div>
-    <a class="logo" href="#hero">NB</a>
+    <a class="logo" href="/">NB</a>
     <button type="button" id="nav-toggle" class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
       <span class="nav-toggle-bar" aria-hidden="true"></span>
       <span class="nav-toggle-bar" aria-hidden="true"></span>
@@ -95,20 +115,20 @@
   </header>
 
   <nav id="site-nav" class="nav" aria-label="Primary" data-gate-inert inert>
-    <a href="#about">About</a>
-    <a href="#built">Built</a>
-    <a href="#experience">Experience</a>
-    <a href="#education">Education</a>
-    <a href="#trainings">Trainings</a>
-    <a href="#speaking">Speaking</a>
-    <a href="#presentations">Presentations</a>
-    <a href="#community">Community</a>
-    <a href="#media">Media</a>
-    <a href="#play">Games</a>
-    <a href="#contact">Contact</a>
+    <a href="/about/">About</a>
+    <a href="/projects/">Projects</a>
+    <a href="/experience/">Experience</a>
+    <a href="/education/">Education</a>
+    <a href="/training/">Training</a>
+    <a href="/speaking/">Speaking</a>
+    <a href="/presentations/">Presentations</a>
+    <a href="/community/">Community</a>
+    <a href="/media/">Media</a>
+    <a href="/games/">Games</a>
+    <a href="/contact/">Contact</a>
   </nav>
 
-  <div class="games-launcher" id="games-launcher" data-gate-inert inert>
+<div class="games-launcher" id="games-launcher" data-gate-inert inert>
     <button type="button" id="games-fab" class="orbit-fab games-fab" data-open-game="basketball" title="Play basketball">
       <span class="orbit-fab-icon" aria-hidden="true">◎</span>
       <span class="orbit-fab-label">Play</span>
@@ -136,7 +156,7 @@
   </div>
 
   <main data-gate-inert inert>
-    <section id="hero" class="section hero reveal">
+<section id="hero" class="section hero reveal">
       <p class="eyebrow">Kathmandu · Nepal</p>
       <h1 class="hero-name"><span class="hero-given">Niraj</span><span class="hero-family">Bhusal</span></h1>
       <p class="tagline">GovTech &amp; AI Governance · Digital Transformation</p>
@@ -170,657 +190,76 @@
       </div>
       <div class="hero-actions">
         <a class="btn btn-primary" href="https://mofnepal.github.io/rasuwa-flood-update/" target="_blank" rel="noopener">Official MoF portal ↗</a>
-        <a class="btn btn-ghost" href="#built">See what’s built</a>
-        <a class="btn btn-ghost" href="#contact">Contact</a>
+        <a class="btn btn-ghost" href="/projects/">View projects</a>
+        <a class="btn btn-ghost" href="/contact/">Contact</a>
         <a class="btn btn-ghost" href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener">Personal civic portal ↗</a>
         <button type="button" class="btn btn-ghost" data-open-game="basketball" title="Open basketball">Play</button>
       </div>
     </section>
-
-    <section id="about" class="section reveal">
-      <p class="sheet-label">◇ SHEET 01 · ABOUT</p>
-      <h2>About</h2>
-      <div class="about-grid">
-        <div class="about-copy">
-          <p>I’m a civil servant with the Government of Nepal, currently at the <strong>Office of the Hon. Finance Minister, Ministry of Finance</strong>, working at the intersection of government technology, AI governance, and digital public infrastructure (DPI).</p>
-          <p>Alongside day-to-day public service, I help surface <strong>official</strong> public records — including briefing the Finance Minister and forwarding the <strong>Rasuwa Flood Update Portal</strong> (Ministry of Finance (MoF)) to MoF IT for linking on mof.gov.np — and I build personal civic experiments such as the independent Rasuwa Flood Update Portal. I also help grow communities like <strong>GovTech Nepal</strong>.</p>
-          <p>I care about systems people can trust: accurate data, clear routing to official channels, and tools that respect the line between personal initiative and government authority.</p>
-        </div>
-        <aside class="card focus-card">
-          <h3>Focus</h3>
-          <ul>
-            <li>GovTech &amp; public digital services</li>
-            <li>AI governance in the public sector</li>
-            <li>Digital public infrastructure (DPI)</li>
-            <li>Crisis information design</li>
-          </ul>
-        </aside>
-      </div>
-    </section>
-
-    <section id="built" class="section reveal">
-      <p class="sheet-label">◇ SHEET 02 · BUILT</p>
-      <h2>What I’ve Built</h2>
-      <article class="card featured featured-mof" aria-labelledby="mof-portal-title">
-        <div class="featured-mof-layout">
-          <div class="featured-mof-copy">
-            <span class="badge badge-official">Ministry of Finance (MoF) · Official</span>
-            <h3 id="mof-portal-title">Rasuwa Flood Update Portal</h3>
-            <p>Official portal from the Office of the Hon. Finance Minister / Ministry of Finance (MoF) — public record of <strong>PMDRF contributions</strong>, handovers, foreign assistance, rescue/relief snapshots, and Government initiatives. Informed the Finance Minister and forwarded to MoF IT to link on <strong>mof.gov.np</strong> with a homepage banner.</p>
-            <p class="meta">Official · Ministry of Finance (MoF)</p>
-            <p class="portal-links">
-              <span class="portal-links-label">Links</span>
-              <a href="https://mofnepal.github.io/rasuwa-flood-update/" target="_blank" rel="noopener">English</a>
-              <span class="portal-links-sep" aria-hidden="true">·</span>
-              <a href="https://mofnepal.github.io/rasuwa-flood-update/ne/" target="_blank" rel="noopener" lang="ne">Nepali</a>
-            </p>
-          </div>
-          <div class="featured-mof-viz" aria-hidden="true">
-            <div class="portal-chrome">
-              <div class="portal-chrome-bar">
-                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-                <span class="portal-url">mofnepal.github.io/rasuwa-flood-update</span>
-              </div>
-              <svg class="portal-dash" viewBox="0 0 320 180" role="img" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="mofGlow" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#3b9eff" stop-opacity="0.55"/>
-                    <stop offset="100%" stop-color="#6ec0ff" stop-opacity="0.15"/>
-                  </linearGradient>
-                  <linearGradient id="barFill" x1="0" y1="1" x2="0" y2="0">
-                    <stop offset="0%" stop-color="#3b9eff" stop-opacity="0.35"/>
-                    <stop offset="100%" stop-color="#6ec0ff" stop-opacity="0.9"/>
-                  </linearGradient>
-                </defs>
-                <rect x="8" y="8" width="304" height="164" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(232,233,237,0.12)"/>
-                <text x="20" y="28" fill="#8b8f9c" font-family="IBM Plex Mono, monospace" font-size="9" letter-spacing="0.06em">ILLUSTRATIVE · NOT LIVE KPIs</text>
-                <text x="20" y="48" fill="#e8e9ed" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="500">Public record · fund flow · relief</text>
-                <!-- mini tiles -->
-                <rect x="20" y="60" width="88" height="42" rx="6" fill="url(#mofGlow)" opacity="0.85"/>
-                <rect x="116" y="60" width="88" height="42" rx="6" fill="rgba(59,158,255,0.12)" stroke="rgba(59,158,255,0.35)"/>
-                <rect x="212" y="60" width="88" height="42" rx="6" fill="rgba(59,158,255,0.12)" stroke="rgba(59,158,255,0.35)"/>
-                <text x="28" y="78" fill="#e8e9ed" font-size="8" font-family="IBM Plex Mono, monospace">PMDRF</text>
-                <text x="28" y="92" fill="#6ec0ff" font-size="10" font-family="IBM Plex Sans, sans-serif">Contributions</text>
-                <text x="124" y="78" fill="#e8e9ed" font-size="8" font-family="IBM Plex Mono, monospace">HANDOVER</text>
-                <text x="124" y="92" fill="#6ec0ff" font-size="10" font-family="IBM Plex Sans, sans-serif">Relief packs</text>
-                <text x="220" y="78" fill="#e8e9ed" font-size="8" font-family="IBM Plex Mono, monospace">FOREIGN</text>
-                <text x="220" y="92" fill="#6ec0ff" font-size="10" font-family="IBM Plex Sans, sans-serif">Assistance</text>
-                <!-- abstract bars -->
-                <rect x="28" y="120" width="14" height="36" rx="3" fill="url(#barFill)"/>
-                <rect x="50" y="132" width="14" height="24" rx="3" fill="url(#barFill)" opacity="0.75"/>
-                <rect x="72" y="114" width="14" height="42" rx="3" fill="url(#barFill)"/>
-                <rect x="94" y="126" width="14" height="30" rx="3" fill="url(#barFill)" opacity="0.8"/>
-                <rect x="116" y="118" width="14" height="38" rx="3" fill="url(#barFill)" opacity="0.7"/>
-                <!-- flow diagram -->
-                <circle cx="190" cy="138" r="10" fill="none" stroke="#3b9eff" stroke-width="1.5"/>
-                <circle cx="230" cy="138" r="10" fill="none" stroke="#6ec0ff" stroke-width="1.5"/>
-                <circle cx="270" cy="138" r="10" fill="none" stroke="#3b9eff" stroke-width="1.5"/>
-                <path d="M200 138 H220 M240 138 H260" stroke="#3b9eff" stroke-width="1.2" stroke-dasharray="3 2"/>
-                <text x="184" y="162" fill="#8b8f9c" font-size="7" font-family="IBM Plex Mono, monospace">MoF → record → public</text>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </article>
-      <article class="card featured featured-civic">
-        <span class="badge">Personal civic · Not a government website</span>
-        <h3>Rasuwa Flood Update Portal</h3>
-        <p>Independent personal civic information site — <strong>not a government website</strong> — aggregating timestamped, fact-checked updates during the August 2026 flood response. Built with Grok; routes citizens to official rescue and donation channels. Distinct from the official Ministry of Finance (MoF) portal above.</p>
-        <p class="meta">Personal civic project</p>
-        <p class="portal-links">
-          <span class="portal-links-label">Link</span>
-          <a href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener">Open portal</a>
-        </p>
-      </article>
-      <div class="card-grid">
-        <article class="card">
-          <h3>Centralized Email</h3>
-          <p>Contributed while in government to centralized government email systems.</p>
-          <p class="meta">Contribution · not ownership</p>
-        </article>
-        <article class="card">
-          <h3>Cabinet Automation</h3>
-          <p>Contributed to automation supporting cabinet workflow.</p>
-          <p class="meta">Contribution · not ownership</p>
-        </article>
-        <article class="card">
-          <h3>GIOMS</h3>
-          <p>Contributed to government information / operations management systems.</p>
-          <p class="meta">Contribution · not ownership</p>
-        </article>
-        <article class="card">
-          <h3>Early Nagarik App</h3>
-          <p>Early contributions to the Nagarik citizen-facing app effort.</p>
-          <p class="meta">Contribution · not ownership</p>
-        </article>
-      </div>
-    </section>
-
-    <section id="experience" class="section reveal">
-      <p class="sheet-label">◇ SHEET 03 · EXPERIENCE</p>
-      <h2>Experience</h2>
-      <div class="card experience-intro">
-        <h3>Civil Servant, Government of Nepal</h3>
-        <p class="meta">September 2013 – Present</p>
-        <p class="current-line"><span class="eyebrow-inline">Currently</span> Office of the Hon. Finance Minister, Ministry of Finance</p>
-      </div>
-      <ol class="timeline">
-        <li>
-          <span class="when">Dec 2019 – Present</span>
-          <span class="org-name">Ministry of Finance</span>
-          <span class="current-tag">Current</span>
-          <p class="role-now">Current posting: Office of the Hon. Finance Minister</p>
-          <ul class="highlights">
-            <li>Digital transformation and technology support to senior leadership</li>
-            <li>High Level Economic Reform Committee — Digital Nepal Framework, IT as a growth engine, interoperable government IT</li>
-            <li>Founded the GovTech Nepal community</li>
-            <li>Trained 100+ civil servants on AI tools</li>
-            <li>Sovereign credit rating research with focus on IT exports and AI</li>
-            <li>Prepaid USD card initiative</li>
-            <li>AI use-cases across finance, tax, and customs</li>
-            <li>Finance Minister’s secretariat support (Oct 2025 – Mar 2026): AI dashboards, scheduling, and automation</li>
-            <li>Informed FM and forwarded the official <strong>Rasuwa Flood Update Portal</strong> (Ministry of Finance (MoF)) to MoF IT for mof.gov.np homepage banner linking</li>
-          </ul>
-        </li>
-        <li>
-          <span class="when">Jun 2017 – Dec 2019</span>
-          <span class="org-name">Office of the Prime Minister and Council of Ministers (OPMCM)</span>
-          <ul class="highlights">
-            <li>Technology policy work in a Prime Minister’s office environment</li>
-            <li>Government Centralized Email</li>
-            <li>Cabinet Automation System</li>
-            <li>OAS → GIOMS transition</li>
-            <li>Early Nagarik App</li>
-            <li>Cross-ministry digital coordination</li>
-          </ul>
-        </li>
-        <li>
-          <span class="when">Jan 2016 – Jun 2017</span>
-          <span class="org-name">Ministry of Water Supply</span>
-          <ul class="highlights">
-            <li>IT procurement</li>
-            <li>Ministry website and email systems</li>
-            <li>Inventory management</li>
-            <li>Digital document training for staff</li>
-          </ul>
-        </li>
-        <li>
-          <span class="when">Sept 2013 – Jan 2016</span>
-          <span class="org-name">Ministry of Urban Development</span>
-          <ul class="highlights">
-            <li>Joined the civil service in September 2013</li>
-            <li>Databases and digitization</li>
-            <li>2015 earthquake period — relief logistics support at Tribhuvan International Airport (TIA) and customs</li>
-          </ul>
-        </li>
-      </ol>
-    </section>
-
-    <section id="education" class="section reveal">
-      <p class="sheet-label">◇ SHEET 04 · EDUCATION</p>
-      <h2>Education</h2>
-      <article class="card featured education-card">
-        <span class="badge">Master’s</span>
-        <h3>M.E. Information &amp; Communication Engineering</h3>
-        <p class="meta">Huazhong University of Science and Technology (HUST), China · 2021–2023</p>
-        <ul class="highlights">
-          <li><strong>MOFCOM Scholarship (China)</strong> — nominated by the Government of Nepal</li>
-          <li>Specializations: Cyber Security, AI, Mobile Communication, IT Project Management, Digital Governance</li>
-          <li>Thesis: 5G and Massive MIMO</li>
-          <li>Excellence in Research Award — May 2023</li>
-        </ul>
-      </article>
-      <article class="card education-card">
-        <h3>Bachelor of Information and Communication Technology (BICT)</h3>
-        <p class="meta">Sanothimi Campus, Tribhuvan University · 2012–2015</p>
-      </article>
-    </section>
-
-    <section id="trainings" class="section reveal">
-      <p class="sheet-label">◇ SHEET 05 · TRAININGS</p>
-      <h2>Trainings</h2>
-      <div class="chip-grid" role="list">
-        <span class="chip" role="listitem"><span class="chip-name">Oxford AI &amp; Digital Transformation for Government</span><span class="chip-when">Dec 2025</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">ITU AI Governance — Geneva</span><span class="chip-when">Sept–Oct 2025</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">Google Gemini Educator</span><span class="chip-when">2025–2028</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">ITU Spectrum Assignment Policies</span><span class="chip-when">Jul 2025</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">Nanjing New Generation AI</span><span class="chip-when">Jun 2025</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">BlueDot AI Governance</span><span class="chip-when">Jan–Apr 2025</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">U. Michigan — Generative AI Governance</span><span class="chip-when">Dec 2024</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">MOFCOM Cross-Border E-Commerce</span><span class="chip-when">Nov 2024</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">DIGOV Erasmus / Leeds</span><span class="chip-when">Digital governance</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">Perplexity AI Fellowship</span><span class="chip-when">Mar–Aug 2025</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">ATIH Responsible Tech Mentorship</span><span class="chip-when">Feb–Jun 2025</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">Texas Hackathon 2025 — Mentor</span><span class="chip-when">Jul 2025</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">India AI Impact Summit</span><span class="chip-when">Feb 2026</span></span>
-        <span class="chip" role="listitem"><span class="chip-name">World Summit AI — Doha</span><span class="chip-when">Dec 2024</span></span>
-      </div>
-    </section>
-
-    <section id="speaking" class="section reveal">
-      <p class="sheet-label">◇ SHEET 06 · SPEAKING</p>
-      <h2>Speaking</h2>
-      <div class="event-grid">
-        <article class="card event-card">
-          <span class="badge">Speaker</span>
-          <h3>Digital Nepal Conclave 2026</h3>
-          <p class="meta">20 Sep 2026 · The Plaza, Pulchowk, Lalitpur · ICT Foundation Nepal</p>
-          <p>Speaker — set context for “Data From Disaster: Nepal’s 2026 Flash Floods — Capturing Human Experiences, Tracing Digital Footprints, Building a Resilient Future.”
-            <a href="https://digitalconclave.org/" target="_blank" rel="noopener">digitalconclave.org ↗</a>
-            · <a href="https://digitalconclave.org/speakers/" target="_blank" rel="noopener">Speakers ↗</a>
-            · <a href="https://lnkd.in/p/gNfivjY9" target="_blank" rel="noopener">LinkedIn ↗</a>
-            · <a href="/presentations/Data-From-Disaster-DNC-2026.pdf" target="_blank" rel="noopener">Slides ↗</a>
-          </p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">AI Trainer</span>
-          <h3>JCI Nepal Area "B" Conference 2026</h3>
-          <p class="meta">4–5 Sep 2026 · Hetauda-02, Makawanpur</p>
-          <p>AI Trainer — AI Governance track.
-            <a href="/presentations/AI-Aim-Act-Achieve-JCI.pdf" target="_blank" rel="noopener">Slides ↗</a>
-          </p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Panelist</span>
-          <h3>Rotaract Kathmandu — Sambhavnaharuko Desh</h3>
-          <p class="meta">May 2025 · Covered in Kathmandu Post</p>
-          <p>Youth discussion panelist.
-            <a href="https://www.facebook.com/rotaractkathmandu/photos/introducing-our-panelist-niraj-bhusalwere-honored-to-welcome-niraj-bhusal-civil-/1131421312362069/" target="_blank" rel="noopener">FB panelist photo ↗</a>
-            · <a href="https://www.facebook.com/rotaractkathmandu/posts/introducing-our-panelist-niraj-bhusalwere-honored-to-welcome-niraj-bhusal-civil-/1131421585695375/" target="_blank" rel="noopener">Rotaract post ↗</a>
-            · <a href="https://kathmandupost.com/art-culture/2025/05/12/youth-urged-to-embrace-uncertainty-and-build-in-nepal" target="_blank" rel="noopener">Kathmandu Post ↗</a>
-          </p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Speaking</span>
-          <h3>Instagram appearances</h3>
-          <p class="meta">Event &amp; community posts</p>
-          <p>
-            <a href="https://www.instagram.com/p/DVOWtLTEbWp/" target="_blank" rel="noopener">Instagram post — AI in Healthcare ↗</a>
-            · <a href="https://www.instagram.com/p/Db022HKMEyK/" target="_blank" rel="noopener">Instagram post — Blockchain &amp; governance ↗</a>
-          </p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Delegate</span>
-          <h3>India AI Impact Summit</h3>
-          <p class="meta">February 2026</p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Delegate</span>
-          <h3>World Summit AI — Doha</h3>
-          <p class="meta">December 2024</p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Panelist</span>
-          <h3>vivo 5G Talk Asia</h3>
-          <p class="meta">May 2023</p>
-          <p>Regional tech talk on 5G prospects (Nepal–Pakistan experts).
-            <a href="https://www.vivo.com/pk/about-vivo/news/5g-talk" target="_blank" rel="noopener">vivo news ↗</a>
-            · <a href="https://propakistani.pk/2023/05/31/vivos-5g-talk-event-a-glimpse-into-a-boundless-intelligent-world-powered-by-5g/amp/" target="_blank" rel="noopener">ProPakistani ↗</a>
-            · <a href="https://www.sharesansar.com/newsdetail/vivo-hosts-tech-talk-on-prospects-for-5g-in-nepal-featuring-pre-eminent-south-asian-experts-on-the-revolutionary-technology-2023-06-02" target="_blank" rel="noopener">ShareSansar ↗</a>
-          </p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Judge</span>
-          <h3>Hult Prize Grand Finale</h3>
-          <p class="meta">March 2022 · Far Western University</p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Summit</span>
-          <h3>Global Crowdsource Summit</h3>
-          <p class="meta">January 2020 · Google, Singapore</p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Summit</span>
-          <h3>GDG / WTM SEA Summit</h3>
-          <p class="meta">August 2019 · Google, Bangkok</p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Speaker</span>
-          <h3>Adapt Convention</h3>
-          <p class="meta">Speaker listing</p>
-          <p><a href="https://adaptconvention.com/speaker/niraj-bhusal/" target="_blank" rel="noopener">adaptconvention.com ↗</a></p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Mentor</span>
-          <h3>ATIH Responsible Tech Mentorship</h3>
-          <p class="meta">February–June 2025</p>
-        </article>
-        <article class="card event-card">
-          <span class="badge">Mentor</span>
-          <h3>Texas Hackathon 2025 Vol.1</h3>
-          <p class="meta">July 2025</p>
-        </article>
-      </div>
-    </section>
-
-    <section id="presentations" class="section reveal">
-      <p class="sheet-label">◇ SHEET 07 · PRESENTATIONS</p>
-      <h2>Presentations</h2>
-      <div class="event-grid">
-        <article class="card event-card">
-          <span class="badge">Speaker</span>
-          <h3>Data From Disaster: Rasuwa–Bhotekoshi Flood 2026</h3>
-          <p class="meta">Digital Nepal Conclave 2026 · 20 September 2026 · The Plaza, Pulchowk, Lalitpur</p>
-          <p>Capturing human experiences, tracing digital footprints, and building a resilient future. Speaker slides by Niraj Bhusal.</p>
-          <div class="card-actions">
-            <a class="btn btn-primary" href="/presentations/Data-From-Disaster-DNC-2026.pdf" target="_blank" rel="noopener">View PDF</a>
-          </div>
-        </article>
-        <article class="card event-card">
-          <span class="badge">AI Trainer</span>
-          <h3>AI: Aim, Act, Achieve!</h3>
-          <p class="meta">JCI Nepal Area "B" Conference 2026 · 4–5 Sep 2026 · Hetauda</p>
-          <p>AI Governance track for Junior Chamber International Nepal Area "B". Presented by Niraj Bhusal, AI Trainer.</p>
-          <div class="card-actions">
-            <a class="btn btn-primary" href="/presentations/AI-Aim-Act-Achieve-JCI.pdf" target="_blank" rel="noopener">View PDF</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section id="community" class="section reveal">
-      <p class="sheet-label">◇ SHEET 08 · COMMUNITY</p>
-      <h2>Community</h2>
-      <div class="card-grid">
-        <article class="card">
-          <h3>GDG Dang</h3>
-          <p>Founder (2015–2019) — first tech community outside Kathmandu; DevFest, I/O Extended, Cloud Next, Women Techmakers.</p>
-        </article>
-        <article class="card">
-          <h3>Google Crowdsource</h3>
-          <p>Community Leader / Influencer for Nepal (2020–2021).</p>
-        </article>
-        <article class="card">
-          <h3>TheirWorld</h3>
-          <p>Global Youth Ambassador (2020–2022).</p>
-        </article>
-        <article class="card">
-          <h3>TechSathi</h3>
-          <p>Founder (2019–2020); grew to 100K+ followers within a year.</p>
-        </article>
-        <article class="card">
-          <h3>GovTech Nepal</h3>
-          <p>Founder — government digital-adoption community.</p>
-        </article>
-      </div>
-    </section>
-
-    <section id="media" class="section reveal">
-      <p class="sheet-label">◇ SHEET 09 · MEDIA</p>
-      <h2>Awards &amp; Media</h2>
-
-      <div class="media-group">
-        <h3>Awards &amp; recognition</h3>
-        <div class="media-grid">
-          <a class="media-card" href="https://www.facebook.com/425174071175625/posts/1008164656209894/" target="_blank" rel="noopener">
-            <span class="outlet">Facebook</span>
-            <span class="headline">Influencer award recognition</span>
-            <span class="when">Community award post</span>
-          </a>
-          <a class="media-card" href="https://app.favikon.com/public/profile/68904be8f1f2a284578be081/" target="_blank" rel="noopener">
-            <span class="outlet">Favikon</span>
-            <span class="headline">Public creator profile</span>
-            <span class="when">Favikon</span>
-          </a>
-          <a class="media-card" href="https://googlecrowdsource.com/team.html" target="_blank" rel="noopener">
-            <span class="outlet">Google Crowdsource</span>
-            <span class="headline">Crowdsource team page</span>
-            <span class="when">Community leadership</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="media-group">
-        <h3>News</h3>
-        <div class="media-grid">
-          <a class="media-card" href="https://ictsamachar.com/news/from-disaster-understanding-to-future-preparedness--the/" target="_blank" rel="noopener">
-            <span class="outlet">ICT Samachar</span>
-            <span class="headline">विपद् बुझ्नदेखि भविष्यको तयारीसम्म डेटाको भूमिका महत्वपूर्ण : निरज भुसाल</span>
-            <span class="when">4 Ashoj 2083 · 20 Sep 2026</span>
-          </a>
-          <a class="media-card" href="https://decodemail.boomlive.in/p/how-do-you-find-someone-after-a-flood" target="_blank" rel="noopener">
-            <span class="outlet">Decode Mail (Boom)</span>
-            <span class="headline">How Do You Find Someone After A Flood?</span>
-            <span class="when">9 Sep 2026 · Adrija Bose · personal civic flood bulletin</span>
-          </a>
-          <a class="media-card" href="https://kathmandupost.com/national/2026/09/06/how-an-it-engineer-used-ai-to-aid-nepal-s-flood-response" target="_blank" rel="noopener">
-            <span class="outlet">The Kathmandu Post</span>
-            <span class="headline">How an IT engineer used AI to aid Nepal’s flood response</span>
-            <span class="when">6 Sep 2026</span>
-          </a>
-          <a class="media-card" href="https://ekantipur.com/technology/2026/09/03/neeraj-creates-bhotekoshi-flood-portal-with-the-power-of-ai-58-15.html" target="_blank" rel="noopener">
-            <span class="outlet">eKantipur</span>
-            <span class="headline">बाढीमा हराएको सूचना खोजिरहेका निरज</span>
-            <span class="when">3 Sep 2026</span>
-          </a>
-          <a class="media-card" href="https://ictsamachar.com/news/niraj-bhusal-started--rasuwa-bhotekoshi-flood--update-to/" target="_blank" rel="noopener">
-            <span class="outlet">ICT Samachar</span>
-            <span class="headline">रसुवा–भोटेकोशी बाढी अपडेट</span>
-            <span class="when">Rasuwa Flood Update Portal coverage</span>
-          </a>
-          <a class="media-card" href="https://bankingsamachar.com/news/168477/" target="_blank" rel="noopener">
-            <span class="outlet">Banking Samachar</span>
-            <span class="headline">निरज भुसालको एआई बाढी ‘ट्रयाकर’</span>
-            <span class="when">Flood tracker</span>
-          </a>
-          <a class="media-card" href="https://bankingsamachar.com/news/55567/" target="_blank" rel="noopener">
-            <span class="outlet">Banking Samachar</span>
-            <span class="headline">Profile / coverage feature</span>
-            <span class="when">Banking Samachar</span>
-          </a>
-          <a class="media-card" href="https://bankingnews.com.np/2026/08/6370/" target="_blank" rel="noopener">
-            <span class="outlet">Banking News</span>
-            <span class="headline">Coverage of civic flood information work</span>
-            <span class="when">Aug 2026</span>
-          </a>
-          <a class="media-card" href="https://www.nepalhackathon.org/blog/innovative-flood-response-tech-projects" target="_blank" rel="noopener">
-            <span class="outlet">Nepal Hackathon</span>
-            <span class="headline">Innovative flood response tech projects</span>
-            <span class="when">Nepal Hackathon blog</span>
-          </a>
-          <a class="media-card" href="https://kalamweekly.substack.com/p/nepals-devastating-flash-flood" target="_blank" rel="noopener">
-            <span class="outlet">Kalam Weekly</span>
-            <span class="headline">Nepal’s devastating flash flood</span>
-            <span class="when">Substack</span>
-          </a>
-          <a class="media-card" href="https://nepaleconomicforum.substack.com/p/bhotekoshi-flood-how-to-stay-informed" target="_blank" rel="noopener">
-            <span class="outlet">Nepal Economic Forum</span>
-            <span class="headline">Bhotekoshi flood — how to stay informed</span>
-            <span class="when">NEF Substack</span>
-          </a>
-          <a class="media-card" href="https://www.setopati.com/social/397005" target="_blank" rel="noopener">
-            <span class="outlet">Setopati</span>
-            <span class="headline">Social coverage</span>
-            <span class="when">Setopati</span>
-          </a>
-          <a class="media-card" href="https://github.com/h4syy/nepal-flood-bulletin" target="_blank" rel="noopener">
-            <span class="outlet">GitHub</span>
-            <span class="headline">Community fork — nepal-flood-bulletin</span>
-            <span class="when">Open source</span>
-          </a>
-          <a class="media-card" href="https://kathmandupost.com/art-culture/2025/05/12/youth-urged-to-embrace-uncertainty-and-build-in-nepal" target="_blank" rel="noopener">
-            <span class="outlet">The Kathmandu Post</span>
-            <span class="headline">Youth urged to embrace uncertainty and build in Nepal</span>
-            <span class="when">12 May 2025</span>
-          </a>
-          <a class="media-card" href="https://kathmandupost.com/national/2026/02/25/nepal-s-it-exports-near-1-billion-can-the-momentum-be-sustained" target="_blank" rel="noopener">
-            <span class="outlet">The Kathmandu Post</span>
-            <span class="headline">Nepal’s IT exports near $1 billion — can the momentum be sustained?</span>
-            <span class="when">25 Feb 2026</span>
-          </a>
-          <a class="media-card" href="https://www.b360nepal.com/detail/21982/the-pains-pitfalls-triumphs-of-first-gen-entrepreneurs-2024-Mar-08-292300" target="_blank" rel="noopener">
-            <span class="outlet">B360</span>
-            <span class="headline">The pains, pitfalls &amp; triumphs of first-gen entrepreneurs</span>
-            <span class="when">8 Mar 2024</span>
-          </a>
-          <a class="media-card" href="https://techpana.com/2022/30368" target="_blank" rel="noopener">
-            <span class="outlet">TechPana</span>
-            <span class="headline">Feature coverage (2022)</span>
-            <span class="when">2022</span>
-          </a>
-          <a class="media-card" href="https://techpana.com/2023/143419/niraj-bhusal-blog" target="_blank" rel="noopener">
-            <span class="outlet">TechPana</span>
-            <span class="headline">Niraj Bhusal blog feature</span>
-            <span class="when">2023</span>
-          </a>
-          <a class="media-card" href="https://english.ratopati.com/story/28469" target="_blank" rel="noopener">
-            <span class="outlet">Ratopati</span>
-            <span class="headline">English feature</span>
-            <span class="when">Ratopati</span>
-          </a>
-          <a class="media-card" href="https://www.newbusinessage.com/news/43851/making-nepal-remote-work-ready/" target="_blank" rel="noopener">
-            <span class="outlet">New Business Age</span>
-            <span class="headline">Making Nepal remote-work ready</span>
-            <span class="when">New Business Age</span>
-          </a>
-          <a class="media-card" href="https://alltechishuman.org/all-tech-is-human-blog/what-are-the-most-important-issues-with-ai-companions-six-key-themes-emerged-from-our-community" target="_blank" rel="noopener">
-            <span class="outlet">All Tech Is Human</span>
-            <span class="headline">AI companions — six key themes from the community</span>
-            <span class="when">ATIH blog</span>
-          </a>
-          <a class="media-card" href="https://www.facebook.com/share/p/1JACM7JmYr/" target="_blank" rel="noopener">
-            <span class="outlet">Facebook</span>
-            <span class="headline">Shared coverage post</span>
-            <span class="when">Facebook</span>
-          </a>
-          <a class="media-card" href="https://www.instagram.com/p/DcgHtJ5K6Tv/" target="_blank" rel="noopener">
-            <span class="outlet">Instagram</span>
-            <span class="headline">Coverage / community post</span>
-            <span class="when">Instagram</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="media-group">
-        <h3>Speaking coverage</h3>
-        <div class="media-grid">
-          <a class="media-card" href="https://www.facebook.com/share/v/1EwKfTHQJ1/" target="_blank" rel="noopener">
-            <span class="outlet">Facebook</span>
-            <span class="headline">Video — speaking at Digital Nepal Conclave 2026</span>
-            <span class="when">सूचनाको गति बाढीको पानीभन्दा तीव्र हुनुपर्छ · Data From Disaster</span>
-          </a>
-          <a class="media-card" href="https://digitalconclave.org/speakers/" target="_blank" rel="noopener">
-            <span class="outlet">Digital Nepal Conclave</span>
-            <span class="headline">Speaker — Niraj Bhusal at DNC 2026</span>
-            <span class="when">20 Sep 2026</span>
-          </a>
-          <a class="media-card" href="https://www.instagram.com/p/DVOWtLTEbWp/" target="_blank" rel="noopener">
-            <span class="outlet">Instagram</span>
-            <span class="headline">AI in Healthcare and Service Delivery — Nepal Health Corps</span>
-            <span class="when">1 Mar 2026</span>
-          </a>
-          <a class="media-card" href="https://www.instagram.com/p/Db022HKMEyK/" target="_blank" rel="noopener">
-            <span class="outlet">Instagram</span>
-            <span class="headline">Where does blockchain fit inside governance? — Superteam Nepal</span>
-            <span class="when">14 Aug 2026</span>
-          </a>
-          <a class="media-card" href="https://www.vivo.com/pk/about-vivo/news/5g-talk" target="_blank" rel="noopener">
-            <span class="outlet">vivo</span>
-            <span class="headline">vivo 5G Talk — official news</span>
-            <span class="when">May 2023</span>
-          </a>
-          <a class="media-card" href="https://propakistani.pk/2023/05/31/vivos-5g-talk-event-a-glimpse-into-a-boundless-intelligent-world-powered-by-5g/amp/" target="_blank" rel="noopener">
-            <span class="outlet">ProPakistani</span>
-            <span class="headline">vivo’s 5G Talk event — a boundless intelligent world powered by 5G</span>
-            <span class="when">31 May 2023</span>
-          </a>
-          <a class="media-card" href="https://www.sharesansar.com/newsdetail/vivo-hosts-tech-talk-on-prospects-for-5g-in-nepal-featuring-pre-eminent-south-asian-experts-on-the-revolutionary-technology-2023-06-02" target="_blank" rel="noopener">
-            <span class="outlet">ShareSansar</span>
-            <span class="headline">vivo hosts tech talk on 5G prospects in Nepal</span>
-            <span class="when">2 Jun 2023</span>
-          </a>
-          <a class="media-card" href="https://adaptconvention.com/speaker/niraj-bhusal/" target="_blank" rel="noopener">
-            <span class="outlet">Adapt Convention</span>
-            <span class="headline">Speaker profile — Niraj Bhusal</span>
-            <span class="when">Adapt</span>
-          </a>
-          <a class="media-card" href="https://www.facebook.com/rotaractkathmandu/posts/introducing-our-panelist-niraj-bhusalwere-honored-to-welcome-niraj-bhusal-civil-/1131421585695375/" target="_blank" rel="noopener">
-            <span class="outlet">Rotaract Kathmandu</span>
-            <span class="headline">Introducing panelist Niraj Bhusal</span>
-            <span class="when">May 2025</span>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <section id="play" class="section reveal">
-      <p class="sheet-label">◇ SHEET 10 · GAMES</p>
-      <h2>Games</h2>
-      <p class="section-lede play-lede">One quiet game. Play opens the same basketball popup. Esc closes.</p>
-      <div class="play-grid games-category-grid">
-        <article class="card game-launch-card">
-          <div class="game-launch-icon" aria-hidden="true">◉</div>
-          <h3>Basketball</h3>
-          <p class="meta">Aim · charge · shoot · one popup</p>
-          <div class="game-controls">
-            <button type="button" class="btn btn-primary" data-open-game="basketball">Play</button>
-          </div>
-        </article>
-        <div class="card constellation-card">
-          <h3>Constellation</h3>
-          <p class="meta">Click a star for a fact</p>
-          <canvas id="constellation" width="480" height="400" role="img" aria-label="Clickable constellation of facts"></canvas>
-          <p id="fact-panel" class="fact-panel" aria-live="polite">Select a star.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact" class="section reveal">
-      <p class="sheet-label">◇ SHEET 11 · CONTACT</p>
-      <h2>Contact</h2>
-      <div class="contact-grid" role="list">
-        <a class="contact-card" role="listitem" href="mailto:niraj.bhusal@icloud.com" id="contact-email-card" aria-label="Contact by email" data-email-card>
-          <span class="contact-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></svg>
-          </span>
-          <span class="contact-label">Contact</span>
-          <span class="contact-hint">Email</span>
-        </a>
-        <a class="contact-card" role="listitem" href="https://linkedin.com/in/nirajbhusal" target="_blank" rel="noopener" aria-label="LinkedIn — nirajbhusal">
-          <span class="contact-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V23h-4V8.5zM8.5 8.5h3.8v2h.05c.53-1 1.82-2.05 3.75-2.05 4.01 0 4.75 2.64 4.75 6.07V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.54 1.72-2.54 3.49V23h-4V8.5z"/></svg>
-          </span>
-          <span class="contact-label">LinkedIn</span>
-          <span class="contact-hint">Profile</span>
-        </a>
-        <a class="contact-card" role="listitem" href="https://x.com/nirajbhusal" target="_blank" rel="noopener" aria-label="X — nirajbhusal">
-          <span class="contact-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M18.9 2H22l-6.78 7.75L23.5 22h-6.55l-5.13-6.7L6.1 22H3l7.25-8.28L.5 2h6.7l4.64 6.15L18.9 2zm-1.15 18h1.82L6.4 3.9H4.45L17.75 20z"/></svg>
-          </span>
-          <span class="contact-label">X</span>
-          <span class="contact-hint">@nirajbhusal</span>
-        </a>
-        <a class="contact-card" role="listitem" href="https://www.buymeacoffee.com/helloniraz" target="_blank" rel="noopener" aria-label="Buy Me a Coffee">
-          <span class="contact-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13a3 3 0 0 1 0 6h-1"/><path d="M5 8v7a4 4 0 0 0 4 4h3a4 4 0 0 0 4-4v-1"/><path d="M8 2v3M12 2v3"/></svg>
-          </span>
-          <span class="contact-label">Coffee</span>
-          <span class="contact-hint">Support</span>
-        </a>
-        <a class="contact-card" role="listitem" href="https://mofnepal.github.io/rasuwa-flood-update/" target="_blank" rel="noopener" aria-label="Ministry of Finance (MoF) Rasuwa Flood Update Portal — Official">
-          <span class="contact-icon lettermark wide" aria-hidden="true">MoF</span>
-          <span class="contact-label">MoF Portal</span>
-          <span class="contact-hint">Official</span>
-        </a>
-        <a class="contact-card" role="listitem" href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener" aria-label="Personal Rasuwa Flood Update Portal — civic">
-          <span class="contact-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14c2-1 3.5-4 4-7 1 3 2.5 5 5 6 1.5.6 3 2 3 4H4z"/><path d="M14 7c.5-2 1.5-3.5 3-4"/><path d="M3 20h18"/></svg>
-          </span>
-          <span class="contact-label">Rasuwa Portal</span>
-          <span class="contact-hint">Civic</span>
-        </a>
-      </div>
-      <div id="email-toast" class="email-toast" role="status" aria-live="polite" hidden>Copied</div>
-      <div class="card coffee-card">
-        <h3>Buy Me a Coffee</h3>
-        <p>Coffee supports time and hosting for personal civic tools — <strong>not</strong> disaster relief.</p>
-        <p>For flood / disaster relief, use official channels: <a href="https://donate.gov.np" target="_blank" rel="noopener">donate.gov.np</a> · <a href="https://mofnepal.github.io/rasuwa-flood-update/" target="_blank" rel="noopener">Ministry of Finance (MoF) flood update</a>.</p>
-        <a class="btn btn-primary" href="https://www.buymeacoffee.com/helloniraz" target="_blank" rel="noopener">Buy Me a Coffee ↗</a>
+    <section id="sections" class="section home-index reveal">
+      <p class="sheet-label">◇ CONTENTS</p>
+      <h2>Sections</h2>
+      <div class="index-grid">
+      <a class="card index-card" href="/about/">
+        <span class="sheet-label">◇ ABOUT</span>
+        <h3>About</h3>
+        <p>Civil servant at the Ministry of Finance, working across GovTech, AI governance, and digital public infrastructure.</p>
+      </a>
+      <a class="card index-card" href="/projects/">
+        <span class="sheet-label">◇ PROJECTS</span>
+        <h3>Projects</h3>
+        <p>The official MoF Rasuwa Flood Update Portal, a personal civic bulletin, and government systems he has contributed to.</p>
+      </a>
+      <a class="card index-card" href="/experience/">
+        <span class="sheet-label">◇ EXPERIENCE</span>
+        <h3>Experience</h3>
+        <p>Civil service since 2013 — the Finance Minister’s office, OPMCM, Water Supply, and Urban Development.</p>
+      </a>
+      <a class="card index-card" href="/education/">
+        <span class="sheet-label">◇ EDUCATION</span>
+        <h3>Education</h3>
+        <p>M.E. in Information and Communication Engineering at HUST, and BICT from Tribhuvan University.</p>
+      </a>
+      <a class="card index-card" href="/training/">
+        <span class="sheet-label">◇ TRAINING</span>
+        <h3>Training</h3>
+        <p>AI governance, digital transformation, and public-sector technology courses and fellowships.</p>
+      </a>
+      <a class="card index-card" href="/speaking/">
+        <span class="sheet-label">◇ SPEAKING</span>
+        <h3>Speaking</h3>
+        <p>Talks and panels, from Digital Nepal Conclave 2026 to training sessions and regional summits.</p>
+      </a>
+      <a class="card index-card" href="/presentations/">
+        <span class="sheet-label">◇ PRESENTATIONS</span>
+        <h3>Presentations</h3>
+        <p>Slide decks, including Data From Disaster and AI: Aim, Act, Achieve.</p>
+      </a>
+      <a class="card index-card" href="/community/">
+        <span class="sheet-label">◇ COMMUNITY</span>
+        <h3>Community</h3>
+        <p>GovTech Nepal, GDG Dang, TechSathi, Google Crowdsource, and TheirWorld.</p>
+      </a>
+      <a class="card index-card" href="/media/">
+        <span class="sheet-label">◇ MEDIA</span>
+        <h3>Awards &amp; Media</h3>
+        <p>Awards, news coverage, and speaking mentions, including the 2026 flood response.</p>
+      </a>
+      <a class="card index-card" href="/games/">
+        <span class="sheet-label">◇ GAMES</span>
+        <h3>Games</h3>
+        <p>A quiet basketball game and a constellation of facts.</p>
+      </a>
+      <a class="card index-card" href="/contact/">
+        <span class="sheet-label">◇ CONTACT</span>
+        <h3>Contact</h3>
+        <p>Reach him through the Contact action, LinkedIn, X, and the flood portals.</p>
+      </a>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer" data-gate-inert inert>
+<footer class="site-footer" data-gate-inert inert>
     <p class="utility-meta">
       <time id="kathmandu-clock" data-chrono="kathmandu" datetime="" aria-label="Kathmandu local time">Kathmandu · --:--:-- NPT</time>
       <span class="utility-sep" aria-hidden="true">·</span>

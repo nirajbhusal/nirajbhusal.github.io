@@ -1,0 +1,39 @@
+  <footer class="site-footer" data-gate-inert inert>
+    <p class="utility-meta">
+      <time id="kathmandu-clock" data-chrono="kathmandu" datetime="" aria-label="Kathmandu local time">Kathmandu · --:--:-- NPT</time>
+      <span class="utility-sep" aria-hidden="true">·</span>
+      <span>Updated September 2026</span>
+    </p>
+    <p>© <span id="year"></span> Niraj Bhusal · Personal site · Ministry of Finance (MoF) portal is official; personal Rasuwa Flood Update Portal is a civic project, not a government website.</p>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    (function () {
+      if (document.querySelector('script[type="module"][src="/src/main.js"]')) return;
+      var nodes = document.querySelectorAll('[data-chrono="kathmandu"]');
+      if (!nodes.length) return;
+      var fmt = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Kathmandu",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23"
+      });
+      var slow = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function tick() {
+        var now = new Date();
+        var iso = now.toISOString();
+        var text = "Kathmandu · " + fmt.format(now) + " NPT";
+        for (var i = 0; i < nodes.length; i++) {
+          nodes[i].dateTime = iso;
+          nodes[i].textContent = text;
+        }
+      }
+      tick();
+      window.setInterval(tick, slow ? 30000 : 1000);
+    })();
+  </script>
+
+</body>
+</html>
