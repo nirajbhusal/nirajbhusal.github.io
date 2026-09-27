@@ -25,9 +25,10 @@ const PAGES = [
   },
   {
     id: 'built',
-    slug: 'built',
-    nav: 'Built',
-    title: 'What I’ve Built — Niraj Bhusal',
+    slug: 'projects',
+    nav: 'Projects',
+    heading: 'Projects',
+    title: 'Projects — Niraj Bhusal',
     description:
       'Projects Niraj Bhusal has shipped or contributed to, including the official Ministry of Finance Rasuwa Flood Update Portal and a personal civic flood bulletin.',
     blurb:
@@ -54,11 +55,12 @@ const PAGES = [
   },
   {
     id: 'trainings',
-    slug: 'trainings',
-    nav: 'Trainings',
-    title: 'Trainings — Niraj Bhusal',
+    slug: 'training',
+    nav: 'Training',
+    heading: 'Training',
+    title: 'Training — Niraj Bhusal',
     description:
-      'Courses and fellowships Niraj Bhusal has completed in AI governance, digital transformation, and public-sector technology.',
+      'Training Niraj Bhusal has completed in AI governance, digital transformation, and public-sector technology.',
     blurb: 'AI governance, digital transformation, and public-sector technology courses and fellowships.',
   },
   {
@@ -92,6 +94,7 @@ const PAGES = [
     id: 'media',
     slug: 'media',
     nav: 'Media',
+    heading: 'Awards &amp; Media',
     title: 'Awards & Media — Niraj Bhusal',
     description:
       'Awards, news coverage, and speaking mentions for Niraj Bhusal, including reporting on the 2026 flood response and Digital Nepal Conclave.',
@@ -125,10 +128,12 @@ const HOME = {
 
 const HASH_MAP = {
   about: '/about/',
-  built: '/built/',
+  built: '/projects/',
+  projects: '/projects/',
   experience: '/experience/',
   education: '/education/',
-  trainings: '/trainings/',
+  trainings: '/training/',
+  training: '/training/',
   speaking: '/speaking/',
   presentations: '/presentations/',
   community: '/community/',
@@ -138,6 +143,11 @@ const HASH_MAP = {
   contact: '/contact/',
   hero: '/',
 };
+
+const REDIRECTS = [
+  { from: 'built', to: '/projects/', label: 'Projects' },
+  { from: 'trainings', to: '/training/', label: 'Training' },
+];
 
 function read(rel) {
   return fs.readFileSync(path.join(site, rel), 'utf8').trim();
@@ -169,7 +179,7 @@ function overviewHtml() {
   const cards = PAGES.map(
     (page) => `      <a class="card index-card" href="/${page.slug}/">
         <span class="sheet-label">◇ ${page.nav.toUpperCase()}</span>
-        <h3>${page.nav === 'Built' ? 'What I’ve Built' : page.nav === 'Media' ? 'Awards &amp; Media' : page.nav}</h3>
+        <h3>${page.heading || page.nav}</h3>
         <p>${page.blurb}</p>
       </a>`
   ).join('\n');
@@ -274,6 +284,28 @@ function main() {
     const dir = path.join(buildSrc, page.slug);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, 'index.html'), documentFor(page, { home: false }));
+  }
+
+  for (const redirect of REDIRECTS) {
+    const dir = path.join(buildSrc, redirect.from);
+    fs.mkdirSync(dir, { recursive: true });
+    const target = `${ORIGIN}${redirect.to}`;
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redirecting to ${redirect.label}…</title>
+  <link rel="canonical" href="${target}" />
+  <meta http-equiv="refresh" content="0; url=${redirect.to}" />
+  <script>location.replace(${JSON.stringify(redirect.to)});</script>
+</head>
+<body>
+  <p><a href="${redirect.to}">${redirect.label}</a></p>
+</body>
+</html>
+`;
+    fs.writeFileSync(path.join(dir, 'index.html'), html);
   }
 
   console.log(`assembled ${PAGES.length + 1} pages into ${buildSrc}`);
