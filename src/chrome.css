@@ -1133,8 +1133,9 @@ html.intro-skip #starfield {
   .md-head {
     display: flex;
     align-items: center;
+    flex: none;
     gap: 0.35rem;
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.35rem;
   }
 
   .md-search {
@@ -1198,24 +1199,12 @@ html.intro-skip #starfield {
   .md-scroll {
     flex: 1 1 auto;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
     overflow: auto;
     overscroll-behavior: contain;
     touch-action: pan-y;
-    padding-bottom: 0.35rem;
-  }
-
-  .md-group {
-    display: grid;
-    align-content: start;
-  }
-
-  .md-section-label {
-    margin: 0.85rem 0 0.15rem;
-    padding: 0 0.7rem;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    color: var(--muted);
   }
 
   .md-row {
@@ -1249,7 +1238,6 @@ html.intro-skip #starfield {
   }
 
   .md-row[hidden],
-  .md-group[hidden],
   .md-empty[hidden],
   .md-settings[hidden] {
     display: none !important;
@@ -1267,7 +1255,8 @@ html.intro-skip #starfield {
     display: flex;
     align-items: center;
     gap: 0.65rem;
-    margin-top: auto;
+    flex: none;
+    margin-top: 0;
     padding: 0.7rem 0.35rem 0.15rem;
     border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
   }

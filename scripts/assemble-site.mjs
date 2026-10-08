@@ -645,7 +645,7 @@ function themeButtonHtml(id) {
 function sidebarHtml(activeSlug) {
   const home = activeSlug === '';
   const links = NAV_ITEMS.map((item) => `        ${navItemHtml(item, activeSlug)}`).join('\n');
-  return `<aside class="side-nav" id="site-nav" aria-label="Sections">
+  return `<aside class="side-nav" id="site-nav" aria-label="Menu">
       <div class="side-brand">
         <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''} aria-label="Niraj Bhusal, home">
           <span class="logo-mark">NB</span>
@@ -653,7 +653,7 @@ function sidebarHtml(activeSlug) {
         </a>
         <button type="button" id="sidebar-collapse" class="icon-btn side-collapse" aria-pressed="false" aria-label="Collapse sidebar" title="Collapse sidebar">${iconSvg('panel', 20)}</button>
       </div>
-      <nav class="side-links" aria-label="Primary">
+      <nav class="side-links">
 ${links}
       </nav>
       <div class="side-foot">
@@ -711,29 +711,14 @@ ${focusItemsHtml('            ')}
     </section>`;
 }
 
-function drawerRowHtml(item, activeSlug, group) {
+function drawerRowHtml(item, activeSlug) {
   const href = item.slug ? `/${item.slug}/` : '/';
   const icon = iconSvg(ICONS[item.id] || 'sparkles', 18);
-  return `          <a class="md-row" href="${href}" data-nav-label="${escapeHtml(item.nav.toLowerCase())}" data-nav-group="${group}"${linkAttrs(item.slug === activeSlug)}>${icon}<span>${escapeHtml(item.nav)}</span></a>`;
+  return `          <a class="md-row" href="${href}" data-nav-label="${escapeHtml(item.nav.toLowerCase())}"${linkAttrs(item.slug === activeSlug)}>${icon}<span>${escapeHtml(item.nav)}</span></a>`;
 }
 
 function mobileDrawerHtml(activeSlug) {
-  const byId = new Map(NAV_ITEMS.map((item) => [item.id, item]));
-  const primary = ['home', 'about', 'built', 'speaking', 'publications']
-    .map((id) => drawerRowHtml(byId.get(id), activeSlug, 'primary'))
-    .join('\n');
-  const sections = [
-    'experience',
-    'education',
-    'trainings',
-    'presentations',
-    'community',
-    'media',
-    'play',
-    'contact',
-  ]
-    .map((id) => drawerRowHtml(byId.get(id), activeSlug, 'sections'))
-    .join('\n');
+  const rows = NAV_ITEMS.map((item) => drawerRowHtml(item, activeSlug)).join('\n');
   return `<nav class="mobile-drawer" id="mobile-nav" aria-label="Menu" aria-hidden="true" tabindex="-1" inert>
       <div class="md-head">
         <label class="md-search">
@@ -743,13 +728,7 @@ function mobileDrawerHtml(activeSlug) {
         <button type="button" class="md-close" id="md-close" aria-label="Close menu">${iconSvg('x', 20)}</button>
       </div>
       <div class="md-scroll">
-        <div class="md-group" data-nav-group-wrap="primary">
-${primary}
-        </div>
-        <div class="md-group" data-nav-group-wrap="sections">
-          <p class="md-section-label">Sections</p>
-${sections}
-        </div>
+${rows}
         <p class="md-empty" hidden>No matches</p>
       </div>
       <div class="md-profile">

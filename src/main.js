@@ -332,22 +332,15 @@ function initNavDrawer() {
 
   function applyFilter() {
     const query = (search?.value || '').trim().toLowerCase();
-    let primary = 0;
-    let sections = 0;
+    let shown = 0;
     nav.querySelectorAll('.md-row').forEach((row) => {
       const label = row.getAttribute('data-nav-label') || '';
       const match = !query || label.includes(query);
       row.hidden = !match;
-      if (!match) return;
-      if (row.getAttribute('data-nav-group') === 'primary') primary += 1;
-      else sections += 1;
+      if (match) shown += 1;
     });
-    const primaryWrap = nav.querySelector('[data-nav-group-wrap="primary"]');
-    const sectionsWrap = nav.querySelector('[data-nav-group-wrap="sections"]');
-    if (primaryWrap) primaryWrap.hidden = primary === 0;
-    if (sectionsWrap) sectionsWrap.hidden = sections === 0;
     const empty = nav.querySelector('.md-empty');
-    if (empty) empty.hidden = primary + sections > 0;
+    if (empty) empty.hidden = shown > 0;
   }
 
   function setSettings(open) {
