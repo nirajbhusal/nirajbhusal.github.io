@@ -291,7 +291,7 @@ const SECTION_ICONS = {
 
 const ARROW_ICON = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>`;
 
-/** Visual order: Projects leads a 2×2 tile; Speaking spans a wide tile. */
+/** Visual order: Projects and Speaking share row 1; Games and Contact share the last row. */
 const CONTENTS_ORDER = [
   { id: 'built', layout: 'feature', hue: 205 },
   { id: 'about', hue: 214 },
@@ -303,8 +303,8 @@ const CONTENTS_ORDER = [
   { id: 'publications', hue: 266 },
   { id: 'community', hue: 168 },
   { id: 'media', hue: 36 },
-  { id: 'play', hue: 206 },
-  { id: 'contact', hue: 212 },
+  { id: 'play', layout: 'pair', hue: 206 },
+  { id: 'contact', layout: 'pair', hue: 212 },
 ];
 
 function tally(n, singular, plural = `${singular}s`) {
@@ -375,6 +375,20 @@ function dateLabel(meta) {
   return '';
 }
 
+function projectNote(name, badge, meta) {
+  const label = `${badge} ${meta}`;
+  if (name === 'Rasuwa Flood Update Portal' && /official/i.test(label)) {
+    return 'Ministry of Finance · Official';
+  }
+  if (name === 'Rasuwa Flood Update Portal' && /personal civic/i.test(label)) {
+    return 'Personal civic project';
+  }
+  if (name === 'Centralized Email' || name === 'Cabinet Automation') {
+    return 'Government system · contributor';
+  }
+  return badge || meta;
+}
+
 function projectPicks() {
   const html = read('sections/built.html');
   const articles = html.match(/<article\b[\s\S]*?<\/article>/g) || [];
@@ -382,7 +396,7 @@ function projectPicks() {
     const name = plainText((article.match(/<h3[^>]*>([\s\S]*?)<\/h3>/) || [])[1]);
     const badge = plainText((article.match(/<span class="badge[^"]*">([\s\S]*?)<\/span>/) || [])[1]);
     const meta = plainText((article.match(/<p class="meta">([\s\S]*?)<\/p>/) || [])[1]);
-    return { name, note: badge || meta };
+    return { name, note: projectNote(name, badge, meta) };
   }).filter((item) => item.name);
 }
 
