@@ -438,7 +438,38 @@ function beginStars() {
   starsOn = true;
   stars?.start();
 }
+
+function initPortraitDepth() {
+  const stage = document.querySelector('.portrait-stage');
+  if (!stage) return;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = window.matchMedia('(pointer: fine)').matches;
+  if (reduce || !fine) return;
+  const photo = stage.querySelector('.portrait-photo');
+  const arc = stage.querySelector('.portrait-arc-wrap');
+  const glow = stage.querySelector('.portrait-glow');
+  let frame = 0;
+  let nx = 0;
+  let ny = 0;
+  window.addEventListener(
+    'pointermove',
+    (event) => {
+      if (!window.matchMedia('(min-width: 901px)').matches) return;
+      nx = event.clientX / window.innerWidth - 0.5;
+      ny = event.clientY / window.innerHeight - 0.5;
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (photo) photo.style.transform = `translate3d(${nx * -8}px, ${ny * -6}px, 0)`;
+        if (arc) arc.style.transform = `translate3d(${nx * 14}px, ${ny * 11}px, 0)`;
+        if (glow) glow.style.transform = `translate3d(${nx * 10}px, ${ny * 8}px, 0)`;
+      });
+    },
+    { passive: true }
+  );
+}
 initIntro({ onSettle: beginStars, onDone: beginStars });
+initPortraitDepth();
 
 initGamePopup();
 

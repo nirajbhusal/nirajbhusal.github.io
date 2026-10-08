@@ -439,7 +439,7 @@ function headHtml(page, { home }) {
   const hashLiteral = JSON.stringify(HASH_MAP);
   const introStyle = home
     ? `<style>
-    html.is-intro .hero-id,html.is-intro .hero-portrait,html.is-intro .tagline,html.is-intro .si-pill,html.is-intro .lede,html.is-intro .hero-chrono,html.is-intro .hero-actions,html.is-intro .side-nav,html.is-intro .mobile-top,html.is-intro .tab-bar,html.is-intro .games-launcher,html.is-intro #starfield{opacity:0}
+    html.is-intro .hero-id,html.is-intro .eyebrow,html.is-intro .hero-name,html.is-intro .hero-posting,html.is-intro .hero-portrait,html.is-intro .tagline,html.is-intro .si-pill,html.is-intro .lede,html.is-intro .hero-chrono,html.is-intro .hero-actions,html.is-intro .side-nav,html.is-intro .mobile-top,html.is-intro .tab-bar,html.is-intro .games-launcher,html.is-intro #starfield{opacity:0}
     html.is-intro-fade body::after{content:"";position:fixed;inset:0;z-index:80;background:var(--bg,#0b1220);pointer-events:none;animation:nb-veil .45s ease forwards}
     @keyframes nb-veil{to{opacity:0}}
   </style>`

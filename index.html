@@ -36,7 +36,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    html.is-intro .hero-id,html.is-intro .hero-portrait,html.is-intro .tagline,html.is-intro .si-pill,html.is-intro .lede,html.is-intro .hero-chrono,html.is-intro .hero-actions,html.is-intro .side-nav,html.is-intro .mobile-top,html.is-intro .tab-bar,html.is-intro .games-launcher,html.is-intro #starfield{opacity:0}
+    html.is-intro .hero-id,html.is-intro .eyebrow,html.is-intro .hero-name,html.is-intro .hero-posting,html.is-intro .hero-portrait,html.is-intro .tagline,html.is-intro .si-pill,html.is-intro .lede,html.is-intro .hero-chrono,html.is-intro .hero-actions,html.is-intro .side-nav,html.is-intro .mobile-top,html.is-intro .tab-bar,html.is-intro .games-launcher,html.is-intro #starfield{opacity:0}
     html.is-intro-fade body::after{content:"";position:fixed;inset:0;z-index:80;background:var(--bg,#0b1220);pointer-events:none;animation:nb-veil .45s ease forwards}
     @keyframes nb-veil{to{opacity:0}}
   </style>
@@ -71,8 +71,8 @@
   }
   if (intro === "1" || (intro !== "0" && !seen)) root.classList.add("is-intro");
 })();</script>
-  <script type="module" crossorigin src="/assets/main-BBebcxPD.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/main-CEAGe_5F.css">
+  <script type="module" crossorigin src="/assets/main-BK9LoKuH.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-CPV7sPGw.css">
 </head>
 <body data-page="home">
   <a class="skip-link" href="#content">Skip to content</a>
@@ -154,64 +154,70 @@
       </header>
       <main id="content">
 <section id="hero" class="section hero">
-      <div class="hero-top">
+      <div class="hero-layout">
         <div class="hero-id">
           <p class="eyebrow">Kathmandu · Nepal</p>
-          <h1 class="hero-name"><span class="hero-given">Niraj</span><span class="hero-family">Bhusal</span></h1>
+          <div class="hero-name-row">
+            <h1 class="hero-name"><span class="hero-given">Niraj</span><span class="hero-family">Bhusal</span></h1>
+            <figure class="hero-portrait">
+              <div class="portrait-stage">
+                <div class="portrait-glow" aria-hidden="true"></div>
+                <div class="portrait-arc-wrap" aria-hidden="true">
+                  <svg class="portrait-arc" viewBox="0 0 200 240">
+                    <path d="M18 188C36 48 168 28 186 156" fill="none" stroke="currentColor" stroke-width="1.15"/>
+                    <circle cx="18" cy="188" r="1.7"/>
+                    <circle cx="72" cy="70" r="1.4"/>
+                    <circle cx="128" cy="46" r="1.5"/>
+                    <circle cx="186" cy="156" r="1.7"/>
+                  </svg>
+                </div>
+                <div class="portrait-photo">
+                  <picture>
+                    <source srcset="/portrait/niraj.webp" type="image/webp" />
+                    <img src="/portrait/niraj.png" alt="Niraj Bhusal" width="900" height="981" loading="eager" decoding="async" />
+                  </picture>
+                </div>
+              </div>
+            </figure>
+          </div>
           <p class="hero-posting">Office of the Hon. Finance Minister · Ministry of Finance, Nepal</p>
         </div>
-        <figure class="hero-portrait">
-          <div class="portrait-stage">
-            <div class="portrait-glow" aria-hidden="true"></div>
-            <svg class="portrait-arc" viewBox="0 0 200 240" aria-hidden="true">
-              <path d="M18 188C36 48 168 28 186 156" fill="none" stroke="currentColor" stroke-width="1"/>
-              <circle cx="18" cy="188" r="1.7"/>
-              <circle cx="72" cy="70" r="1.4"/>
-              <circle cx="128" cy="46" r="1.5"/>
-              <circle cx="186" cy="156" r="1.7"/>
-            </svg>
-            <picture>
-              <source srcset="/portrait/niraj.webp" type="image/webp" />
-              <img src="/portrait/niraj.png" alt="Niraj Bhusal" width="680" height="645" loading="eager" decoding="async" />
-            </picture>
-          </div>
-        </figure>
-      </div>
-      <p class="tagline">GovTech · AI Governance · Digital Transformation (DPI)</p>
-      <a class="si-pill" href="/superintelligence/"><span class="si-pill-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg></span><span>Now exploring: Preparing government for superintelligence →</span></a>
-      <p class="lede">Building clearer public systems — and the occasional personal civic tool when the moment demands it.</p>
-      <div class="hero-chrono" aria-label="Local time and year progress">
-        <p class="hero-caption">move with time, understand the universe</p>
-        <p class="hero-clock" id="hero-clock" aria-live="polite">
-          <time id="hero-datetime" data-chrono="datetime" datetime=""></time>
-        </p>
-        <div class="progress-stack">
-          <div class="year-progress" role="progressbar" aria-labelledby="year-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="year-progress" data-chrono="year-bar">
-            <div class="progress-track year-track">
-              <div class="progress-fill year-fill" id="year-progress-fill" data-chrono="year-fill"></div>
+        <p class="tagline">GovTech · AI Governance · Digital Transformation (DPI)</p>
+        <a class="si-pill" href="/superintelligence/"><span class="si-pill-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg></span><span>Now exploring: Preparing government for superintelligence →</span></a>
+        <p class="lede">Building clearer public systems — and the occasional personal civic tool when the moment demands it.</p>
+        <div class="hero-chrono" aria-label="Local time and year progress">
+          <p class="hero-caption">move with time, understand the universe</p>
+          <p class="hero-clock" id="hero-clock" aria-live="polite">
+            <time id="hero-datetime" data-chrono="datetime" datetime=""></time>
+          </p>
+          <div class="progress-stack">
+            <div class="year-progress" role="progressbar" aria-labelledby="year-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="year-progress" data-chrono="year-bar">
+              <div class="progress-track year-track">
+                <div class="progress-fill year-fill" id="year-progress-fill" data-chrono="year-fill"></div>
+              </div>
+              <div class="progress-meta">
+                <span id="year-progress-label" data-chrono="year-label">Day 1 · 0% of 2026</span>
+                <span id="year-progress-pct" class="progress-pct" data-chrono="year-pct">0%</span>
+              </div>
             </div>
-            <div class="progress-meta">
-              <span id="year-progress-label" data-chrono="year-label">Day 1 · 0% of 2026</span>
-              <span id="year-progress-pct" class="progress-pct" data-chrono="year-pct">0%</span>
-            </div>
-          </div>
-          <div class="day-progress" role="progressbar" aria-labelledby="day-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="day-progress" data-chrono="day-bar">
-            <div class="progress-track day-track">
-              <div class="progress-fill day-fill" id="day-progress-fill" data-chrono="day-fill"></div>
-            </div>
-            <div class="progress-meta day-meta">
-              <span id="day-progress-label" data-chrono="day-label">Today</span>
-              <span id="day-progress-pct" class="progress-pct" data-chrono="day-pct">0%</span>
+            <div class="day-progress" role="progressbar" aria-labelledby="day-progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="day-progress" data-chrono="day-bar">
+              <div class="progress-track day-track">
+                <div class="progress-fill day-fill" id="day-progress-fill" data-chrono="day-fill"></div>
+              </div>
+              <div class="progress-meta day-meta">
+                <span id="day-progress-label" data-chrono="day-label">Today</span>
+                <span id="day-progress-pct" class="progress-pct" data-chrono="day-pct">0%</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="https://mofnepal.github.io/rasuwa-flood-update/" target="_blank" rel="noopener">Official MoF portal ↗</a>
-        <a class="btn btn-ghost" href="/projects/">View projects</a>
-        <a class="btn btn-ghost" href="/contact/">Contact</a>
-        <a class="btn btn-ghost" href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener">Personal civic portal ↗</a>
-        <button type="button" class="btn btn-ghost" data-open-game="basketball" aria-label="Play Games" title="Play Games">Play Games</button>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="https://mofnepal.github.io/rasuwa-flood-update/" target="_blank" rel="noopener">Official MoF portal ↗</a>
+          <a class="btn btn-ghost" href="/projects/">View projects</a>
+          <a class="btn btn-ghost" href="/contact/">Contact</a>
+          <a class="btn btn-ghost" href="https://nirajbhusal.github.io/rasuwa-flood-bulletin/" target="_blank" rel="noopener">Personal civic portal ↗</a>
+          <button type="button" class="btn btn-ghost" data-open-game="basketball" aria-label="Play Games" title="Play Games">Play Games</button>
+        </div>
       </div>
     </section>
     <section id="sections" class="section home-index reveal">
