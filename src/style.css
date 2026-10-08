@@ -1346,7 +1346,8 @@ body[data-page]:not([data-page="home"]) .section {
 
 .index-card--feature,
 .index-card--wide,
-.index-card--pair {
+.index-card--pair,
+.index-card--band {
   grid-column: 1 / -1;
 }
 

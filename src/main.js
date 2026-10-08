@@ -1,55 +1,64 @@
 import './style.css';
+import './chrome.css';
 import { initStarfield } from './starfield.js';
 import { initConstellation } from './constellation.js';
 import { createAmbient } from './ambient.js';
-import { initEnterGateVista } from './enter-gate.js';
 import { initBasketball } from './sports-games.js';
+import { initIntro } from './intro.js';
+import {
+  THEME_KEY,
+  PART_LABEL,
+  partFromDate,
+  readMode,
+  daypartOverride,
+  paletteFor,
+  applyDocumentTheme,
+} from './theme.js';
 
-const THEME_KEY = 'theme';
-const GATE_KEY = 'nb-entered';
 const EMAIL = 'niraj.bhusal@icloud.com';
+const SIDEBAR_KEY = 'nb-sidebar';
 const prefersReduced = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function applyTheme(theme) {
-  if (theme === 'light') {
-    document.documentElement.setAttribute('data-theme', 'light');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-  }
-}
+let forcedPart = daypartOverride();
 
-function periodFromHour(hour) {
-  if (hour >= 5 && hour < 12) return 'morning';
-  if (hour >= 12 && hour < 18) return 'afternoon';
-  return 'night';
-}
-
-function applyTimeOfDay(period) {
-  document.documentElement.setAttribute('data-tod', period);
-}
-
-function initTimeOfDay() {
-  const tick = () => {
-    applyTimeOfDay(periodFromHour(new Date().getHours()));
-  };
-  tick();
-  // Refresh every minute so dawn/dusk transitions land cleanly
-  window.setInterval(tick, 60_000);
+function syncTheme(mode) {
+  const part = forcedPart || partFromDate(new Date());
+  const palette = forcedPart || paletteFor(mode, part);
+  applyDocumentTheme({ mode, part, palette });
+  const label =
+    mode === 'auto'
+      ? `Auto · ${PART_LABEL[part] || 'Night'}`
+      : mode === 'light'
+        ? 'Light'
+        : 'Dark';
+  document.querySelectorAll('.theme-cycle').forEach((btn) => {
+    btn.setAttribute('aria-label', `Theme: ${label}`);
+    btn.title = label;
+  });
 }
 
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  const theme = saved === 'light' || saved === 'dark' ? saved : 'dark';
-  applyTheme(theme);
-  const btn = document.getElementById('theme-toggle');
-  btn?.addEventListener('click', () => {
-    const next =
-      document.documentElement.getAttribute('data-theme') === 'light'
-        ? 'dark'
-        : 'light';
-    applyTheme(next);
-    localStorage.setItem(THEME_KEY, next);
+  const apply = () => syncTheme(readMode());
+  apply();
+  window.setInterval(apply, 120_000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') apply();
+  });
+
+  const order = ['auto', 'light', 'dark'];
+  document.querySelectorAll('.theme-cycle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      forcedPart = null;
+      const mode = readMode();
+      const next = order[(order.indexOf(mode) + 1) % order.length];
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch {
+        /* ignore */
+      }
+      syncTheme(next);
+    });
   });
 }
 
@@ -247,131 +256,64 @@ function initReveal() {
   nodes.forEach((n) => io.observe(n));
 }
 
-function normalizePath(pathname) {
-  let path = pathname || '/';
-  path = path.replace(/\/index\.html$/, '');
-  if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
-  return path || '/';
+function initSidebar() {
+  const btn = document.getElementById('sidebar-collapse');
+  if (!btn) return;
+  const root = document.documentElement;
+
+  function collapsed() {
+    return root.getAttribute('data-sidebar') === 'collapsed';
+  }
+
+  function apply(next) {
+    if (next) root.setAttribute('data-sidebar', 'collapsed');
+    else root.removeAttribute('data-sidebar');
+    btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+    const label = next ? 'Expand sidebar' : 'Collapse sidebar';
+    btn.setAttribute('aria-label', label);
+    btn.title = label;
+    try {
+      localStorage.setItem(SIDEBAR_KEY, next ? 'collapsed' : 'expanded');
+    } catch {
+      /* ignore */
+    }
+  }
+
+  let stored = null;
+  try {
+    stored = localStorage.getItem(SIDEBAR_KEY);
+  } catch {
+    /* ignore */
+  }
+  apply(stored === 'collapsed' || collapsed());
+  btn.addEventListener('click', () => apply(!collapsed()));
 }
 
-function initNav() {
-  const toggle = document.getElementById('nav-toggle');
-  const nav = document.getElementById('site-nav');
-  const overlay = document.getElementById('nav-overlay');
-  if (!toggle || !nav) return;
-
-  const MOBILE_MQ = '(max-width: 1179px)';
-  const links = [...nav.querySelectorAll('a[href]')];
-  let lastFocus = null;
-  let lockY = 0;
-
-  function isMobileNav() {
-    return window.matchMedia(MOBILE_MQ).matches;
-  }
-
-  function focusables() {
-    // offsetParent is null for position:fixed in some engines — do not use it
-    return [toggle, ...links].filter((el) => {
-      if (!el || el.hasAttribute('disabled')) return false;
-      const style = window.getComputedStyle(el);
-      return style.visibility !== 'hidden' && style.display !== 'none';
-    });
-  }
+function initMoreSheet() {
+  const sheet = document.getElementById('more-sheet');
+  const tab = document.getElementById('more-tab');
+  if (!sheet || !tab) return;
 
   function setOpen(open) {
-    const wasOpen = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    nav.classList.toggle('is-open', open);
-    nav.setAttribute('aria-hidden', open || !isMobileNav() ? 'false' : 'true');
-    if (overlay) {
-      overlay.hidden = !open;
-      overlay.setAttribute('aria-hidden', open ? 'false' : 'true');
-    }
-
-    if (open && !wasOpen) {
-      lockY = window.scrollY || window.pageYOffset || 0;
-      document.body.classList.add('nav-open');
-      document.body.style.top = `-${lockY}px`;
-      lastFocus = document.activeElement;
-      window.setTimeout(() => links[0]?.focus(), 40);
-    } else if (!open && wasOpen) {
-      document.body.classList.remove('nav-open');
-      document.body.style.top = '';
-      window.scrollTo(0, lockY);
-      (lastFocus || toggle).focus?.();
-    } else if (!open) {
-      document.body.classList.remove('nav-open');
-      document.body.style.top = '';
+    sheet.hidden = !open;
+    tab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      window.setTimeout(() => sheet.querySelector('.more-panel a')?.focus(), 20);
+    } else {
+      tab.focus();
     }
   }
 
-  toggle.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const open = toggle.getAttribute('aria-expanded') !== 'true';
-    setOpen(open);
+  tab.addEventListener('click', () => setOpen(sheet.hidden));
+  sheet.querySelectorAll('[data-more-close], .more-panel a').forEach((el) => {
+    el.addEventListener('click', () => setOpen(false));
   });
-
-
-  overlay?.addEventListener('click', () => setOpen(false));
-
-  links.forEach((link) => {
-    link.addEventListener('click', () => setOpen(false));
-  });
-
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+    if (e.key === 'Escape' && !sheet.hidden) {
       e.preventDefault();
       setOpen(false);
-      return;
-    }
-    if (
-      e.key === 'Tab' &&
-      toggle.getAttribute('aria-expanded') === 'true' &&
-      isMobileNav()
-    ) {
-      const items = focusables();
-      if (!items.length) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
     }
   });
-
-  window.addEventListener('resize', () => {
-    if (!isMobileNav()) setOpen(false);
-  });
-
-  function setActiveFromPath() {
-    const path = normalizePath(location.pathname);
-    links.forEach((a) => {
-      let href = '/';
-      try {
-        href = normalizePath(new URL(a.getAttribute('href'), location.origin).pathname);
-      } catch {
-        href = '/';
-      }
-      const on = href === path;
-      a.classList.toggle('active', on);
-      if (on) a.setAttribute('aria-current', 'page');
-      else a.removeAttribute('aria-current');
-    });
-    const logo = document.querySelector('a.logo');
-    if (logo) {
-      const home = normalizePath(new URL(logo.getAttribute('href') || '/', location.origin).pathname);
-      if (home === path) logo.setAttribute('aria-current', 'page');
-      else logo.removeAttribute('aria-current');
-    }
-  }
-
-  setActiveFromPath();
 }
 
 function initGamePopup() {
@@ -446,152 +388,88 @@ function syncSoundButton(btn, ambient) {
 }
 
 function wireVolumeControls(ambient) {
-  const btn = document.getElementById('sound-toggle');
-  const down = document.getElementById('sound-vol-down');
-  const up = document.getElementById('sound-vol-up');
-  syncSoundButton(btn, ambient);
+  function syncAll() {
+    document.querySelectorAll('.sound-toggle').forEach((btn) => syncSoundButton(btn, ambient));
+  }
 
   async function ensureStarted() {
     if (!ambient.isStarted()) await ambient.start();
   }
 
-  down?.addEventListener('click', async () => {
-    await ensureStarted();
-    ambient.volumeDown();
-    syncSoundButton(btn, ambient);
-  });
-  up?.addEventListener('click', async () => {
-    await ensureStarted();
-    ambient.volumeUp();
-    syncSoundButton(btn, ambient);
-  });
-  btn?.addEventListener('click', async () => {
-    await ensureStarted();
-    if (ambient.isMuted()) ambient.volumeUp();
-    else ambient.setVolume(0);
-    syncSoundButton(btn, ambient);
-  });
-}
-
-function setGateInert(blocked) {
-  document.querySelectorAll('[data-gate-inert]').forEach((el) => {
-    if (blocked) el.setAttribute('inert', '');
-    else el.removeAttribute('inert');
-  });
-}
-
-function initAmbientAndGate() {
-  const ambient = createAmbient();
-  const soundBtn = document.getElementById('sound-toggle');
-  const gate = document.getElementById('enter-gate');
-  const enterBtn = document.getElementById('enter-gate-btn');
-  const gateCanvas = document.getElementById('enter-gate-canvas');
-
-  const already = sessionStorage.getItem(GATE_KEY) === '1';
-  const vista =
-    gate && !already
-      ? initEnterGateVista(gateCanvas)
-      : { warp: async () => {}, destroy: () => {} };
-
-  wireVolumeControls(ambient);
-
-  let dismissing = false;
-  async function dismissGate(startSound) {
-    if (!gate || gate.hidden || dismissing) return;
-    dismissing = true;
-    enterBtn?.setAttribute('disabled', '');
-    if (startSound) {
-      await ambient.start();
-    }
-    sessionStorage.setItem(GATE_KEY, '1');
-    syncSoundButton(soundBtn, ambient);
-    const reduced = prefersReduced();
-    gate.classList.add(reduced ? 'is-leaving' : 'is-crossing');
-    document.body.classList.remove('gate-locked');
-    document.body.classList.add('is-entering');
-    const done = () => {
-      gate.hidden = true;
-      gate.setAttribute('hidden', '');
-      gate.setAttribute('aria-hidden', 'true');
-      gate.style.pointerEvents = 'none';
-      gate.classList.remove('is-leaving', 'is-crossing');
-      document.body.classList.remove('is-entering', 'gate-locked');
-      setGateInert(false);
-      vista.destroy();
-      if (gateCanvas && gateCanvas.parentNode) {
-        gateCanvas.width = 0;
-        gateCanvas.height = 0;
-        gateCanvas.remove();
-      }
-    };
-    if (reduced) {
-      window.setTimeout(done, 320);
-      return;
-    }
-    await vista.warp(1400);
-    gate.classList.add('is-leaving');
-    window.setTimeout(done, 560);
-  }
-
-  if (already || !gate) {
-    gate?.setAttribute('hidden', '');
-    gate?.setAttribute('aria-hidden', 'true');
-    if (gate) gate.style.pointerEvents = 'none';
-    document.body.classList.remove('gate-locked');
-    setGateInert(false);
-    vista.destroy();
-    if (gateCanvas && gateCanvas.parentNode) gateCanvas.remove();
-  } else {
-    setGateInert(true);
-    enterBtn?.focus();
-    enterBtn?.addEventListener('click', () => dismissGate(true));
-    document.addEventListener('keydown', (e) => {
-      if (gate.hidden || dismissing) return;
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        dismissGate(false);
-        return;
-      }
-      // A focused Enter button already activates on Enter; handle the key elsewhere.
-      if (e.key === 'Enter' && e.target !== enterBtn) {
-        e.preventDefault();
-        dismissGate(true);
-      }
+  syncAll();
+  document.querySelectorAll('.sound-control').forEach((root) => {
+    const btn = root.querySelector('.sound-toggle');
+    const down = root.querySelector('[id^="sound-vol-down"]');
+    const up = root.querySelector('[id^="sound-vol-up"]');
+    down?.addEventListener('click', async () => {
+      await ensureStarted();
+      ambient.volumeDown();
+      syncAll();
     });
-  }
-
-  return ambient;
-}
-
-
-function initQuietIdle() {
-  let timer = 0;
-  const IDLE_MS = 4200;
-  const mark = () => {
-    document.body.classList.remove('is-idle');
-    window.clearTimeout(timer);
-    timer = window.setTimeout(() => {
-      document.body.classList.add('is-idle');
-    }, IDLE_MS);
-  };
-  ['pointermove', 'pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach((evt) => {
-    window.addEventListener(evt, mark, { passive: true });
+    up?.addEventListener('click', async () => {
+      await ensureStarted();
+      ambient.volumeUp();
+      syncAll();
+    });
+    btn?.addEventListener('click', async () => {
+      const audible = ambient.isStarted() && !ambient.isMuted();
+      await ensureStarted();
+      if (audible) ambient.setVolume(0);
+      else if (ambient.isMuted()) ambient.volumeUp();
+      syncAll();
+    });
   });
-  mark();
 }
 
-initTimeOfDay();
-initQuietIdle();
 initTheme();
 initYear();
 initHeroChrono();
 initContactCards();
-initNav();
+initSidebar();
+initMoreSheet();
 initReveal();
-initAmbientAndGate();
+wireVolumeControls(createAmbient());
 
 const starCanvas = document.getElementById('starfield');
-if (starCanvas) initStarfield(starCanvas);
+const stars = starCanvas ? initStarfield(starCanvas) : null;
+let starsOn = false;
+function beginStars() {
+  if (starsOn) return;
+  starsOn = true;
+  stars?.start();
+}
+
+function initPortraitDepth() {
+  const stage = document.querySelector('.portrait-stage');
+  if (!stage) return;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = window.matchMedia('(pointer: fine)').matches;
+  if (reduce || !fine) return;
+  const photo = stage.querySelector('.portrait-photo');
+  const arc = stage.querySelector('.portrait-arc-wrap');
+  const glow = stage.querySelector('.portrait-glow');
+  let frame = 0;
+  let nx = 0;
+  let ny = 0;
+  window.addEventListener(
+    'pointermove',
+    (event) => {
+      if (!window.matchMedia('(min-width: 901px)').matches) return;
+      nx = event.clientX / window.innerWidth - 0.5;
+      ny = event.clientY / window.innerHeight - 0.5;
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (photo) photo.style.transform = `translate3d(${nx * -8}px, ${ny * -6}px, 0)`;
+        if (arc) arc.style.transform = `translate3d(${nx * 14}px, ${ny * 11}px, 0)`;
+        if (glow) glow.style.transform = `translate3d(${nx * 10}px, ${ny * 8}px, 0)`;
+      });
+    },
+    { passive: true }
+  );
+}
+initIntro({ onSettle: beginStars, onDone: beginStars });
+initPortraitDepth();
 
 initGamePopup();
 

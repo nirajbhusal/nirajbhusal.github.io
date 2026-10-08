@@ -1,99 +1,75 @@
 const prefersReduced = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function isCoarseDevice() {
-  try {
-    return window.matchMedia('(pointer: coarse), (hover: none)').matches;
-  } catch {
-    return 'ontouchstart' in window;
-  }
-}
-
-function todDensity() {
-  const tod = document.documentElement.getAttribute('data-tod') || 'night';
-  if (tod === 'morning') return 0.72;
-  if (tod === 'afternoon') return 0.55;
-  return 1;
-}
-
-function todAlpha(theme) {
-  const tod = document.documentElement.getAttribute('data-tod') || 'night';
-  if (theme === 'light') return 0.32;
-  if (tod === 'morning') return 0.42;
-  if (tod === 'afternoon') return 0.38;
-  return 0.62;
+function hash(n) {
+  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
 }
 
 export function initStarfield(canvas) {
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { alpha: true });
   let stars = [];
   let w = 0;
   let h = 0;
+  let dpr = 1;
   let raf = 0;
   let running = false;
-  let visible = true;
-  let pageVisible = true;
-  let pointer = { x: 0.5, y: 0.5 };
-  const usePointerParallax = !isCoarseDevice();
-  let dpr = 1;
-  let t0 = performance.now();
-  let lastTod = '';
+  let alive = true;
+  const t0 = performance.now();
 
-  function rebuildStars() {
-    const density = todDensity();
-    const count = Math.floor(((w * h) / 7500) * density);
-    stars = Array.from({ length: count }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      z: Math.random() * 0.8 + 0.2,
-      r: Math.random() * 1.5 + 0.2,
-      tw: Math.random() * Math.PI * 2,
-      drift: 0.015 + Math.random() * 0.04,
+  function palette() {
+    return document.documentElement.getAttribute('data-palette') || 'night';
+  }
+
+  function visiblePalette() {
+    const p = palette();
+    return p === 'night' || p === 'evening';
+  }
+
+  function budget() {
+    const mobile = Math.min(w, h) < 700;
+    const count = Math.floor((w * h) / (mobile ? 28000 : 22000));
+    return Math.max(28, Math.min(count, mobile ? 56 : 90));
+  }
+
+  function rebuild() {
+    const count = budget();
+    stars = Array.from({ length: count }, (_, i) => ({
+      x: hash(i + 1.3) * w,
+      y: hash(i + 4.7) * h,
+      r: 0.35 + hash(i + 8.1) * 0.7,
+      a: 0.12 + hash(i + 12.4) * 0.26,
+      tw: hash(i + 16.2) * Math.PI * 2,
+      sp: 0.25 + hash(i + 19.5) * 0.45,
     }));
   }
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    w = window.innerWidth;
-    h = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+    w = Math.max(1, window.innerWidth);
+    h = Math.max(1, window.innerHeight);
     canvas.width = Math.floor(w * dpr);
     canvas.height = Math.floor(h * dpr);
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    rebuildStars();
+    rebuild();
   }
 
   function draw(now = performance.now()) {
-    const tod = document.documentElement.getAttribute('data-tod') || 'night';
-    if (tod !== lastTod) {
-      lastTod = tod;
-      rebuildStars();
-    }
-    const theme = document.documentElement.getAttribute('data-theme');
-    const elapsed = (now - t0) / 1000;
     ctx.clearRect(0, 0, w, h);
-    const px = usePointerParallax ? (pointer.x - 0.5) * 32 : 0;
-    const py = usePointerParallax ? (pointer.y - 0.5) * 32 : 0;
-    const baseAlpha = todAlpha(theme);
+    if (!visiblePalette()) return;
+    const evening = palette() === 'evening';
+    const scale = evening ? 0.34 : 1;
+    const elapsed = (now - t0) / 1000;
+    const reduced = prefersReduced();
     for (const s of stars) {
-      const driftX = Math.sin(elapsed * s.drift + s.tw) * 6 * s.z;
-      const driftY = Math.cos(elapsed * s.drift * 0.8 + s.tw) * 4 * s.z;
-      const x = s.x + px * s.z + driftX;
-      const y = s.y + py * s.z + driftY;
-      const twinkle = 0.75 + 0.25 * Math.sin(elapsed * 1.8 + s.tw);
-      const alpha =
-        baseAlpha * s.z * (prefersReduced() ? 1 : twinkle);
-      ctx.fillStyle =
-        theme === 'light'
-          ? `rgba(60, 70, 90, ${alpha})`
-          : tod === 'morning'
-            ? `rgba(200, 220, 255, ${alpha})`
-            : tod === 'afternoon'
-              ? `rgba(210, 225, 245, ${alpha})`
-              : `rgba(190, 220, 255, ${alpha})`;
+      const drift = reduced ? 0 : Math.sin(elapsed * 0.05 * s.sp + s.tw) * 1.1;
+      const twinkle = reduced ? 1 : 0.78 + 0.22 * Math.sin(elapsed * 0.55 * s.sp + s.tw);
+      const alpha = s.a * scale * twinkle;
+      ctx.fillStyle = `rgba(214, 224, 240, ${alpha})`;
       ctx.beginPath();
-      ctx.arc(x, y, s.r * s.z, 0, Math.PI * 2);
+      ctx.arc(s.x, s.y + drift, s.r, 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -105,7 +81,14 @@ export function initStarfield(canvas) {
   }
 
   function start() {
-    if (prefersReduced() || running || !visible || !pageVisible) return;
+    if (!alive) return;
+    if (!visiblePalette()) {
+      stop();
+      draw();
+      return;
+    }
+    draw();
+    if (prefersReduced() || running) return;
     running = true;
     raf = requestAnimationFrame(frame);
   }
@@ -115,39 +98,38 @@ export function initStarfield(canvas) {
     cancelAnimationFrame(raf);
   }
 
-  function onPointer(e) {
-    if (!usePointerParallax) return;
-    if (e.pointerType === 'touch') return;
-    pointer.x = e.clientX / window.innerWidth;
-    pointer.y = e.clientY / window.innerHeight;
-    if (prefersReduced()) draw();
-  }
-
-  window.addEventListener('resize', () => {
+  function onResize() {
     resize();
     draw();
-  });
-  window.addEventListener('pointermove', onPointer, { passive: true });
+  }
+
+  window.addEventListener('resize', onResize);
   document.addEventListener('visibilitychange', () => {
-    pageVisible = document.visibilityState === 'visible';
-    if (pageVisible) start();
+    if (document.visibilityState === 'visible') start();
     else stop();
   });
 
-  const io = new IntersectionObserver(
-    ([entry]) => {
-      visible = entry.isIntersecting;
-      if (visible) start();
-      else stop();
-    },
-    { threshold: 0.01 }
-  );
-  io.observe(canvas);
+  const mo = new MutationObserver(() => {
+    if (running || document.visibilityState === 'visible') start();
+    else draw();
+  });
+  mo.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-palette'],
+  });
 
   resize();
   draw();
-  if (!prefersReduced()) start();
-  else draw();
 
-  return { stop, start, draw };
+  return {
+    start,
+    stop,
+    draw,
+    destroy() {
+      alive = false;
+      stop();
+      window.removeEventListener('resize', onResize);
+      mo.disconnect();
+    },
+  };
 }
