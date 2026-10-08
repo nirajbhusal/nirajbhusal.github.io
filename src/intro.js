@@ -252,14 +252,15 @@ export function initIntro({ onSettle, onDone } = {}) {
     const cover = t < 0.72 ? 1 : 1 - easeOutCubic((t - 0.72) / 0.28);
     canvas.style.opacity = String(cover);
 
-    const br = Math.round(2 + (end[0] - 2) * dis);
-    const bgc = Math.round(3 + (end[1] - 3) * dis);
-    const bb = Math.round(8 + (end[2] - 8) * dis);
-    ctx.fillStyle = `rgb(${br},${bgc},${bb})`;
-    ctx.fillRect(0, 0, w, h);
-
     const cx = w * 0.5;
     const cy = h * 0.46;
+    const mix = (a, b) => Math.round(a + (b - a) * dis);
+    const space = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.75);
+    space.addColorStop(0, `rgb(${mix(5, end[0])},${mix(6, end[1])},${mix(13, end[2])})`);
+    space.addColorStop(1, `rgb(${mix(11, end[0])},${mix(13, end[1])},${mix(26, end[2])})`);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = space;
+    ctx.fillRect(0, 0, w, h);
     const starKeep = palette === 'night' ? 1 : palette === 'evening' ? 1 - dis * 0.7 : 1 - dis;
     const gal = core * (1 - dis * 0.92);
 
@@ -347,9 +348,7 @@ export function initIntro({ onSettle, onDone } = {}) {
 
     const flash = flashAmt(t);
     if (flash > 0.01) {
-      ctx.fillStyle = `rgba(255, 255, 255, ${0.2 * flash})`;
-      ctx.fillRect(0, 0, w, h);
-      const bloom = Math.min(w, h) * 0.48;
+      const bloom = Math.min(w, h) * 0.42;
       const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, bloom);
       fg.addColorStop(0, `rgba(255, 255, 255, ${0.95 * flash})`);
       fg.addColorStop(0.22, `rgba(186, 214, 255, ${0.5 * flash})`);

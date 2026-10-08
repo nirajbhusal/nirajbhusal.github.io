@@ -630,7 +630,8 @@ html[data-theme-mode="dark"] .theme-cycle-label::before {
 .portrait-stage {
   position: relative;
   width: 100%;
-  aspect-ratio: 727 / 742;
+  aspect-ratio: 900 / 981;
+  isolation: isolate;
 }
 
 .portrait-glow,
@@ -661,7 +662,7 @@ html[data-theme-mode="dark"] .theme-cycle-label::before {
 
 .portrait-photo {
   inset: 0;
-  z-index: 2;
+  z-index: 4;
 }
 
 .hero-portrait img {
