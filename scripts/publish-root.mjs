@@ -49,4 +49,12 @@ if (fs.existsSync(distAssets)) {
 const faviconFrom = path.join(dist, 'favicon.svg');
 if (fs.existsSync(faviconFrom)) copyFile(faviconFrom, path.join(root, 'favicon.svg'));
 
+const portraitFrom = path.join(dist, 'portrait');
+if (fs.existsSync(portraitFrom)) {
+  for (const name of fs.readdirSync(portraitFrom)) {
+    const from = path.join(portraitFrom, name);
+    if (fs.statSync(from).isFile()) copyFile(from, path.join(root, 'portrait', name));
+  }
+}
+
 console.log('published dist onto the repository root');

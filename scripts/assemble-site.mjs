@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 /**
  * Assemble multi-page HTML into build-src/ for Vite.
- * Home keeps the Enter gate and hero. Every other section is its own page.
+ * Home is the hero plus a contents index. Every other section is its own page.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { publications } from '../src/site/data/publications.js';
+import { iconSvg } from '../src/site/icons.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const site = path.join(root, 'src', 'site');
@@ -34,6 +35,17 @@ const PAGES = [
       'Projects Niraj Bhusal has shipped or contributed to, including the official Ministry of Finance Rasuwa Flood Update Portal and a personal civic flood bulletin.',
     blurb:
       'The official MoF Rasuwa Flood Update Portal, a personal civic bulletin, and government systems he has contributed to.',
+  },
+  {
+    id: 'superintelligence',
+    slug: 'superintelligence',
+    nav: 'Superintelligence',
+    heading: 'Preparing Government for Superintelligence',
+    title: 'Preparing Government for Superintelligence — Niraj Bhusal',
+    description:
+      'A personal view by Niraj Bhusal on why governments, including Nepal, should start preparing for advanced AI and possible superintelligence. Not an official position of the Government of Nepal.',
+    blurb:
+      'A personal view on why governments, including Nepal, should start preparing for advanced AI and superintelligence.',
   },
   {
     id: 'experience',
@@ -133,9 +145,9 @@ const PAGES = [
 
 const HOME = {
   slug: '',
-  title: 'Niraj Bhusal — GovTech • AI Governance • Digital Public Infrastructure',
+  title: 'Niraj Bhusal — GovTech · AI Governance · Digital Transformation (DPI)',
   description:
-    'Niraj Bhusal — civil servant at the Office of the Hon. Finance Minister, Ministry of Finance, Nepal. GovTech • AI Governance • Digital Public Infrastructure. Highlighting the official Ministry of Finance (MoF) Rasuwa Flood Update Portal and personal civic tools.',
+    'Niraj Bhusal — civil servant at the Office of the Hon. Finance Minister, Ministry of Finance, Nepal. GovTech · AI Governance · Digital Transformation (DPI). Now exploring how governments can prepare for superintelligence. Highlighting the official Ministry of Finance (MoF) Rasuwa Flood Update Portal and personal civic tools.',
 };
 
 const HASH_MAP = {
@@ -154,8 +166,70 @@ const HASH_MAP = {
   play: '/games/',
   games: '/games/',
   contact: '/contact/',
+  superintelligence: '/superintelligence/',
   hero: '/',
 };
+
+const ICONS = {
+  home: 'house',
+  about: 'user',
+  built: 'grid',
+  superintelligence: 'sparkles',
+  experience: 'briefcase',
+  education: 'grad',
+  trainings: 'book',
+  speaking: 'mic',
+  presentations: 'presentation',
+  publications: 'file',
+  community: 'users',
+  media: 'award',
+  play: 'gamepad',
+  contact: 'mail',
+};
+
+const TAB_SLUGS = new Set(['projects', 'speaking', 'publications']);
+
+const THEME_BOOT = `(function () {
+  try {
+    var params = new URLSearchParams(location.search);
+    var override = params.get("daypart");
+    var valid = override === "morning" || override === "afternoon" || override === "evening" || override === "night";
+    var hour = new Date().getHours();
+    var part = hour >= 5 && hour < 11 ? "morning" : hour >= 11 && hour < 16 ? "afternoon" : hour >= 16 && hour < 19 ? "evening" : "night";
+    if (valid) part = override;
+    var saved = localStorage.getItem("theme");
+    var mode = saved === "light" || saved === "dark" || saved === "auto" ? saved : "auto";
+    var palette = valid ? part : mode === "light" ? "afternoon" : mode === "dark" ? "night" : part;
+    var theme = palette === "morning" || palette === "afternoon" ? "light" : "dark";
+    var root = document.documentElement;
+    root.setAttribute("data-theme", theme);
+    root.setAttribute("data-daypart", part);
+    root.setAttribute("data-palette", palette);
+    root.setAttribute("data-theme-mode", mode);
+    root.style.colorScheme = theme;
+    if (localStorage.getItem("nb-sidebar") === "collapsed") root.setAttribute("data-sidebar", "collapsed");
+  } catch (e) {}
+})();`;
+
+const INTRO_BOOT = `(function () {
+  try {
+    if (document.body && document.body.getAttribute("data-page") !== "home") return;
+  } catch (e) {}
+  var reduce = false;
+  try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+  var intro = "";
+  var seen = false;
+  try {
+    intro = new URLSearchParams(location.search).get("intro") || "";
+    seen = sessionStorage.getItem("nb-intro-seen") === "1";
+  } catch (e) {}
+  var root = document.documentElement;
+  if (reduce) {
+    if (intro === "1" || (intro !== "0" && !seen)) root.classList.add("is-intro-fade");
+    return;
+  }
+  if (intro === "1" || (intro !== "0" && !seen)) root.classList.add("is-intro");
+})();`;
 
 const REDIRECTS = [
   { from: 'built', to: '/projects/', label: 'Projects' },
@@ -164,10 +238,6 @@ const REDIRECTS = [
 
 function read(rel) {
   return fs.readFileSync(path.join(site, rel), 'utf8').trim();
-}
-
-function stripGate(html) {
-  return html.replaceAll(' data-gate-inert', '').replaceAll(' inert', '');
 }
 
 function promoteHeading(html) {
@@ -206,7 +276,8 @@ function publicationCitation(item) {
 }
 
 function publicationsSectionHtml(page) {
-  const sheet = String(PAGES.indexOf(page) + 1).padStart(2, '0');
+  const numbered = PAGES.filter((item) => item.id !== 'superintelligence');
+  const sheet = String(numbered.indexOf(page) + 1).padStart(2, '0');
   const cards = publications
     .map((item) => {
       const badge = escapeHtml(item.type || 'Publication');
@@ -235,19 +306,25 @@ ${cards}
     </section>`;
 }
 
-function navHtml(activeSlug, locked) {
-  const inert = locked ? ' data-gate-inert inert' : '';
-  const links = PAGES.map((page) => {
-    const current = page.slug === activeSlug;
-    const attrs = current ? ' class="active" aria-current="page"' : '';
-    return `    <a href="/${page.slug}/"${attrs}>${page.nav}</a>`;
-  }).join('\n');
-  return `  <nav id="site-nav" class="nav" aria-label="Primary"${inert}>\n${links}\n  </nav>`;
+function linkAttrs(current) {
+  return current ? ' aria-current="page"' : '';
 }
+
+function navItemHtml(item, activeSlug, size = 20) {
+  const current = item.slug === activeSlug;
+  const href = item.slug ? `/${item.slug}/` : '/';
+  return `<a href="${href}"${linkAttrs(current)}>${iconSvg(ICONS[item.id] || 'sparkles', size)}<span class="side-label">${item.nav}</span></a>`;
+}
+
+const NAV_ITEMS = [
+  { id: 'home', slug: '', nav: 'Home' },
+  ...PAGES.map((page) => ({ id: page.id, slug: page.slug, nav: page.nav })),
+];
 
 function overviewHtml() {
   const cards = PAGES.map(
     (page) => `      <a class="card index-card" href="/${page.slug}/">
+        <span class="index-icon" aria-hidden="true">${iconSvg(ICONS[page.id] || 'sparkles', 20)}</span>
         <span class="sheet-label">◇ ${page.nav.toUpperCase()}</span>
         <h3>${page.heading || page.nav}</h3>
         <p>${page.blurb}</p>
@@ -262,21 +339,118 @@ ${cards}
     </section>`;
 }
 
-function headHtml(page) {
+function themeIcons() {
+  return ['sunrise', 'sun', 'sunset', 'moon']
+    .map(
+      (name) =>
+        `<span class="theme-ico theme-ico-${name}">${iconSvg(name, 20)}</span>`
+    )
+    .join('');
+}
+
+function soundControlHtml(suffix) {
+  const id = (name) => (suffix ? `${name}-${suffix}` : name);
+  return `<div class="sound-control" role="group" aria-label="Ambient sound volume">
+        <button type="button" id="${id('sound-vol-down')}" class="sound-vol-btn" aria-label="Decrease volume" title="Volume down">−</button>
+        <button type="button" id="${id('sound-toggle')}" class="sound-toggle" aria-pressed="false" aria-label="Sound off" title="Ambient sound" data-vol-level="0">
+          <span class="sound-icon" aria-hidden="true">
+            <svg class="sound-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 10v4h3l4 3V7L7 10H4z"/>
+              <path class="sound-wave sound-wave-1" d="M14.5 9.5a3.5 3.5 0 0 1 0 5"/>
+              <path class="sound-wave sound-wave-2" d="M16.8 7.5a6.5 6.5 0 0 1 0 9"/>
+              <line class="sound-mute-slash" x1="4" y1="4" x2="20" y2="20"/>
+            </svg>
+          </span>
+          <span class="sound-label">Vol</span>
+        </button>
+        <button type="button" id="${id('sound-vol-up')}" class="sound-vol-btn" aria-label="Increase volume" title="Volume up">+</button>
+      </div>`;
+}
+
+function themeButtonHtml(id) {
+  return `<button type="button" id="${id}" class="theme-cycle" aria-label="Theme: Auto" title="Auto">
+        ${themeIcons()}
+        <span class="theme-cycle-label"></span>
+      </button>`;
+}
+
+function sidebarHtml(activeSlug) {
+  const home = activeSlug === '';
+  const links = NAV_ITEMS.map((item) => `        ${navItemHtml(item, activeSlug)}`).join('\n');
+  return `<aside class="side-nav" aria-label="Sections">
+      <div class="side-brand">
+        <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''} aria-label="Niraj Bhusal, home">
+          <span class="logo-mark">NB</span>
+          <span class="wordmark">Niraj Bhusal</span>
+        </a>
+        <button type="button" id="sidebar-collapse" class="icon-btn side-collapse" aria-pressed="false" aria-label="Collapse sidebar" title="Collapse sidebar">${iconSvg('panel', 20)}</button>
+      </div>
+      <nav class="side-links" aria-label="Primary">
+${links}
+      </nav>
+      <div class="side-foot">
+        ${soundControlHtml('')}
+        ${themeButtonHtml('theme-toggle')}
+      </div>
+    </aside>`;
+}
+
+function mobileTopHtml(activeSlug) {
+  const home = activeSlug === '';
+  return `<header class="mobile-top">
+        <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''}>
+          <span class="logo-mark">NB</span>
+          <span class="wordmark">Niraj Bhusal</span>
+        </a>
+        <div class="mobile-tools">
+          ${soundControlHtml('m')}
+          ${themeButtonHtml('theme-toggle-m')}
+        </div>
+      </header>`;
+}
+
+function tabBarHtml(activeSlug) {
+  const primary = NAV_ITEMS.filter((item) => item.slug === '' || TAB_SLUGS.has(item.slug));
+  const links = primary
+    .map((item) => `      ${navItemHtml(item, activeSlug, 22)}`)
+    .join('\n');
+  const moreCurrent = activeSlug && !TAB_SLUGS.has(activeSlug);
+  return `<nav class="tab-bar" aria-label="Sections">
+${links}
+      <button type="button" id="more-tab" aria-expanded="false" aria-controls="more-sheet"${moreCurrent ? ' aria-current="page"' : ''}>${iconSvg('ellipsis', 22)}<span>More</span></button>
+    </nav>`;
+}
+
+function moreSheetHtml(activeSlug) {
+  const rest = NAV_ITEMS.filter((item) => item.slug && !TAB_SLUGS.has(item.slug));
+  const links = rest
+    .map((item) => `        ${navItemHtml(item, activeSlug)}`)
+    .join('\n');
+  return `<div class="more-layer" id="more-sheet" hidden>
+      <button type="button" class="more-scrim" aria-label="Close menu" data-more-close></button>
+      <div class="more-panel" role="dialog" aria-modal="true" aria-label="More sections">
+${links}
+      </div>
+    </div>`;
+}
+
+function headHtml(page, { home }) {
   const url = pageUrl(page.slug);
   const hashLiteral = JSON.stringify(HASH_MAP);
+  const introStyle = home
+    ? `<style>
+    html.is-intro .hero-id,html.is-intro .hero-portrait,html.is-intro .tagline,html.is-intro .si-pill,html.is-intro .lede,html.is-intro .hero-chrono,html.is-intro .hero-actions,html.is-intro .side-nav,html.is-intro .mobile-top,html.is-intro .tab-bar,html.is-intro .games-launcher,html.is-intro #starfield{opacity:0}
+    html.is-intro-fade body::after{content:"";position:fixed;inset:0;z-index:80;background:var(--bg,#0b1220);pointer-events:none;animation:nb-veil .45s ease forwards}
+    @keyframes nb-veil{to{opacity:0}}
+  </style>`
+    : '';
+  const introBoot = home ? `<script>${INTRO_BOOT}</script>` : '';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script>
-    try {
-      if (localStorage.getItem("theme") === "light") {
-        document.documentElement.setAttribute("data-theme", "light");
-      }
-    } catch (e) {}
-  </script>
+  <script>${THEME_BOOT}</script>
   <title>${page.title}</title>
   <meta name="description" content="${page.description}" />
   <link rel="canonical" href="${url}" />
@@ -287,7 +461,8 @@ function headHtml(page) {
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  ${introStyle}
   <script>
     (function () {
       var map = ${hashLiteral};
@@ -300,42 +475,41 @@ function headHtml(page) {
       if (path !== norm) location.replace(target);
     })();
   </script>
+  ${introBoot}
 </head>`;
 }
 
 function documentFor(page, { home }) {
-  const locked = home;
-  const header = locked ? read('partials/header.html') : stripGate(read('partials/header.html'));
-  const games = locked ? read('partials/games.html') : stripGate(read('partials/games.html'));
-  const footer = locked ? read('partials/footer.html') : stripGate(read('partials/footer.html'));
-  const gate = home ? `  ${read('partials/gate.html')}\n` : '';
-  const overlayInert = locked ? ' data-gate-inert inert' : '';
-  const mainInert = locked ? ' data-gate-inert inert' : '';
-  const bodyClass = home ? ' class="gate-locked"' : '';
+  const activeSlug = home ? '' : page.slug;
   const dataPage = home ? 'home' : page.slug;
+  const games = read('partials/games.html');
+  const footer = read('partials/footer.html');
   const main = home
     ? `${read('sections/hero.html')}\n${overviewHtml()}`
     : promoteHeading(
         page.id === 'publications' ? publicationsSectionHtml(page) : read(`sections/${page.id}.html`)
       );
 
-  return `${headHtml(page)}
-<body${bodyClass} data-page="${dataPage}">
-${gate}  <canvas id="starfield" aria-hidden="true"></canvas>
-  <div id="nebula" class="nebula" aria-hidden="true"></div>
-  <div id="nav-overlay" class="nav-overlay" hidden${overlayInert}></div>
-
-${header}
-
-${navHtml(home ? '' : page.slug, locked)}
-
-${games}
-
-  <main${mainInert}>
+  return `${headHtml(page, { home })}
+<body data-page="${dataPage}">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div class="app-shell">
+    ${sidebarHtml(activeSlug)}
+    <div class="shell-main">
+      ${mobileTopHtml(activeSlug)}
+      <main id="content">
 ${main}
-  </main>
-
-${footer}
+      </main>
+      ${footer}
+    </div>
+  </div>
+${games}
+${tabBarHtml(activeSlug)}
+${moreSheetHtml(activeSlug)}
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
 `;
 }
 
