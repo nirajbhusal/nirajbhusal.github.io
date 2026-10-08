@@ -1119,15 +1119,21 @@ html.intro-skip #starfield {
 
   .hero .hero-given {
     font-weight: 700;
-    background: linear-gradient(
+    line-height: 1.05;
+    padding-block: 0.05em 0.12em;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 40%, transparent));
+  }
+
+  .hero .hero-given-fill {
+    background-image: linear-gradient(
       118deg,
       var(--fg) 8%,
       color-mix(in srgb, var(--accent) 78%, var(--fg)) 100%
     );
     -webkit-background-clip: text;
     background-clip: text;
+    -webkit-text-fill-color: transparent;
     color: transparent;
-    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 42%, transparent));
   }
 
   .hero .hero-family {
@@ -1136,7 +1142,7 @@ html.intro-skip #starfield {
   }
 
   html[data-theme="light"] .hero .hero-given {
-    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 28%, transparent));
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 26%, transparent));
   }
 
   .hero-portrait {
