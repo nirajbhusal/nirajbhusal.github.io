@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { publications } from '../src/site/data/publications.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const site = path.join(root, 'src', 'site');
@@ -82,6 +83,17 @@ const PAGES = [
     blurb: 'Slide decks, including Data From Disaster and AI: Aim, Act, Achieve.',
   },
   {
+    id: 'publications',
+    slug: 'publications',
+    nav: 'Publications',
+    heading: 'Papers &amp; Publications',
+    title: 'Papers & Publications — Niraj Bhusal',
+    description:
+      'Papers and magazine articles by Niraj Bhusal, including Government Services in Our Pocket in NEFport Issue 66 from the Nepal Economic Forum.',
+    blurb:
+      'Magazine writing, including an article in NEFport on digital public services and digital democracy.',
+  },
+  {
     id: 'community',
     slug: 'community',
     nav: 'Community',
@@ -136,6 +148,7 @@ const HASH_MAP = {
   training: '/training/',
   speaking: '/speaking/',
   presentations: '/presentations/',
+  publications: '/publications/',
   community: '/community/',
   media: '/media/',
   play: '/games/',
@@ -163,6 +176,63 @@ function promoteHeading(html) {
 
 function pageUrl(slug) {
   return slug ? `${ORIGIN}/${slug}/` : `${ORIGIN}/`;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
+function publicationVenue(item) {
+  if (item.publication) return item.publication;
+  let line = item.venue || '';
+  if (item.issue) line += `${line ? ', ' : ''}Issue ${item.issue}`;
+  if (item.issueTitle) line += ` — “${item.issueTitle}”`;
+  return line;
+}
+
+function publicationCitation(item) {
+  const pages = item.pages
+    ? /^pp\.?\s/i.test(item.pages)
+      ? item.pages
+      : `pp. ${item.pages}`
+    : '';
+  return [item.author, publicationVenue(item), item.publisher, item.date, pages]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+function publicationsSectionHtml(page) {
+  const sheet = String(PAGES.indexOf(page) + 1).padStart(2, '0');
+  const cards = publications
+    .map((item) => {
+      const badge = escapeHtml(item.type || 'Publication');
+      const title = escapeHtml(item.title || 'Untitled');
+      const citation = escapeHtml(publicationCitation(item));
+      const description = item.description ? `\n          <p>${escapeHtml(item.description)}</p>` : '';
+      const link = item.url
+        ? `\n          <div class="card-actions">
+            <a class="btn btn-primary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.linkLabel || 'Read')}</a>
+          </div>`
+        : '';
+      return `        <article class="card event-card">
+          <span class="badge">${badge}</span>
+          <h3>${title}</h3>
+          <p class="meta">${citation}</p>${description}${link}
+        </article>`;
+    })
+    .join('\n');
+
+  return `<section id="publications" class="section reveal">
+      <p class="sheet-label">◇ SHEET ${sheet} · PUBLICATIONS</p>
+      <h2>${page.heading || page.nav}</h2>
+      <div class="event-grid">
+${cards}
+      </div>
+    </section>`;
 }
 
 function navHtml(activeSlug, locked) {
@@ -245,7 +315,9 @@ function documentFor(page, { home }) {
   const dataPage = home ? 'home' : page.slug;
   const main = home
     ? `${read('sections/hero.html')}\n${overviewHtml()}`
-    : promoteHeading(read(`sections/${page.id}.html`));
+    : promoteHeading(
+        page.id === 'publications' ? publicationsSectionHtml(page) : read(`sections/${page.id}.html`)
+      );
 
   return `${headHtml(page)}
 <body${bodyClass} data-page="${dataPage}">
