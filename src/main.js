@@ -291,12 +291,15 @@ function initSidebar() {
 
 function initNavDrawer() {
   const toggle = document.getElementById('nav-toggle');
-  const nav = document.getElementById('site-nav');
+  const nav = document.getElementById('mobile-nav');
   const scrim = document.getElementById('nav-scrim');
   if (!toggle || !nav || !scrim) return;
 
   const mq = window.matchMedia('(max-width: 900px)');
   const shell = document.querySelector('.shell-main');
+  const search = document.getElementById('md-search');
+  const settingsBtn = document.getElementById('md-settings-btn');
+  const settings = document.getElementById('md-settings');
   const backdropNodes = [
     document.querySelector('.skip-link'),
     shell,
@@ -305,6 +308,7 @@ function initNavDrawer() {
   ].filter(Boolean);
   let lastFocus = null;
   let lockedScroll = 0;
+  let suppressClick = false;
 
   function mobile() {
     return mq.matches;
@@ -314,11 +318,45 @@ function initNavDrawer() {
     return document.documentElement.getAttribute('data-nav') === 'open';
   }
 
+  function settingsOpen() {
+    return Boolean(settings && !settings.hidden);
+  }
+
   function focusable() {
-    return [...nav.querySelectorAll('a[href], button:not([disabled])')].filter((el) => {
+    return [...nav.querySelectorAll('a[href], button:not([disabled]), input:not([disabled])')].filter((el) => {
+      if (el.closest('[hidden]')) return false;
       const style = window.getComputedStyle(el);
       return style.display !== 'none' && style.visibility !== 'hidden';
     });
+  }
+
+  function applyFilter() {
+    const query = (search?.value || '').trim().toLowerCase();
+    let primary = 0;
+    let sections = 0;
+    nav.querySelectorAll('.md-row').forEach((row) => {
+      const label = row.getAttribute('data-nav-label') || '';
+      const match = !query || label.includes(query);
+      row.hidden = !match;
+      if (!match) return;
+      if (row.getAttribute('data-nav-group') === 'primary') primary += 1;
+      else sections += 1;
+    });
+    const primaryWrap = nav.querySelector('[data-nav-group-wrap="primary"]');
+    const sectionsWrap = nav.querySelector('[data-nav-group-wrap="sections"]');
+    if (primaryWrap) primaryWrap.hidden = primary === 0;
+    if (sectionsWrap) sectionsWrap.hidden = sections === 0;
+    const empty = nav.querySelector('.md-empty');
+    if (empty) empty.hidden = primary + sections > 0;
+  }
+
+  function setSettings(open) {
+    if (!settings || !settingsBtn) return;
+    settings.hidden = !open;
+    settingsBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      window.requestAnimationFrame(() => settings.querySelector('button')?.focus());
+    }
   }
 
   function lockScroll() {
@@ -346,34 +384,79 @@ function initNavDrawer() {
     if (next) {
       lastFocus = document.activeElement;
       document.documentElement.setAttribute('data-nav', 'open');
+      nav.removeAttribute('inert');
+      nav.removeAttribute('aria-hidden');
       nav.setAttribute('role', 'dialog');
       nav.setAttribute('aria-modal', 'true');
       for (const node of backdropNodes) node.setAttribute('inert', '');
       lockScroll();
-      window.requestAnimationFrame(() => focusable()[0]?.focus());
+      window.requestAnimationFrame(() => nav.focus());
       return;
+    }
+    setSettings(false);
+    if (search && search.value) {
+      search.value = '';
+      applyFilter();
     }
     document.documentElement.removeAttribute('data-nav');
     nav.removeAttribute('role');
     nav.removeAttribute('aria-modal');
     for (const node of backdropNodes) node.removeAttribute('inert');
-    if (was) unlockScroll();
     if (was) {
-      const back = lastFocus && document.contains(lastFocus) ? lastFocus : toggle;
+      const back =
+        lastFocus && document.contains(lastFocus) && !nav.contains(lastFocus) ? lastFocus : toggle;
       back.focus?.();
     }
+    nav.setAttribute('aria-hidden', 'true');
+    nav.setAttribute('inert', '');
+    if (was) unlockScroll();
   }
 
-  toggle.addEventListener('click', () => setOpen(!isOpen()));
+  function armSuppressClick() {
+    suppressClick = true;
+    const stop = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      suppressClick = false;
+      document.removeEventListener('click', stop, true);
+    };
+    document.addEventListener('click', stop, true);
+    window.setTimeout(() => {
+      suppressClick = false;
+      document.removeEventListener('click', stop, true);
+    }, 400);
+  }
+
+  toggle.addEventListener('click', () => {
+    if (suppressClick) return;
+    setOpen(!isOpen());
+  });
+  document.getElementById('md-close')?.addEventListener('click', () => setOpen(false));
   scrim.addEventListener('click', () => setOpen(false));
   nav.addEventListener('click', (event) => {
+    if (suppressClick) return;
     if (event.target.closest('a') && mobile()) setOpen(false);
+  });
+  search?.addEventListener('input', applyFilter);
+  settingsBtn?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    setSettings(!settingsOpen());
+  });
+  document.addEventListener('click', (event) => {
+    if (!settingsOpen()) return;
+    if (settings.contains(event.target) || settingsBtn.contains(event.target)) return;
+    setSettings(false);
   });
   document.addEventListener('keydown', (event) => {
     if (!isOpen()) return;
     if (event.key === 'Escape') {
       event.preventDefault();
       event.stopImmediatePropagation();
+      if (settingsOpen()) {
+        setSettings(false);
+        settingsBtn?.focus();
+        return;
+      }
       setOpen(false);
       return;
     }
@@ -394,6 +477,64 @@ function initNavDrawer() {
       first.focus();
     }
   });
+
+  let gesture = null;
+  document.addEventListener(
+    'touchstart',
+    (event) => {
+      if (!mobile() || event.touches.length !== 1) {
+        gesture = null;
+        return;
+      }
+      const touch = event.touches[0];
+      const open = isOpen();
+      const onDrawer = nav.contains(event.target);
+      const onScrim = event.target === scrim;
+      if (!open && touch.clientX <= 24) {
+        gesture = { x: touch.clientX, y: touch.clientY, dx: 0, dy: 0, mode: 'open' };
+      } else if (open && (onDrawer || onScrim)) {
+        gesture = { x: touch.clientX, y: touch.clientY, dx: 0, dy: 0, mode: 'close' };
+      } else {
+        gesture = null;
+      }
+    },
+    { passive: true }
+  );
+  document.addEventListener(
+    'touchmove',
+    (event) => {
+      if (!gesture || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      gesture.dx = touch.clientX - gesture.x;
+      gesture.dy = touch.clientY - gesture.y;
+    },
+    { passive: true }
+  );
+  document.addEventListener(
+    'touchend',
+    () => {
+      if (!gesture) return;
+      const dx = gesture.dx || 0;
+      const dy = gesture.dy || 0;
+      const horizontal = Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.15;
+      if (horizontal && gesture.mode === 'open' && dx > 0) {
+        armSuppressClick();
+        setOpen(true);
+      } else if (horizontal && gesture.mode === 'close' && dx < 0) {
+        armSuppressClick();
+        setOpen(false);
+      }
+      gesture = null;
+    },
+    { passive: true }
+  );
+  document.addEventListener(
+    'touchcancel',
+    () => {
+      gesture = null;
+    },
+    { passive: true }
+  );
 
   const onViewport = () => {
     if (!mobile()) setOpen(false);
