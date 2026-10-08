@@ -289,31 +289,117 @@ function initSidebar() {
   btn.addEventListener('click', () => apply(!collapsed()));
 }
 
-function initMoreSheet() {
-  const sheet = document.getElementById('more-sheet');
-  const tab = document.getElementById('more-tab');
-  if (!sheet || !tab) return;
+function initNavDrawer() {
+  const toggle = document.getElementById('nav-toggle');
+  const nav = document.getElementById('site-nav');
+  const scrim = document.getElementById('nav-scrim');
+  if (!toggle || !nav || !scrim) return;
+
+  const mq = window.matchMedia('(max-width: 900px)');
+  const shell = document.querySelector('.shell-main');
+  const backdropNodes = [
+    document.querySelector('.skip-link'),
+    shell,
+    document.getElementById('games-launcher'),
+    document.getElementById('game-popup'),
+  ].filter(Boolean);
+  let lastFocus = null;
+  let lockedScroll = 0;
+
+  function mobile() {
+    return mq.matches;
+  }
+
+  function isOpen() {
+    return document.documentElement.getAttribute('data-nav') === 'open';
+  }
+
+  function focusable() {
+    return [...nav.querySelectorAll('a[href], button:not([disabled])')].filter((el) => {
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' && style.visibility !== 'hidden';
+    });
+  }
+
+  function lockScroll() {
+    lockedScroll = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.top = `-${lockedScroll}px`;
+    document.body.classList.add('nav-open');
+  }
+
+  function unlockScroll() {
+    const y = lockedScroll;
+    document.body.classList.remove('nav-open');
+    document.body.style.top = '';
+    const root = document.documentElement;
+    const previous = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+    window.scrollTo(0, y);
+    root.style.scrollBehavior = previous;
+  }
 
   function setOpen(open) {
-    sheet.hidden = !open;
-    tab.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if (open) {
-      window.setTimeout(() => sheet.querySelector('.more-panel a')?.focus(), 20);
-    } else {
-      tab.focus();
+    const next = Boolean(open) && mobile();
+    const was = isOpen();
+    toggle.setAttribute('aria-expanded', next ? 'true' : 'false');
+    toggle.setAttribute('aria-label', next ? 'Close menu' : 'Open menu');
+    if (next) {
+      lastFocus = document.activeElement;
+      document.documentElement.setAttribute('data-nav', 'open');
+      nav.setAttribute('role', 'dialog');
+      nav.setAttribute('aria-modal', 'true');
+      for (const node of backdropNodes) node.setAttribute('inert', '');
+      lockScroll();
+      window.requestAnimationFrame(() => focusable()[0]?.focus());
+      return;
+    }
+    document.documentElement.removeAttribute('data-nav');
+    nav.removeAttribute('role');
+    nav.removeAttribute('aria-modal');
+    for (const node of backdropNodes) node.removeAttribute('inert');
+    if (was) unlockScroll();
+    if (was) {
+      const back = lastFocus && document.contains(lastFocus) ? lastFocus : toggle;
+      back.focus?.();
     }
   }
 
-  tab.addEventListener('click', () => setOpen(sheet.hidden));
-  sheet.querySelectorAll('[data-more-close], .more-panel a').forEach((el) => {
-    el.addEventListener('click', () => setOpen(false));
+  toggle.addEventListener('click', () => setOpen(!isOpen()));
+  scrim.addEventListener('click', () => setOpen(false));
+  nav.addEventListener('click', (event) => {
+    if (event.target.closest('a') && mobile()) setOpen(false);
   });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !sheet.hidden) {
-      e.preventDefault();
+  document.addEventListener('keydown', (event) => {
+    if (!isOpen()) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopImmediatePropagation();
       setOpen(false);
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const items = focusable();
+    if (!items.length) {
+      event.preventDefault();
+      return;
+    }
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || !nav.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (active === last || !nav.contains(active))) {
+      event.preventDefault();
+      first.focus();
     }
   });
+
+  const onViewport = () => {
+    if (!mobile()) setOpen(false);
+  };
+  if (typeof mq.addEventListener === 'function') mq.addEventListener('change', onViewport);
+  else mq.addListener(onViewport);
 }
 
 function initGamePopup() {
@@ -426,7 +512,7 @@ initYear();
 initHeroChrono();
 initContactCards();
 initSidebar();
-initMoreSheet();
+initNavDrawer();
 initReveal();
 wireVolumeControls(createAmbient());
 

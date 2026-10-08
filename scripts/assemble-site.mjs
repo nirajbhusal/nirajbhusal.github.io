@@ -147,7 +147,7 @@ const HOME = {
   slug: '',
   title: 'Niraj Bhusal — GovTech · AI Governance · Digital Transformation (DPI)',
   description:
-    'Niraj Bhusal — civil servant at the Office of the Hon. Finance Minister, Ministry of Finance, Nepal. GovTech · AI Governance · Digital Transformation (DPI). Now exploring how governments can prepare for superintelligence. Highlighting the official Ministry of Finance (MoF) Rasuwa Flood Update Portal and personal civic tools.',
+    'Niraj Bhusal — civil servant at the Office of the Hon. Finance Minister, Ministry of Finance, Nepal. GovTech · AI Governance · Digital Transformation (DPI). Highlighting the official Ministry of Finance (MoF) Rasuwa Flood Update Portal and personal civic tools.',
 };
 
 const HASH_MAP = {
@@ -186,8 +186,6 @@ const ICONS = {
   play: 'gamepad',
   contact: 'mail',
 };
-
-const TAB_SLUGS = new Set(['projects', 'speaking', 'publications']);
 
 const THEME_BOOT = `(function () {
   try {
@@ -358,10 +356,10 @@ const SECTION_ICONS = {
 
 const ARROW_ICON = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>`;
 
-/** Visual order: Projects and Speaking share row 1; Games and Contact share the last row. */
+/** Visual order: Projects and Speaking share row 1; Games and Contact share the last row.
+ *  Superintelligence stays in the sidebar only — a contents card leaves an orphan row. */
 const CONTENTS_ORDER = [
   { id: 'built', layout: 'feature', hue: 205 },
-  { id: 'superintelligence', layout: 'band', hue: 262 },
   { id: 'about', hue: 214 },
   { id: 'experience', hue: 228 },
   { id: 'education', hue: 250 },
@@ -642,7 +640,7 @@ function themeButtonHtml(id) {
 function sidebarHtml(activeSlug) {
   const home = activeSlug === '';
   const links = NAV_ITEMS.map((item) => `        ${navItemHtml(item, activeSlug)}`).join('\n');
-  return `<aside class="side-nav" aria-label="Sections">
+  return `<aside class="side-nav" id="site-nav" aria-label="Sections">
       <div class="side-brand">
         <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''} aria-label="Niraj Bhusal, home">
           <span class="logo-mark">NB</span>
@@ -663,40 +661,12 @@ ${links}
 function mobileTopHtml(activeSlug) {
   const home = activeSlug === '';
   return `<header class="mobile-top">
-        <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''}>
+        <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''} aria-label="Niraj Bhusal, home">
           <span class="logo-mark">NB</span>
           <span class="wordmark">Niraj Bhusal</span>
         </a>
-        <div class="mobile-tools">
-          ${soundControlHtml('m')}
-          ${themeButtonHtml('theme-toggle-m')}
-        </div>
+        <button type="button" id="nav-toggle" class="icon-btn nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">${iconSvg('menu', 22)}</button>
       </header>`;
-}
-
-function tabBarHtml(activeSlug) {
-  const primary = NAV_ITEMS.filter((item) => item.slug === '' || TAB_SLUGS.has(item.slug));
-  const links = primary
-    .map((item) => `      ${navItemHtml(item, activeSlug, 22)}`)
-    .join('\n');
-  const moreCurrent = activeSlug && !TAB_SLUGS.has(activeSlug);
-  return `<nav class="tab-bar" aria-label="Sections">
-${links}
-      <button type="button" id="more-tab" aria-expanded="false" aria-controls="more-sheet"${moreCurrent ? ' aria-current="page"' : ''}>${iconSvg('ellipsis', 22)}<span>More</span></button>
-    </nav>`;
-}
-
-function moreSheetHtml(activeSlug) {
-  const rest = NAV_ITEMS.filter((item) => item.slug && !TAB_SLUGS.has(item.slug));
-  const links = rest
-    .map((item) => `        ${navItemHtml(item, activeSlug)}`)
-    .join('\n');
-  return `<div class="more-layer" id="more-sheet" hidden>
-      <button type="button" class="more-scrim" aria-label="Close menu" data-more-close></button>
-      <div class="more-panel" role="dialog" aria-modal="true" aria-label="More sections">
-${links}
-      </div>
-    </div>`;
 }
 
 function headHtml(page, { home }) {
@@ -704,7 +674,7 @@ function headHtml(page, { home }) {
   const hashLiteral = JSON.stringify(HASH_MAP);
   const introStyle = home
     ? `<style>
-    html.is-intro .hero-id,html.is-intro .eyebrow,html.is-intro .hero-name,html.is-intro .hero-posting,html.is-intro .hero-portrait,html.is-intro .tagline,html.is-intro .si-pill,html.is-intro .lede,html.is-intro .hero-chrono,html.is-intro .hero-actions,html.is-intro .side-nav,html.is-intro .mobile-top,html.is-intro .tab-bar,html.is-intro .games-launcher,html.is-intro #starfield{opacity:0}
+    html.is-intro .hero-id,html.is-intro .eyebrow,html.is-intro .hero-name,html.is-intro .hero-posting,html.is-intro .hero-portrait,html.is-intro .tagline,html.is-intro .lede,html.is-intro .hero-chrono,html.is-intro .hero-actions,html.is-intro .side-nav,html.is-intro .mobile-top,html.is-intro .games-launcher,html.is-intro #starfield{opacity:0}
     html.is-intro-fade body::after{content:"";position:fixed;inset:0;z-index:80;background:var(--bg,#0b1220);pointer-events:none;animation:nb-veil .45s ease forwards}
     @keyframes nb-veil{to{opacity:0}}
   </style>`
@@ -760,6 +730,7 @@ function documentFor(page, { home }) {
   <a class="skip-link" href="#content">Skip to content</a>
   <canvas id="starfield" aria-hidden="true"></canvas>
   <div class="app-shell">
+    <button type="button" class="nav-scrim" id="nav-scrim" tabindex="-1" aria-label="Close menu"></button>
     ${sidebarHtml(activeSlug)}
     <div class="shell-main">
       ${mobileTopHtml(activeSlug)}
@@ -770,8 +741,6 @@ ${main}
     </div>
   </div>
 ${games}
-${tabBarHtml(activeSlug)}
-${moreSheetHtml(activeSlug)}
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

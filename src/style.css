@@ -91,8 +91,11 @@ body {
 body.nav-open,
 body.orbit-open {
   overflow: hidden;
-  touch-action: none;
   overscroll-behavior: none;
+}
+
+body.orbit-open {
+  touch-action: none;
 }
 
 body.nav-open {
@@ -1346,8 +1349,7 @@ body[data-page]:not([data-page="home"]) .section {
 
 .index-card--feature,
 .index-card--wide,
-.index-card--pair,
-.index-card--band {
+.index-card--pair {
   grid-column: 1 / -1;
 }
 
@@ -1825,13 +1827,6 @@ body[data-page]:not([data-page="home"]) .section {
 }
 
 @media (max-width: 420px) {
-  .sound-label {
-    display: none;
-  }
-  .sound-toggle {
-    min-width: 2.4rem;
-    padding: 0 0.35rem;
-  }
   .header-actions {
     gap: 0.3rem;
   }
