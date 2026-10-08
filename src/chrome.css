@@ -333,10 +333,7 @@ p,
 }
 
 .mobile-top .wordmark {
-  font-size: 0.95rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: none;
 }
 
 .nav-toggle {
@@ -1110,8 +1107,36 @@ html.intro-skip #starfield {
     align-items: flex-start;
     flex: 1;
     min-width: 0;
-    font-size: clamp(1.7rem, 6.6vw, 2.05rem);
-    line-height: 1.02;
+    font-size: clamp(2.65rem, 13.35vw, 3.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+  }
+
+  .hero .hero-given,
+  .hero .hero-family {
+    white-space: nowrap;
+  }
+
+  .hero .hero-given {
+    font-weight: 700;
+    background: linear-gradient(
+      118deg,
+      var(--fg) 8%,
+      color-mix(in srgb, var(--accent) 78%, var(--fg)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 42%, transparent));
+  }
+
+  .hero .hero-family {
+    font-weight: 400;
+    color: var(--fg);
+  }
+
+  html[data-theme="light"] .hero .hero-given {
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 28%, transparent));
   }
 
   .hero-portrait {

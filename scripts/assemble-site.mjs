@@ -661,7 +661,7 @@ ${links}
 function mobileTopHtml(activeSlug) {
   const home = activeSlug === '';
   return `<header class="mobile-top">
-        <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''}>
+        <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''} aria-label="Niraj Bhusal, home">
           <span class="logo-mark">NB</span>
           <span class="wordmark">Niraj Bhusal</span>
         </a>
