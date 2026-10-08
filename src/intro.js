@@ -91,11 +91,39 @@ function playWhoosh() {
 }
 
 function spawnStar(far) {
+  const ang = Math.random() * Math.PI * 2;
+  const r = Math.sqrt(0.04 + Math.random() * 0.96);
   return {
-    x: (Math.random() - 0.5) * 2,
-    y: (Math.random() - 0.5) * 2,
-    z: far ? 0.9 + Math.random() * 0.1 : Math.random(),
+    ang,
+    r,
+    z: far ? 0.78 + Math.random() * 0.22 : Math.random() ** 1.7,
   };
+}
+
+function buildGalaxy(count, arms) {
+  const parts = [];
+  const per = Math.ceil(count / arms);
+  for (let i = 0; i < count; i++) {
+    const arm = i % arms;
+    const along = (Math.floor(i / arms) + 0.5) / per;
+    const jitter = ((i * 97) % 1000) / 1000;
+    const ang =
+      arm * ((Math.PI * 2) / arms) +
+      along * 5.4 +
+      (jitter - 0.5) * 0.42;
+    const radN = 0.045 + along ** 0.75 * 0.96;
+    const lane = Math.sin(along * 26 + arm * 2.2 + jitter * 3.1);
+    parts.push({
+      ang,
+      radN,
+      lane,
+      along,
+      jitter,
+      yScale: 0.34 + jitter * 0.1,
+      size: along < 0.18 ? 2.4 : 1.05 + jitter * 0.9,
+    });
+  }
+  return parts;
 }
 
 export function initIntro({ onSettle, onDone } = {}) {
@@ -148,14 +176,9 @@ export function initIntro({ onSettle, onDone } = {}) {
   const palette = root.getAttribute('data-palette') || 'night';
   const end = PALETTE_BG[palette] || PALETTE_BG.night;
   const mobile = Math.min(window.innerWidth, window.innerHeight) < 700;
-  const area = Math.max(1, window.innerWidth * window.innerHeight);
-  const starCount = clamp(
-    Math.floor(area / (mobile ? 8500 : 6200)),
-    mobile ? 110 : 160,
-    mobile ? 260 : 480
-  );
+  const starCount = mobile ? 360 : 640;
   const stars = Array.from({ length: starCount }, () => spawnStar(false));
-  const armCount = mobile ? 90 : 150;
+  const galaxy = buildGalaxy(mobile ? 260 : 480, 3);
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -169,30 +192,39 @@ export function initIntro({ onSettle, onDone } = {}) {
   }
 
   function speedAt(t) {
-    if (t < 0.12) return easeInCubic(t / 0.12) * 0.2;
-    if (t < 0.52) return 0.2 + easeInExpo((t - 0.12) / 0.4) * 0.8;
-    if (t < 0.66) return 1;
-    return Math.max(0, 1 - easeOutCubic((t - 0.66) / 0.34));
+    if (t < 0.12) return easeInCubic(t / 0.12) * 0.22;
+    if (t < 0.5) return 0.22 + easeInExpo((t - 0.12) / 0.38) * 0.78;
+    if (t < 0.6) return 1;
+    const u = (t - 0.6) / 0.18;
+    if (u >= 1) return 0;
+    return 1 - easeOutCubic(u);
   }
 
   function coreAmt(t) {
-    if (t < 0.2) return 0;
-    if (t < 0.48) return easeOutCubic((t - 0.2) / 0.28);
-    if (t < 0.74) return 1 - easeInCubic((t - 0.48) / 0.26) * 0.9;
-    return Math.max(0, 0.06 * (1 - (t - 0.74) / 0.26));
+    if (t < 0.12) return easeOutCubic(t / 0.12) * 0.4;
+    if (t < 0.4) return 0.4 + easeOutCubic((t - 0.12) / 0.28) * 0.6;
+    if (t < 0.62) return 1;
+    if (t < 0.8) return 1 - easeInCubic((t - 0.62) / 0.18);
+    return 0;
   }
 
   function dissolve(t) {
-    if (t < 0.58) return 0;
-    return easeOutCubic((t - 0.58) / 0.42);
+    if (t < 0.62) return 0;
+    return easeOutCubic((t - 0.62) / 0.38);
+  }
+
+  function flashAmt(t) {
+    const d = Math.abs(t - 0.58);
+    if (d > 0.07) return 0;
+    const u = 1 - d / 0.07;
+    return u * u;
   }
 
   function project(s) {
-    const depth = 0.055 + s.z * 1.4;
+    const depth = 0.09 + s.z * 1.35;
     return {
-      x: w * 0.5 + (s.x / depth) * w * 0.48,
-      y: h * 0.46 + (s.y / depth) * h * 0.48,
-      depth,
+      x: w * 0.5 + (Math.cos(s.ang) * s.r / depth) * w * 0.58,
+      y: h * 0.46 + (Math.sin(s.ang) * s.r / depth) * h * 0.58,
     };
   }
 
@@ -228,12 +260,19 @@ export function initIntro({ onSettle, onDone } = {}) {
 
     const cx = w * 0.5;
     const cy = h * 0.46;
-    if (core > 0.015) {
-      const rad = Math.min(w, h) * (0.16 + core * 0.46);
+    const starKeep = palette === 'night' ? 1 : palette === 'evening' ? 1 - dis * 0.7 : 1 - dis;
+    const gal = core * (1 - dis * 0.92);
+
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineCap = 'round';
+
+    if (gal > 0.02) {
+      const rad = Math.min(w, h) * (0.2 + gal * 0.38);
       const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
-      g.addColorStop(0, `rgba(214, 224, 255, ${0.5 * core})`);
-      g.addColorStop(0.28, `rgba(96, 132, 255, ${0.26 * core})`);
-      g.addColorStop(0.58, `rgba(128, 78, 196, ${0.14 * core})`);
+      g.addColorStop(0, `rgba(255, 255, 255, ${0.9 * gal})`);
+      g.addColorStop(0.1, `rgba(198, 220, 255, ${0.62 * gal})`);
+      g.addColorStop(0.32, `rgba(92, 128, 255, ${0.32 * gal})`);
+      g.addColorStop(0.58, `rgba(156, 86, 230, ${0.18 * gal})`);
       g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g;
       ctx.beginPath();
@@ -242,50 +281,85 @@ export function initIntro({ onSettle, onDone } = {}) {
 
       ctx.save();
       ctx.translate(cx, cy);
-      ctx.rotate(elapsed / 1000 * 0.35);
-      for (let i = 0; i < armCount; i++) {
-        const ang = i * 0.45;
-        const rr = (i / armCount) ** 0.85 * rad * 0.92;
-        const x = Math.cos(ang) * rr;
-        const y = Math.sin(ang) * rr * 0.58;
-        const a = 0.4 * core * (1 - i / armCount);
-        ctx.fillStyle = `rgba(226, 232, 255, ${a})`;
-        ctx.fillRect(x, y, 1.3, 1.3);
+      ctx.rotate((elapsed / 1000) * 0.48);
+      const galR = Math.min(w, h) * (0.2 + gal * 0.34);
+      for (const p of galaxy) {
+        if (p.lane < -0.58) continue;
+        const dust = p.lane < -0.18 ? 0.18 : 1;
+        const rr = p.radN * galR;
+        const x = Math.cos(p.ang) * rr;
+        const y = Math.sin(p.ang) * rr * p.yScale;
+        const inner = 1 - p.along;
+        const a = gal * dust * (0.32 + inner * 0.68);
+        if (a < 0.04) continue;
+        const cr = Math.round(255 * inner + 176 * (1 - inner));
+        const cg = Math.round(248 * inner + 142 * (1 - inner));
+        const cb = 255;
+        ctx.fillStyle = `rgba(${cr},${cg},${cb},${a})`;
+        ctx.fillRect(x, y, p.size, p.size);
       }
       ctx.restore();
     }
 
-    const starKeep = palette === 'night' ? 1 : palette === 'evening' ? 1 - dis * 0.7 : 1 - dis;
-
     for (const s of stars) {
-      const before = project(s);
       if (dt > 0 && speed > 0.001) {
-        s.z -= speed * (0.012 + (1 - s.z) * 0.03) * dt * 60;
-        if (s.z < 0.025) Object.assign(s, spawnStar(true));
+        s.z -= speed * (0.016 + (1 - s.z) * 0.042) * dt * 60;
+        if (s.z < 0.02) Object.assign(s, spawnStar(true));
       }
       const p = project(s);
-      if (p.x < -80 || p.x > w + 80 || p.y < -80 || p.y > h + 80) continue;
+      if (p.x < -120 || p.x > w + 120 || p.y < -120 || p.y > h + 120) continue;
       const near = clamp(1 - s.z, 0, 1);
-      const alpha = clamp((0.22 + near * 0.78) * starKeep, 0, 0.95);
-      if (alpha < 0.02) continue;
-      const streak = speed * (6 + near * 54);
-      if (streak > 2 && speed > 0.12) {
-        const dx = p.x - before.x;
-        const dy = p.y - before.y;
-        const len = Math.hypot(dx, dy) || 1;
-        ctx.strokeStyle = `rgba(232, 238, 255, ${alpha})`;
-        ctx.lineWidth = 0.55 + near * 1.35;
+      const dx = p.x - cx;
+      const dy = p.y - cy;
+      const dist = Math.hypot(dx, dy) || 1;
+      const alpha = clamp((0.28 + near * 0.72) * (0.2 + speed * 0.8) * starKeep, 0, 1);
+      if (alpha < 0.03) continue;
+      const reach = clamp(dist / (Math.min(w, h) * 0.26), 0.28, 1.45);
+      const len = speed * (12 + near * 210) * reach;
+      if (len > 3.5 && speed > 0.08) {
+        const ux = dx / dist;
+        const uy = dy / dist;
+        const px = -uy;
+        const py = ux;
+        const x0 = p.x - ux * len;
+        const y0 = p.y - uy * len;
+        const shift = 0.7 + near * 0.9;
+        const passes = [
+          [px * shift, py * shift, 140, 186, 255, 0.55],
+          [0, 0, 255, 255, 255, 0.95],
+          [-px * shift, -py * shift, 206, 150, 255, 0.5],
+        ];
+        ctx.lineWidth = 0.7 + near * 1.55;
+        for (const pass of passes) {
+          ctx.strokeStyle = `rgba(${pass[2]},${pass[3]},${pass[4]},${alpha * pass[5]})`;
+          ctx.beginPath();
+          ctx.moveTo(x0 + pass[0], y0 + pass[1]);
+          ctx.lineTo(p.x + pass[0], p.y + pass[1]);
+          ctx.stroke();
+        }
+      } else {
+        ctx.fillStyle = `rgba(236, 242, 255, ${alpha * 0.85})`;
         ctx.beginPath();
-        ctx.moveTo(p.x - (dx / len) * streak, p.y - (dy / len) * streak);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
+        ctx.arc(p.x, p.y, 0.45 + near * 1.15, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.fillStyle = `rgba(236, 240, 248, ${alpha})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 0.45 + near * 1.05, 0, Math.PI * 2);
-      ctx.fill();
     }
 
+    const flash = flashAmt(t);
+    if (flash > 0.01) {
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.2 * flash})`;
+      ctx.fillRect(0, 0, w, h);
+      const bloom = Math.min(w, h) * 0.48;
+      const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, bloom);
+      fg.addColorStop(0, `rgba(255, 255, 255, ${0.95 * flash})`);
+      fg.addColorStop(0.22, `rgba(186, 214, 255, ${0.5 * flash})`);
+      fg.addColorStop(0.55, `rgba(170, 120, 255, ${0.16 * flash})`);
+      fg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = fg;
+      ctx.fillRect(cx - bloom, cy - bloom, bloom * 2, bloom * 2);
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
     return t;
   }
 
