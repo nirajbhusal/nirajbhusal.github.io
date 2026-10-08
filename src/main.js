@@ -260,7 +260,7 @@ function initNav() {
   const overlay = document.getElementById('nav-overlay');
   if (!toggle || !nav) return;
 
-  const MOBILE_MQ = '(max-width: 900px)';
+  const MOBILE_MQ = '(max-width: 1179px)';
   const links = [...nav.querySelectorAll('a[href]')];
   let lastFocus = null;
   let lockY = 0;
