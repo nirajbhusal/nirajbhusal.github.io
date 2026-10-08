@@ -237,22 +237,160 @@ ${cards}
 
 function navHtml(activeSlug, locked) {
   const inert = locked ? ' data-gate-inert inert' : '';
-  const links = PAGES.map((page) => {
-    const current = page.slug === activeSlug;
+  const item = (href, label, current) => {
     const attrs = current ? ' class="active" aria-current="page"' : '';
-    return `    <a href="/${page.slug}/"${attrs}>${page.nav}</a>`;
-  }).join('\n');
-  return `  <nav id="site-nav" class="nav" aria-label="Primary"${inert}>\n${links}\n  </nav>`;
+    return `    <a href="${href}"${attrs}>${label}</a>`;
+  };
+  const home = item('/', 'Home', activeSlug === '');
+  const links = PAGES.map((page) => item(`/${page.slug}/`, page.nav, page.slug === activeSlug));
+  return `  <nav id="site-nav" class="nav" aria-label="Primary"${inert}>\n${home}\n${links.join('\n')}\n  </nav>`;
+}
+
+function lineIcon(body) {
+  return `<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+}
+
+const SECTION_ICONS = {
+  about: lineIcon(
+    '<circle cx="12" cy="8" r="3.15"/><path d="M5.25 19.25v-.35c0-2.85 2.55-4.7 6.75-4.7s6.75 1.85 6.75 4.7v.35"/>'
+  ),
+  built: lineIcon(
+    '<path d="M12 3.25 20.25 7.5 12 11.75 3.75 7.5 12 3.25z"/><path d="m3.75 12 8.25 4.25L20.25 12"/><path d="m3.75 16.25 8.25 4.25 8.25-4.25"/>'
+  ),
+  experience: lineIcon(
+    '<rect x="3.25" y="7.25" width="17.5" height="12" rx="2"/><path d="M9 7.25V6a1.75 1.75 0 0 1 1.75-1.75h2.5A1.75 1.75 0 0 1 15 6v1.25"/><path d="M3.25 12.25h17.5"/>'
+  ),
+  education: lineIcon(
+    '<path d="m3 10 9-4.75L21 10l-9 4.75L3 10z"/><path d="M7.25 12.15v3.85c0 .35 2.1 2.15 4.75 2.15s4.75-1.8 4.75-2.15v-3.85"/><path d="M21 10.25V16"/>'
+  ),
+  trainings: lineIcon(
+    '<circle cx="12" cy="9" r="4.75"/><path d="m9.15 13.15-1.15 6.35L12 16.85l4 2.65-1.15-6.35"/>'
+  ),
+  speaking: lineIcon(
+    '<rect x="9" y="3.25" width="6" height="10.5" rx="3"/><path d="M6.75 11a5.25 5.25 0 0 0 10.5 0"/><path d="M12 16.25v3.5M9.25 19.75h5.5"/>'
+  ),
+  presentations: lineIcon(
+    '<rect x="3.25" y="4" width="17.5" height="11.5" rx="1.6"/><path d="m8 19.75 4-4.15 4 4.15"/><path d="M7.5 8h5.25M7.5 11h3.5"/>'
+  ),
+  publications: lineIcon(
+    '<path d="M5 4.75c2.15-1.15 4.05-.65 7 .85 2.95-1.5 4.85-2 7-.85v13.1c-2.15-1.15-4.05-.65-7 .85-2.95-1.5-4.85-2-7-.85z"/><path d="M12 5.6v13.1"/>'
+  ),
+  community: lineIcon(
+    '<circle cx="9" cy="8.15" r="2.55"/><circle cx="16.1" cy="8.85" r="2.05"/><path d="M3.7 18.85v-.25c0-2.25 2.05-3.75 5.3-3.75s5.3 1.5 5.3 3.75"/><path d="M14.15 14.9c1.55-.3 3.15.2 4.15 1.2.85.85 1.35 1.95 1.35 2.75"/>'
+  ),
+  media: lineIcon(
+    '<circle cx="12" cy="8.75" r="4.6"/><path d="m8.85 12.7-1.2 6.55L12 16.55l4.35 2.7-1.2-6.55"/>'
+  ),
+  play: lineIcon(
+    '<circle cx="12" cy="12" r="8"/><path d="M12 4.15c2.15 2.35 3.25 4.95 3.25 7.85S14.15 17.5 12 19.85c-2.15-2.35-3.25-4.95-3.25-7.85S9.85 6.5 12 4.15"/><path d="M4.35 9.35h15.3M4.35 14.65h15.3"/>'
+  ),
+  contact: lineIcon(
+    '<path d="m3.75 11.35 16.6-7.1-7.35 15.85-2.15-6.6-7.1-2.15z"/><path d="m11 13.5 9.35-9.25"/>'
+  ),
+};
+
+const ARROW_ICON = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>`;
+
+/** Visual order: Projects leads a 2×2 tile; Speaking spans a wide tile. */
+const CONTENTS_ORDER = [
+  { id: 'built', layout: 'feature', hue: 205 },
+  { id: 'about', hue: 214 },
+  { id: 'experience', hue: 228 },
+  { id: 'education', hue: 250 },
+  { id: 'trainings', hue: 188 },
+  { id: 'speaking', layout: 'wide', hue: 198 },
+  { id: 'presentations', hue: 222 },
+  { id: 'publications', hue: 266 },
+  { id: 'community', hue: 168 },
+  { id: 'media', hue: 36 },
+  { id: 'play', hue: 206 },
+  { id: 'contact', hue: 212 },
+];
+
+function tally(n, singular, plural = `${singular}s`) {
+  if (!n) return '';
+  return `${n} ${n === 1 ? singular : plural}`;
+}
+
+function sectionStat(id) {
+  if (id === 'publications') {
+    const n = publications.length;
+    if (!n) return '';
+    if (n === 1) {
+      const type = String(publications[0].type || 'publication').toLowerCase();
+      return `1 ${type}`;
+    }
+    return tally(n, 'publication');
+  }
+
+  const file = {
+    about: 'sections/about.html',
+    built: 'sections/built.html',
+    experience: 'sections/experience.html',
+    education: 'sections/education.html',
+    trainings: 'sections/trainings.html',
+    speaking: 'sections/speaking.html',
+    presentations: 'sections/presentations.html',
+    community: 'sections/community.html',
+    media: 'sections/media.html',
+    play: 'sections/play.html',
+    contact: 'sections/contact.html',
+  }[id];
+  if (!file) return '';
+  const html = read(file);
+
+  if (id === 'about') {
+    const focus = html.match(/<aside class="card focus-card">([\s\S]*?)<\/aside>/);
+    return tally(focus ? (focus[1].match(/<li>/g) || []).length : 0, 'focus area');
+  }
+  if (id === 'built') return tally((html.match(/<article\b/g) || []).length, 'project');
+  if (id === 'experience') {
+    const roles = (html.match(/class="org-name"/g) || []).length;
+    const joined = html.match(/Joined the civil service in [A-Za-z]+ (\d{4})/);
+    const parts = [];
+    if (roles) parts.push(tally(roles, 'posting'));
+    if (joined) parts.push(`since ${joined[1]}`);
+    return parts.join(' · ');
+  }
+  if (id === 'education') return tally((html.match(/<article\b/g) || []).length, 'degree');
+  if (id === 'trainings') return tally((html.match(/class="chip"/g) || []).length, 'program');
+  if (id === 'speaking') return tally((html.match(/class="card event-card"/g) || []).length, 'event');
+  if (id === 'presentations') return tally((html.match(/<article\b/g) || []).length, 'deck');
+  if (id === 'community') {
+    return tally((html.match(/<article\b/g) || []).length, 'community', 'communities');
+  }
+  if (id === 'media') return tally((html.match(/class="media-card"/g) || []).length, 'listing');
+  if (id === 'play') {
+    const names = [];
+    if (/data-open-game="basketball"/.test(html)) names.push('Basketball');
+    if (/id="constellation"/.test(html)) names.push('constellation');
+    if (names.length === 2) return `${names[0]} & ${names[1]}`;
+    return names[0] || '';
+  }
+  if (id === 'contact') return tally((html.match(/class="contact-card"/g) || []).length, 'link');
+  return '';
 }
 
 function overviewHtml() {
-  const cards = PAGES.map(
-    (page) => `      <a class="card index-card" href="/${page.slug}/">
-        <span class="sheet-label">◇ ${page.nav.toUpperCase()}</span>
-        <h3>${page.heading || page.nav}</h3>
-        <p>${page.blurb}</p>
-      </a>`
-  ).join('\n');
+  const byId = new Map(PAGES.map((page) => [page.id, page]));
+  const cards = CONTENTS_ORDER.map((slot) => {
+    const page = byId.get(slot.id);
+    const layout = slot.layout ? ` index-card--${slot.layout}` : '';
+    const stat = sectionStat(slot.id);
+    const statHtml = stat ? `\n        <span class="index-stat">${escapeHtml(stat)}</span>` : '';
+    const icon = SECTION_ICONS[slot.id] || '';
+    return `      <a class="index-card${layout}" href="/${page.slug}/" style="--h: ${slot.hue}">
+        <span class="index-icon" aria-hidden="true">${icon}</span>
+        <span class="index-main">
+          <span class="sheet-label">◇ ${page.nav.toUpperCase()}</span>
+          <h3>${page.heading || page.nav}</h3>
+          <p>${page.blurb}</p>
+          <span class="index-foot">${statHtml}
+            <span class="index-arrow" aria-hidden="true">${ARROW_ICON}</span>
+          </span>
+        </span>
+      </a>`;
+  }).join('\n');
   return `    <section id="sections" class="section home-index reveal">
       <p class="sheet-label">◇ CONTENTS</p>
       <h2>Sections</h2>
