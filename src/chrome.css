@@ -341,6 +341,7 @@ p,
 
 .nav-toggle {
   flex: none;
+  margin-left: auto;
 }
 
 .brand-lockup {

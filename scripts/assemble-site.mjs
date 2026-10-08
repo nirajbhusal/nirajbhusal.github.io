@@ -661,11 +661,11 @@ ${links}
 function mobileTopHtml(activeSlug) {
   const home = activeSlug === '';
   return `<header class="mobile-top">
-        <button type="button" id="nav-toggle" class="icon-btn nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">${iconSvg('menu', 22)}</button>
         <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''}>
           <span class="logo-mark">NB</span>
           <span class="wordmark">Niraj Bhusal</span>
         </a>
+        <button type="button" id="nav-toggle" class="icon-btn nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">${iconSvg('menu', 22)}</button>
       </header>`;
 }
 
