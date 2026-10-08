@@ -1210,6 +1210,7 @@ html.intro-skip #starfield {
   .md-row {
     display: flex;
     align-items: center;
+    flex: none;
     gap: 0.7rem;
     min-height: 44px;
     padding: 0 0.7rem;
