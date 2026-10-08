@@ -312,6 +312,113 @@ function tally(n, singular, plural = `${singular}s`) {
   return `${n} ${n === 1 ? singular : plural}`;
 }
 
+function plainText(html) {
+  return String(html || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replaceAll('&amp;', '&')
+    .replaceAll('&quot;', '"')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&apos;', "'")
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const MONTH_INDEX = {
+  january: 0,
+  jan: 0,
+  february: 1,
+  feb: 1,
+  march: 2,
+  mar: 2,
+  april: 3,
+  apr: 3,
+  may: 4,
+  june: 5,
+  jun: 5,
+  july: 6,
+  jul: 6,
+  august: 7,
+  aug: 7,
+  september: 8,
+  sept: 8,
+  sep: 8,
+  october: 9,
+  oct: 9,
+  november: 10,
+  nov: 10,
+  december: 11,
+  dec: 11,
+};
+
+function eventTimestamp(meta) {
+  const yearMatch = meta.match(/\b(20\d{2})\b/);
+  if (!yearMatch) return null;
+  const monthRe =
+    /\b(January|February|March|April|May|June|July|August|September|Sept|Sep|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Oct|Nov|Dec)\b/gi;
+  const months = [...meta.matchAll(monthRe)].map((match) => MONTH_INDEX[match[1].toLowerCase()]);
+  if (!months.length) return null;
+  const month = Math.max(...months);
+  let day = 1;
+  const range = meta.match(/(\d{1,2})\s*[–-]\s*(\d{1,2})\s+[A-Za-z]+\s+20\d{2}/);
+  const single = meta.match(/(\d{1,2})\s+[A-Za-z]+\s+20\d{2}/);
+  if (range) day = Number(range[2]);
+  else if (single) day = Number(single[1]);
+  return Date.UTC(Number(yearMatch[1]), month, day);
+}
+
+function dateLabel(meta) {
+  const head = meta.split('·')[0].trim();
+  if (/\b20\d{2}\b/.test(head)) return head;
+  if (/\b20\d{2}\b/.test(meta)) return meta.trim();
+  return '';
+}
+
+function projectPicks() {
+  const html = read('sections/built.html');
+  const articles = html.match(/<article\b[\s\S]*?<\/article>/g) || [];
+  return articles.slice(0, 4).map((article) => {
+    const name = plainText((article.match(/<h3[^>]*>([\s\S]*?)<\/h3>/) || [])[1]);
+    const badge = plainText((article.match(/<span class="badge[^"]*">([\s\S]*?)<\/span>/) || [])[1]);
+    const meta = plainText((article.match(/<p class="meta">([\s\S]*?)<\/p>/) || [])[1]);
+    return { name, note: badge || meta };
+  }).filter((item) => item.name);
+}
+
+function speakingPicks() {
+  const html = read('sections/speaking.html');
+  const articles = html.match(/<article\b[\s\S]*?<\/article>/g) || [];
+  const events = articles.map((article) => {
+    const name = plainText((article.match(/<h3[^>]*>([\s\S]*?)<\/h3>/) || [])[1]);
+    const meta = plainText((article.match(/<p class="meta">([\s\S]*?)<\/p>/) || [])[1]);
+    return { name, note: dateLabel(meta), time: eventTimestamp(meta) };
+  }).filter((item) => item.name && item.time != null);
+  events.sort((a, b) => b.time - a.time);
+  return events.slice(0, 3).map(({ name, note }) => ({ name, note }));
+}
+
+function picksHtml(items) {
+  if (!items.length) return '';
+  const lis = items
+    .map((item) => {
+      const note = item.note
+        ? `\n            <span class="index-pick-note">${escapeHtml(item.note)}</span>`
+        : '';
+      return `          <li>
+            <span class="index-pick-name">${escapeHtml(item.name)}</span>${note}
+          </li>`;
+    })
+    .join('\n');
+  return `\n        <ul class="index-picks">\n${lis}\n        </ul>`;
+}
+
+function sectionPicks(id) {
+  if (id === 'built') return picksHtml(projectPicks());
+  if (id === 'speaking') return picksHtml(speakingPicks());
+  return '';
+}
+
 function sectionStat(id) {
   if (id === 'publications') {
     const n = publications.length;
@@ -377,17 +484,20 @@ function overviewHtml() {
     const page = byId.get(slot.id);
     const layout = slot.layout ? ` index-card--${slot.layout}` : '';
     const stat = sectionStat(slot.id);
-    const statHtml = stat ? `\n        <span class="index-stat">${escapeHtml(stat)}</span>` : '';
+    const statHtml = stat ? `\n          <span class="index-stat">${escapeHtml(stat)}</span>` : '';
     const icon = SECTION_ICONS[slot.id] || '';
+    const picks = sectionPicks(slot.id);
     return `      <a class="index-card${layout}" href="/${page.slug}/" style="--h: ${slot.hue}">
-        <span class="index-icon" aria-hidden="true">${icon}</span>
-        <span class="index-main">
-          <span class="sheet-label">◇ ${page.nav.toUpperCase()}</span>
-          <h3>${page.heading || page.nav}</h3>
-          <p>${page.blurb}</p>
-          <span class="index-foot">${statHtml}
-            <span class="index-arrow" aria-hidden="true">${ARROW_ICON}</span>
+        <span class="index-top">
+          <span class="index-icon" aria-hidden="true">${icon}</span>
+          <span class="index-intro">
+            <span class="sheet-label">◇ ${page.nav.toUpperCase()}</span>
+            <h3>${page.heading || page.nav}</h3>
+            <p>${page.blurb}</p>
           </span>
+        </span>${picks}
+        <span class="index-foot">${statHtml}
+          <span class="index-arrow" aria-hidden="true">${ARROW_ICON}</span>
         </span>
       </a>`;
   }).join('\n');
