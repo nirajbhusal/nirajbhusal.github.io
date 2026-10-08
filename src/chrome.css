@@ -174,8 +174,76 @@ p,
 .featured-mof-copy > p,
 .play-lede,
 .site-footer,
-.nav a {
+.nav a,
+.focus-card li,
+.home-focus li {
   color: var(--muted);
+}
+
+.focus-card a.quiet-link,
+.home-focus a.quiet-link,
+.home-about-more a {
+  color: var(--muted);
+  font-weight: 400;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: color-mix(in srgb, var(--muted) 55%, transparent);
+}
+
+.focus-card a.quiet-link:hover,
+.focus-card a.quiet-link:focus-visible,
+.home-focus a.quiet-link:hover,
+.home-focus a.quiet-link:focus-visible,
+.home-about-more a:hover,
+.home-about-more a:focus-visible {
+  color: var(--fg);
+  text-decoration-color: color-mix(in srgb, var(--fg) 45%, transparent);
+}
+
+.home-about-more a {
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.home-about {
+  --section-pad-top: 1.6rem;
+  padding-bottom: 0.35rem;
+}
+
+.home-about-grid {
+  display: grid;
+  gap: 1.35rem 2.75rem;
+  align-items: start;
+}
+
+.home-about-copy {
+  max-width: 68ch;
+}
+
+.home-about-more {
+  margin: 1.15rem 0 0;
+}
+
+.home-focus h3 {
+  margin: 0 0 0.55rem;
+  font-size: 0.98rem;
+  letter-spacing: -0.02em;
+}
+
+.home-focus ul {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.home-focus li + li {
+  margin-top: 0.45rem;
+}
+
+@media (min-width: 901px) {
+  .home-about-grid {
+    grid-template-columns: minmax(0, 68ch) minmax(15rem, 22rem);
+  }
 }
 
 .tagline,
@@ -806,6 +874,7 @@ html.is-intro .tagline,
 html.is-intro .lede,
 html.is-intro .hero-chrono,
 html.is-intro .hero-actions,
+html.is-intro .home-about,
 html.is-intro .side-nav,
 html.is-intro .mobile-top,
 html.is-intro .games-launcher,
@@ -1041,7 +1110,11 @@ html.intro-skip #starfield {
     bottom: 0;
     z-index: 70;
     width: var(--drawer-w);
-    padding: calc(0.65rem + env(safe-area-inset-top)) 0.65rem calc(0.55rem + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    padding-right: 16px;
+    padding-bottom: calc(0.7rem + env(safe-area-inset-bottom, 0px));
+    padding-left: 16px;
     background: var(--bg-elevated);
     color: var(--fg);
     transform: translateX(-100%);
@@ -1160,6 +1233,8 @@ html.intro-skip #starfield {
   }
 
   .md-row svg {
+    width: 18px;
+    height: 18px;
     flex: none;
     color: var(--muted);
   }
