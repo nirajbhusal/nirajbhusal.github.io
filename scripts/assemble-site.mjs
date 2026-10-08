@@ -21,9 +21,9 @@ const PAGES = [
     nav: 'About',
     title: 'About — Niraj Bhusal',
     description:
-      'About Niraj Bhusal, a civil servant at the Office of the Hon. Finance Minister, Ministry of Finance, Nepal, working on GovTech, AI governance, and digital public infrastructure.',
+      'Civil servant with 13 years in Nepal’s public service, now in the Office of the Hon. Finance Minister, Ministry of Finance (MoF). GovTech, AI governance, and digital public infrastructure.',
     blurb:
-      'Civil servant at the Ministry of Finance, working across GovTech, AI governance, and digital public infrastructure.',
+      '13 years in Nepal’s public service, now in the Finance Minister’s office — GovTech, AI governance, and DPI.',
   },
   {
     id: 'built',
@@ -658,14 +658,66 @@ ${links}
     </aside>`;
 }
 
-function mobileTopHtml(activeSlug) {
-  const home = activeSlug === '';
+function drawerRowHtml(item, activeSlug, group) {
+  const href = item.slug ? `/${item.slug}/` : '/';
+  const icon = group === 'primary' ? iconSvg(ICONS[item.id] || 'sparkles', 18) : '';
+  return `          <a class="md-row" href="${href}" data-nav-label="${escapeHtml(item.nav.toLowerCase())}" data-nav-group="${group}"${linkAttrs(item.slug === activeSlug)}>${icon}<span>${escapeHtml(item.nav)}</span></a>`;
+}
+
+function mobileDrawerHtml(activeSlug) {
+  const byId = new Map(NAV_ITEMS.map((item) => [item.id, item]));
+  const primary = ['home', 'about', 'built', 'speaking', 'publications']
+    .map((id) => drawerRowHtml(byId.get(id), activeSlug, 'primary'))
+    .join('\n');
+  const sections = [
+    'superintelligence',
+    'experience',
+    'education',
+    'trainings',
+    'presentations',
+    'community',
+    'media',
+    'play',
+    'contact',
+  ]
+    .map((id) => drawerRowHtml(byId.get(id), activeSlug, 'sections'))
+    .join('\n');
+  return `<nav class="mobile-drawer" id="mobile-nav" aria-label="Menu" aria-hidden="true" tabindex="-1" inert>
+      <div class="md-head">
+        <label class="md-search">
+          <span class="md-search-icon" aria-hidden="true">${iconSvg('search', 18)}</span>
+          <input id="md-search" type="search" placeholder="Search" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Search menu" />
+        </label>
+        <button type="button" class="md-close" id="md-close" aria-label="Close menu">${iconSvg('x', 20)}</button>
+      </div>
+      <div class="md-scroll">
+        <div class="md-group" data-nav-group-wrap="primary">
+${primary}
+        </div>
+        <div class="md-group" data-nav-group-wrap="sections">
+          <p class="md-section-label">Sections</p>
+${sections}
+        </div>
+        <p class="md-empty" hidden>No matches</p>
+      </div>
+      <div class="md-profile">
+        <img class="md-avatar" src="/portrait/niraj.webp" alt="" width="36" height="36" />
+        <span class="md-profile-text">
+          <span class="md-profile-name">Niraj Bhusal</span>
+          <span class="md-profile-role">Ministry of Finance, Nepal</span>
+        </span>
+        <button type="button" class="md-settings-btn" id="md-settings-btn" aria-expanded="false" aria-controls="md-settings" aria-label="Settings">${iconSvg('settings', 18)}</button>
+        <div class="md-settings" id="md-settings" hidden>
+          ${soundControlHtml('m')}
+          ${themeButtonHtml('theme-toggle-m')}
+        </div>
+      </div>
+    </nav>`;
+}
+
+function mobileTopHtml() {
   return `<header class="mobile-top">
-        <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''} aria-label="Niraj Bhusal, home">
-          <span class="logo-mark">NB</span>
-          <span class="wordmark">Niraj Bhusal</span>
-        </a>
-        <button type="button" id="nav-toggle" class="icon-btn nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">${iconSvg('menu', 22)}</button>
+        <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">${iconSvg('menu', 22)}</button>
       </header>`;
 }
 
@@ -696,7 +748,7 @@ function headHtml(page, { home }) {
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet" />
   ${introStyle}
   <script>
     (function () {
@@ -732,6 +784,7 @@ function documentFor(page, { home }) {
   <div class="app-shell">
     <button type="button" class="nav-scrim" id="nav-scrim" tabindex="-1" aria-label="Close menu"></button>
     ${sidebarHtml(activeSlug)}
+    ${mobileDrawerHtml(activeSlug)}
     <div class="shell-main">
       ${mobileTopHtml(activeSlug)}
       <main id="content">
