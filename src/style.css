@@ -923,7 +923,7 @@ h3 {
   color: #05060a;
 }
 
-/* Eleven nav items: keep one row until the drawer breakpoint. */
+/* Twelve nav items: keep one row until the drawer breakpoint. */
 @media (min-width: 901px) and (max-width: 1180px) {
   .nav {
     gap: 0.08rem 0.22rem;
