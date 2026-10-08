@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { publications } from '../src/site/data/publications.js';
+import { ABOUT_FOCUS, ABOUT_PARAGRAPHS } from '../src/site/data/about.js';
 import { iconSvg } from '../src/site/icons.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -357,7 +358,7 @@ const SECTION_ICONS = {
 const ARROW_ICON = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>`;
 
 /** Visual order: Projects and Speaking share row 1; Games and Contact share the last row.
- *  Superintelligence stays in the sidebar only — a contents card leaves an orphan row. */
+ *  Four columns on desktop, so each row is full. Superintelligence is not a section card. */
 const CONTENTS_ORDER = [
   { id: 'built', layout: 'feature', hue: 205 },
   { id: 'about', hue: 214 },
@@ -567,7 +568,11 @@ function navItemHtml(item, activeSlug, size = 20) {
 
 const NAV_ITEMS = [
   { id: 'home', slug: '', nav: 'Home' },
-  ...PAGES.map((page) => ({ id: page.id, slug: page.slug, nav: page.nav })),
+  ...PAGES.filter((page) => page.id !== 'superintelligence').map((page) => ({
+    id: page.id,
+    slug: page.slug,
+    nav: page.nav,
+  })),
 ];
 
 function overviewHtml() {
@@ -658,9 +663,57 @@ ${links}
     </aside>`;
 }
 
+function aboutParagraphsHtml(indent) {
+  return ABOUT_PARAGRAPHS.map((paragraph) => `${indent}<p>${escapeHtml(paragraph)}</p>`).join('\n');
+}
+
+function focusItemsHtml(indent) {
+  return ABOUT_FOCUS.map((item) => {
+    if (typeof item === 'string') return `${indent}<li>${escapeHtml(item)}</li>`;
+    return `${indent}<li>${escapeHtml(item.before)}<a class="quiet-link" href="${item.href}">${escapeHtml(item.text)}</a></li>`;
+  }).join('\n');
+}
+
+function aboutPageHtml() {
+  return `<section id="about" class="section reveal">
+      <p class="sheet-label">◇ SHEET 01 · ABOUT</p>
+      <h2>About</h2>
+      <div class="about-grid">
+        <div class="about-copy">
+${aboutParagraphsHtml('          ')}
+        </div>
+        <aside class="card focus-card">
+          <h3>Focus</h3>
+          <ul>
+${focusItemsHtml('            ')}
+          </ul>
+        </aside>
+      </div>
+    </section>`;
+}
+
+function homeAboutHtml() {
+  return `    <section id="home-about" class="section home-about reveal">
+      <p class="sheet-label">◇ ABOUT</p>
+      <h2>About</h2>
+      <div class="home-about-grid">
+        <div class="about-copy home-about-copy">
+${aboutParagraphsHtml('          ')}
+          <p class="home-about-more"><a href="/about/">More about me →</a></p>
+        </div>
+        <aside class="home-focus">
+          <h3>Focus</h3>
+          <ul>
+${focusItemsHtml('            ')}
+          </ul>
+        </aside>
+      </div>
+    </section>`;
+}
+
 function drawerRowHtml(item, activeSlug, group) {
   const href = item.slug ? `/${item.slug}/` : '/';
-  const icon = group === 'primary' ? iconSvg(ICONS[item.id] || 'sparkles', 18) : '';
+  const icon = iconSvg(ICONS[item.id] || 'sparkles', 18);
   return `          <a class="md-row" href="${href}" data-nav-label="${escapeHtml(item.nav.toLowerCase())}" data-nav-group="${group}"${linkAttrs(item.slug === activeSlug)}>${icon}<span>${escapeHtml(item.nav)}</span></a>`;
 }
 
@@ -670,7 +723,6 @@ function mobileDrawerHtml(activeSlug) {
     .map((id) => drawerRowHtml(byId.get(id), activeSlug, 'primary'))
     .join('\n');
   const sections = [
-    'superintelligence',
     'experience',
     'education',
     'trainings',
@@ -726,7 +778,7 @@ function headHtml(page, { home }) {
   const hashLiteral = JSON.stringify(HASH_MAP);
   const introStyle = home
     ? `<style>
-    html.is-intro .hero-id,html.is-intro .eyebrow,html.is-intro .hero-name,html.is-intro .hero-posting,html.is-intro .hero-portrait,html.is-intro .tagline,html.is-intro .lede,html.is-intro .hero-chrono,html.is-intro .hero-actions,html.is-intro .side-nav,html.is-intro .mobile-top,html.is-intro .games-launcher,html.is-intro #starfield{opacity:0}
+    html.is-intro .hero-id,html.is-intro .eyebrow,html.is-intro .hero-name,html.is-intro .hero-posting,html.is-intro .hero-portrait,html.is-intro .tagline,html.is-intro .lede,html.is-intro .hero-chrono,html.is-intro .hero-actions,html.is-intro .home-about,html.is-intro .side-nav,html.is-intro .mobile-top,html.is-intro .games-launcher,html.is-intro #starfield{opacity:0}
     html.is-intro-fade body::after{content:"";position:fixed;inset:0;z-index:80;background:var(--bg,#0b1220);pointer-events:none;animation:nb-veil .45s ease forwards}
     @keyframes nb-veil{to{opacity:0}}
   </style>`
@@ -772,9 +824,13 @@ function documentFor(page, { home }) {
   const games = read('partials/games.html');
   const footer = read('partials/footer.html');
   const main = home
-    ? `${read('sections/hero.html')}\n${overviewHtml()}`
+    ? `${read('sections/hero.html')}\n${homeAboutHtml()}\n${overviewHtml()}`
     : promoteHeading(
-        page.id === 'publications' ? publicationsSectionHtml(page) : read(`sections/${page.id}.html`)
+        page.id === 'about'
+          ? aboutPageHtml()
+          : page.id === 'publications'
+            ? publicationsSectionHtml(page)
+            : read(`sections/${page.id}.html`)
       );
 
   return `${headHtml(page, { home })}
