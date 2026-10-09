@@ -978,16 +978,18 @@ html.intro-skip #starfield {
   }
 
   .side-nav {
+    --rail-hit: 40px;
+    --rail-icon: 18px;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 4px;
     position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
     z-index: 40;
     width: var(--sidebar-w);
-    padding: 0.75rem 0.65rem 0.7rem;
+    padding: 12px;
     background: color-mix(in srgb, var(--bg) 92%, transparent);
     border-right: 1px solid var(--border);
     backdrop-filter: blur(16px);
@@ -1002,15 +1004,19 @@ html.intro-skip #starfield {
   .side-brand {
     display: flex;
     align-items: center;
-    min-height: 40px;
-    margin-bottom: 0.2rem;
+    justify-content: flex-start;
+    width: var(--rail-hit);
+    height: var(--rail-hit);
+    min-height: var(--rail-hit);
+    margin: 0;
   }
 
   .side-mark {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: var(--rail-hit);
+    height: var(--rail-hit);
+    margin: 0;
     padding: 0;
     border: 0;
     border-radius: 10px;
@@ -1049,15 +1055,18 @@ html.intro-skip #starfield {
   }
 
   .side-search {
-    display: flex;
+    display: grid;
+    grid-template-columns: var(--rail-hit) minmax(0, 1fr) auto;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0;
     width: 100%;
-    min-height: 40px;
-    margin-bottom: 0.25rem;
-    padding: 0 0.7rem;
-    border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+    height: var(--rail-hit);
+    min-height: var(--rail-hit);
+    margin: 0;
+    padding: 0 10px 0 0;
+    border: 0;
     border-radius: 10px;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 85%, transparent);
     background: color-mix(in srgb, var(--fg) 5%, transparent);
     color: var(--muted);
     font: inherit;
@@ -1065,6 +1074,15 @@ html.intro-skip #starfield {
     font-weight: 600;
     text-align: left;
     cursor: pointer;
+  }
+
+  .side-search svg,
+  .side-nav .side-links a svg,
+  .side-mark-icon svg,
+  .side-gear svg {
+    width: var(--rail-icon);
+    height: var(--rail-icon);
+    justify-self: center;
   }
 
   .side-search:hover {
@@ -1090,33 +1108,45 @@ html.intro-skip #starfield {
   }
 
   .side-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     overflow: auto;
     align-content: start;
-    gap: 0.1rem;
     min-height: 0;
+    margin: 0;
   }
 
-  .side-nav a {
-    min-height: 40px;
+  .side-nav .side-links a {
+    display: grid;
+    grid-template-columns: var(--rail-hit) minmax(0, 1fr);
+    align-items: center;
+    gap: 0;
+    width: 100%;
+    height: var(--rail-hit);
+    min-height: var(--rail-hit);
+    margin: 0;
+    padding: 0;
     border-radius: 10px;
-    padding: 0 0.7rem;
   }
 
   .side-account {
     position: relative;
-    display: flex;
+    display: grid;
+    grid-template-columns: var(--rail-hit) minmax(0, 1fr) var(--rail-hit);
     align-items: center;
-    gap: 0.6rem;
+    gap: 0;
     flex: none;
     margin-top: auto;
-    min-height: 52px;
-    padding: 0.7rem 0.25rem 0.1rem;
+    min-height: var(--rail-hit);
+    padding: 8px 0 0;
     border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
   }
 
   .side-avatar {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    justify-self: center;
     flex: none;
     border-radius: 50%;
     object-fit: cover;
@@ -1158,9 +1188,10 @@ html.intro-skip #starfield {
   }
 
   .side-gear {
-    width: 36px;
-    height: 36px;
-    margin-left: auto;
+    width: var(--rail-hit);
+    height: var(--rail-hit);
+    margin: 0;
+    justify-self: center;
     border-radius: 10px;
   }
 
@@ -1201,9 +1232,8 @@ html.intro-skip #starfield {
 
   html[data-sidebar="collapsed"] .side-nav {
     width: var(--sidebar-w-collapsed);
-    padding-left: 0;
-    padding-right: 0;
-    align-items: center;
+    padding: 12px;
+    align-items: stretch;
     overflow: visible;
   }
 
@@ -1212,42 +1242,81 @@ html.intro-skip #starfield {
   }
 
   html[data-sidebar="collapsed"] .side-links {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
     overflow: visible;
-    width: 100%;
-    align-items: center;
+    width: var(--rail-hit);
   }
 
+  html[data-sidebar="collapsed"] .side-brand,
+  html[data-sidebar="collapsed"] .side-mark,
   html[data-sidebar="collapsed"] .side-search,
-  html[data-sidebar="collapsed"] .side-nav a {
+  html[data-sidebar="collapsed"] .side-links a,
+  html[data-sidebar="collapsed"] .side-avatar-btn,
+  html[data-sidebar="collapsed"] .side-account {
     position: relative;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    width: 40px;
-    padding-left: 0;
-    padding-right: 0;
+    width: var(--rail-hit);
+    height: var(--rail-hit);
+    min-height: var(--rail-hit);
+    margin: 0;
+    padding: 0;
+    gap: 0;
+    border-radius: 10px;
+  }
+
+  html[data-sidebar="collapsed"] .side-mark {
+    display: grid;
+    place-items: center;
+  }
+
+  html[data-sidebar="collapsed"] .side-mark .logo-mark,
+  html[data-sidebar="collapsed"] .side-mark .side-mark-icon {
+    grid-area: 1 / 1;
   }
 
   html[data-sidebar="collapsed"] .side-search {
-    border-color: transparent;
+    box-shadow: none;
     background: transparent;
-    margin-bottom: 0.15rem;
+    grid-template-columns: none;
   }
 
-  html[data-sidebar="collapsed"] .side-kbd {
+  html[data-sidebar="collapsed"] .side-search:hover,
+  html[data-sidebar="collapsed"] .side-links a:hover,
+  html[data-sidebar="collapsed"] .side-mark:hover,
+  html[data-sidebar="collapsed"] .side-avatar-btn:hover {
+    background: color-mix(in srgb, var(--fg) 8%, transparent);
+  }
+
+  html[data-sidebar="collapsed"] .side-links a[aria-current="page"] {
+    background: color-mix(in srgb, var(--fg) 10%, transparent);
+  }
+
+  html[data-sidebar="collapsed"] .side-label,
+  html[data-sidebar="collapsed"] .side-kbd,
+  html[data-sidebar="collapsed"] .side-account-text,
+  html[data-sidebar="collapsed"] .side-avatar-show,
+  html[data-sidebar="collapsed"] .side-gear {
     display: none;
   }
 
-  html[data-sidebar="collapsed"] .side-label {
+  html[data-sidebar="collapsed"] .side-links a:hover .side-label,
+  html[data-sidebar="collapsed"] .side-links a:focus-visible .side-label,
+  html[data-sidebar="collapsed"] .side-search:hover .side-label,
+  html[data-sidebar="collapsed"] .side-search:focus-visible .side-label {
+    display: block;
     position: absolute;
-    left: calc(100% + 10px);
+    left: calc(100% + 12px);
     top: 50%;
     transform: translateY(-50%);
     width: max-content;
     height: auto;
     margin: 0;
     padding: 0.32rem 0.55rem;
-    overflow: visible;
-    clip: auto;
-    white-space: nowrap;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: var(--bg-elevated);
@@ -1255,35 +1324,24 @@ html.intro-skip #starfield {
     font-size: 13px;
     font-weight: 600;
     line-height: 1.3;
-    opacity: 0;
+    white-space: nowrap;
     pointer-events: none;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
     z-index: 6;
   }
 
-  html[data-sidebar="collapsed"] .side-links a:hover .side-label,
-  html[data-sidebar="collapsed"] .side-links a:focus-visible .side-label,
-  html[data-sidebar="collapsed"] .side-search:hover .side-label,
-  html[data-sidebar="collapsed"] .side-search:focus-visible .side-label {
-    opacity: 1;
-  }
-
-  html[data-sidebar="collapsed"] .side-avatar-show,
-  html[data-sidebar="collapsed"] .side-account-text,
-  html[data-sidebar="collapsed"] .side-gear {
-    display: none;
-  }
-
   html[data-sidebar="collapsed"] .side-avatar-btn {
-    display: inline-flex;
+    display: flex;
+  }
+
+  html[data-sidebar="collapsed"] .side-avatar-btn .side-avatar {
+    width: 32px;
+    height: 32px;
   }
 
   html[data-sidebar="collapsed"] .side-account {
-    justify-content: center;
-    width: auto;
-    min-height: 0;
-    padding: 0.45rem 0 0.15rem;
     border-top: 0;
+    padding: 0;
   }
 
   html[data-sidebar="collapsed"] .side-settings {
@@ -1816,14 +1874,22 @@ html.intro-skip #starfield {
 @media (max-width: 900px) {
   .cmd-palette {
     align-items: end;
+    justify-content: stretch;
     padding: 0;
   }
 
   .cmd-panel {
     width: 100%;
+    justify-self: stretch;
     max-height: min(86vh, 640px);
     border-radius: 18px 18px 0 0;
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .cmd-kbd,
+  .side-kbd,
+  .md-search kbd {
+    display: none !important;
   }
 }
 
