@@ -560,20 +560,34 @@ function sectionStat(id) {
   return '';
 }
 
-function navItemHtml(item, activeSlug, size = 20) {
+function navItemHtml(item, activeSlug, size = 18) {
   const current = item.slug === activeSlug;
   const href = item.slug ? `/${item.slug}/` : '/';
-  return `<a href="${href}"${linkAttrs(current)}>${iconSvg(ICONS[item.id] || 'sparkles', size)}<span class="side-label">${item.nav}</span></a>`;
+  return `<a href="${href}" title="${escapeHtml(item.nav)}"${linkAttrs(current)}>${iconSvg(ICONS[item.id] || 'sparkles', size)}<span class="side-label">${escapeHtml(item.nav)}</span></a>`;
 }
 
-const NAV_ITEMS = [
-  { id: 'home', slug: '', nav: 'Home' },
-  ...PAGES.filter((page) => page.id !== 'superintelligence').map((page) => ({
-    id: page.id,
-    slug: page.slug,
-    nav: page.nav,
-  })),
+const NAV_ORDER = [
+  'home',
+  'about',
+  'built',
+  'experience',
+  'speaking',
+  'publications',
+  'presentations',
+  'trainings',
+  'education',
+  'media',
+  'community',
+  'play',
+  'contact',
 ];
+
+const NAV_ITEMS = NAV_ORDER.map((id) => {
+  if (id === 'home') return { id: 'home', slug: '', nav: 'Home' };
+  const page = PAGES.find((item) => item.id === id);
+  if (!page) throw new Error(`Missing nav page: ${id}`);
+  return { id: page.id, slug: page.slug, nav: page.nav };
+});
 
 function overviewHtml() {
   const byId = new Map(PAGES.map((page) => [page.id, page]));
@@ -643,22 +657,36 @@ function themeButtonHtml(id) {
 }
 
 function sidebarHtml(activeSlug) {
-  const home = activeSlug === '';
   const links = NAV_ITEMS.map((item) => `        ${navItemHtml(item, activeSlug)}`).join('\n');
   return `<aside class="side-nav" id="site-nav" aria-label="Menu">
       <div class="side-brand">
-        <a class="brand-lockup" href="/"${home ? ' aria-current="page"' : ''} aria-label="Niraj Bhusal, home">
+        <button type="button" id="sidebar-collapse" class="side-mark" aria-pressed="false" aria-label="Collapse sidebar" title="Collapse sidebar">
           <span class="logo-mark">NB</span>
-          <span class="wordmark">Niraj Bhusal</span>
-        </a>
-        <button type="button" id="sidebar-collapse" class="icon-btn side-collapse" aria-pressed="false" aria-label="Collapse sidebar" title="Collapse sidebar">${iconSvg('panel', 20)}</button>
+          <span class="side-mark-icon" aria-hidden="true">${iconSvg('panel', 18)}</span>
+        </button>
       </div>
+      <button type="button" class="side-search" id="side-search">
+        ${iconSvg('search', 18)}
+        <span class="side-label">Search</span>
+        <kbd class="side-kbd" data-mod-kbd>Ctrl K</kbd>
+      </button>
       <nav class="side-links">
 ${links}
       </nav>
-      <div class="side-foot">
-        ${soundControlHtml('')}
-        ${themeButtonHtml('theme-toggle')}
+      <div class="side-account">
+        <img class="side-avatar side-avatar-show" src="/portrait/niraj.webp" alt="" width="36" height="36" />
+        <span class="side-account-text">
+          <span class="side-account-name">Niraj Bhusal</span>
+          <span class="side-account-role">Ministry of Finance, Nepal</span>
+        </span>
+        <button type="button" class="side-gear" id="side-settings-btn" aria-expanded="false" aria-controls="side-settings" aria-label="Settings">${iconSvg('settings', 18)}</button>
+        <button type="button" class="side-avatar-btn" id="side-avatar-btn" aria-expanded="false" aria-controls="side-settings" aria-label="Settings">
+          <img class="side-avatar" src="/portrait/niraj.webp" alt="" width="36" height="36" />
+        </button>
+        <div class="side-settings" id="side-settings" hidden>
+          ${soundControlHtml('')}
+          ${themeButtonHtml('theme-toggle')}
+        </div>
       </div>
     </aside>`;
 }
@@ -721,15 +749,14 @@ function mobileDrawerHtml(activeSlug) {
   const rows = NAV_ITEMS.map((item) => drawerRowHtml(item, activeSlug)).join('\n');
   return `<nav class="mobile-drawer" id="mobile-nav" aria-label="Menu" aria-hidden="true" tabindex="-1" inert>
       <div class="md-head">
-        <label class="md-search">
+        <button type="button" class="md-search" id="md-search">
           <span class="md-search-icon" aria-hidden="true">${iconSvg('search', 18)}</span>
-          <input id="md-search" type="search" placeholder="Search" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Search menu" />
-        </label>
+          <span class="md-search-label">Search</span>
+        </button>
         <button type="button" class="md-close" id="md-close" aria-label="Close menu">${iconSvg('x', 20)}</button>
       </div>
       <div class="md-scroll">
 ${rows}
-        <p class="md-empty" hidden>No matches</p>
       </div>
       <div class="md-profile">
         <img class="md-avatar" src="/portrait/niraj.webp" alt="" width="36" height="36" />
@@ -744,6 +771,183 @@ ${rows}
         </div>
       </div>
     </nav>`;
+}
+
+function articleBlocks(html) {
+  const blocks = [];
+  const re = /<article\b[^>]*>([\s\S]*?)<\/article>/g;
+  let match;
+  while ((match = re.exec(html))) blocks.push(match[1]);
+  return blocks;
+}
+
+function catalogItem({ id, group, title, hint, text, href, icon, external }) {
+  if (!title || /@/.test(`${title} ${hint} ${text}`) || /mailto:/i.test(href)) return null;
+  return {
+    id,
+    group,
+    title,
+    hint: hint || '',
+    text: text || `${title} ${hint || ''}`,
+    href,
+    icon: iconSvg(icon, 18),
+    external: Boolean(external),
+  };
+}
+
+function paletteCatalog() {
+  const items = [];
+  const push = (item) => {
+    if (item) items.push(item);
+  };
+
+  for (const item of NAV_ITEMS) {
+    push(
+      catalogItem({
+        id: `page:${item.id}`,
+        group: 'Pages',
+        title: item.nav,
+        hint: '',
+        text: item.nav,
+        href: item.slug ? `/${item.slug}/` : '/',
+        icon: ICONS[item.id] || 'sparkles',
+      })
+    );
+  }
+
+  articleBlocks(read('sections/built.html')).forEach((block, index) => {
+    const title = plainText((block.match(/<h3[^>]*>([\s\S]*?)<\/h3>/) || [])[1]);
+    const meta = plainText((block.match(/<p class="meta">([\s\S]*?)<\/p>/) || [])[1]);
+    const blurb = plainText((block.match(/<p>([\s\S]*?)<\/p>/) || [])[1]);
+    push(
+      catalogItem({
+        id: `project:${index}`,
+        group: 'Projects',
+        title,
+        hint: meta,
+        text: `${title} ${meta} ${blurb}`,
+        href: '/projects/',
+        icon: 'grid',
+      })
+    );
+  });
+
+  articleBlocks(read('sections/speaking.html')).forEach((block, index) => {
+    const title = plainText((block.match(/<h3[^>]*>([\s\S]*?)<\/h3>/) || [])[1]);
+    const meta = plainText((block.match(/<p class="meta">([\s\S]*?)<\/p>/) || [])[1]);
+    const blurb = plainText((block.match(/<p>([\s\S]*?)<\/p>/) || [])[1]);
+    push(
+      catalogItem({
+        id: `speaking:${index}`,
+        group: 'Speaking',
+        title,
+        hint: meta,
+        text: `${title} ${meta} ${blurb}`,
+        href: '/speaking/',
+        icon: 'mic',
+      })
+    );
+  });
+
+  articleBlocks(read('sections/presentations.html')).forEach((block, index) => {
+    const title = plainText((block.match(/<h3[^>]*>([\s\S]*?)<\/h3>/) || [])[1]);
+    const meta = plainText((block.match(/<p class="meta">([\s\S]*?)<\/p>/) || [])[1]);
+    const blurb = plainText((block.match(/<p>([\s\S]*?)<\/p>/) || [])[1]);
+    const pdf = (block.match(/href="([^"]+\.pdf)"/) || [])[1] || '/presentations/';
+    push(
+      catalogItem({
+        id: `presentation:${index}`,
+        group: 'Presentations',
+        title,
+        hint: meta,
+        text: `${title} ${meta} ${blurb}`,
+        href: pdf,
+        icon: 'presentation',
+      })
+    );
+  });
+
+  publications.forEach((item, index) => {
+    const title = item.title || 'Untitled';
+    const hint = [item.type, publicationVenue(item), item.date].filter(Boolean).join(' · ');
+    push(
+      catalogItem({
+        id: `publication:${index}`,
+        group: 'Publications',
+        title,
+        hint,
+        text: `${title} ${hint} ${item.description || ''}`,
+        href: item.url || '/publications/',
+        icon: 'file',
+        external: Boolean(item.url),
+      })
+    );
+  });
+
+  const training = read('sections/trainings.html');
+  const chipRe = /<span class="chip-name">([\s\S]*?)<\/span>[\s\S]*?<span class="chip-when">([\s\S]*?)<\/span>/g;
+  let chip;
+  let chipIndex = 0;
+  while ((chip = chipRe.exec(training))) {
+    const title = plainText(chip[1]);
+    const hint = plainText(chip[2]);
+    push(
+      catalogItem({
+        id: `training:${chipIndex}`,
+        group: 'Training',
+        title,
+        hint,
+        text: `${title} ${hint}`,
+        href: '/training/',
+        icon: 'book',
+      })
+    );
+    chipIndex += 1;
+  }
+
+  const media = read('sections/media.html');
+  const mediaRe = /<a class="media-card" href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
+  let card;
+  let mediaIndex = 0;
+  while ((card = mediaRe.exec(media))) {
+    const body = card[2];
+    const outlet = plainText((body.match(/<span class="outlet">([\s\S]*?)<\/span>/) || [])[1]);
+    const headline = plainText((body.match(/<span class="headline">([\s\S]*?)<\/span>/) || [])[1]);
+    const when = plainText((body.match(/<span class="when">([\s\S]*?)<\/span>/) || [])[1]);
+    const href = card[1];
+    push(
+      catalogItem({
+        id: `media:${mediaIndex}`,
+        group: 'Media',
+        title: headline || outlet,
+        hint: [outlet, when].filter(Boolean).join(' · '),
+        text: `${headline} ${outlet} ${when}`,
+        href,
+        icon: 'award',
+        external: /^https?:/i.test(href),
+      })
+    );
+    mediaIndex += 1;
+  }
+
+  return items;
+}
+
+function paletteHtml() {
+  const json = JSON.stringify(paletteCatalog()).replace(/</g, '\\u003c');
+  return `<div class="cmd-palette" id="cmd-palette" hidden>
+    <button type="button" class="cmd-backdrop" id="cmd-backdrop" tabindex="-1" aria-label="Close search"></button>
+    <div class="cmd-panel" role="dialog" aria-modal="true" aria-label="Search">
+      <div class="cmd-input-row">
+        <span class="cmd-input-icon" aria-hidden="true">${iconSvg('search', 18)}</span>
+        <input id="cmd-input" type="search" placeholder="Search pages and work" autocomplete="off" spellcheck="false" aria-label="Search pages and work" aria-controls="cmd-results" aria-autocomplete="list" role="combobox" aria-expanded="true" />
+        <kbd class="cmd-kbd" data-mod-kbd>Ctrl K</kbd>
+      </div>
+      <div class="cmd-results" id="cmd-results" role="listbox"></div>
+      <p class="cmd-empty" id="cmd-empty" hidden>No matches</p>
+    </div>
+  </div>
+  <script type="application/json" id="palette-index">${json}</script>`;
 }
 
 function mobileTopHtml() {
@@ -828,6 +1032,7 @@ ${main}
       ${footer}
     </div>
   </div>
+  ${paletteHtml()}
 ${games}
   <script type="module" src="/src/main.js"></script>
 </body>
