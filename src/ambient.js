@@ -16,8 +16,17 @@ function clamp(n, a, b) {
   return Math.max(a, Math.min(b, n));
 }
 
+/** Storage can throw when the browser blocks site data; sound still works without it. */
+function readStored(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
 function readStoredVolume() {
-  const raw = localStorage.getItem(VOL_KEY);
+  const raw = readStored(VOL_KEY);
   if (raw == null) return DEFAULT_VOL;
   const n = Number(raw);
   if (!Number.isFinite(n)) return DEFAULT_VOL;
@@ -33,17 +42,9 @@ export function createAmbient() {
   let toneTimer = 0;
   let started = false;
   let volume = readStoredVolume();
-  // Legacy mute flag: if previously muted, start at 0 but keep preferred volume
-  let mutedLegacy = localStorage.getItem(MUTE_KEY) === '1';
-  if (mutedLegacy && volume > 0) {
-    // Keep preferred loudness in VOL_KEY; effective level is 0 until user raises
-    volume = 0;
-  }
-  let reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function effectiveGain() {
-    return volume;
-  }
+  // Legacy mute flag from before volume was stored: start silent until the user raises it.
+  if (readStored(MUTE_KEY) === '1') volume = 0;
+  const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function ensureCtx() {
     if (ctx) return ctx;
@@ -51,7 +52,7 @@ export function createAmbient() {
     if (!AC) return null;
     ctx = new AC();
     master = ctx.createGain();
-    master.gain.value = effectiveGain();
+    master.gain.value = volume;
 
     dryGain = ctx.createGain();
     dryGain.gain.value = 0.55;
@@ -193,15 +194,19 @@ export function createAmbient() {
     if (!master || !ctx) return;
     const t = ctx.currentTime;
     master.gain.cancelScheduledValues(t);
-    master.gain.linearRampToValueAtTime(Math.max(0.0001, effectiveGain()), t + ms);
-    if (effectiveGain() <= 0.0001) {
+    master.gain.linearRampToValueAtTime(Math.max(0.0001, volume), t + ms);
+    if (volume <= 0.0001) {
       master.gain.linearRampToValueAtTime(0, t + ms);
     }
   }
 
   function persistVolume() {
-    localStorage.setItem(VOL_KEY, String(volume));
-    localStorage.setItem(MUTE_KEY, volume <= 0.001 ? '1' : '0');
+    try {
+      localStorage.setItem(VOL_KEY, String(volume));
+      localStorage.setItem(MUTE_KEY, volume <= 0.001 ? '1' : '0');
+    } catch {
+      /* ignore */
+    }
   }
 
   async function start() {
@@ -252,18 +257,6 @@ export function createAmbient() {
     return setVolume(volume - VOL_STEP);
   }
 
-  /** @deprecated mute API kept for callers; maps to volume 0 / restore default */
-  function setMuted(next) {
-    if (next) return setVolume(0);
-    if (volume <= 0.001) return setVolume(DEFAULT_VOL);
-    return volume;
-  }
-
-  function toggleMute() {
-    if (volume > 0.001) return setVolume(0);
-    return setVolume(DEFAULT_VOL);
-  }
-
   function isMuted() {
     return volume <= 0.001;
   }
@@ -283,8 +276,6 @@ export function createAmbient() {
 
   return {
     start,
-    toggleMute,
-    setMuted,
     isMuted,
     isStarted,
     setVolume,

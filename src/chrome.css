@@ -174,7 +174,6 @@ p,
 .featured-mof-copy > p,
 .play-lede,
 .site-footer,
-.nav a,
 .focus-card li,
 .home-focus li {
   color: var(--muted);
@@ -350,11 +349,9 @@ p,
   outline-offset: 3px;
 }
 
-.about-links a,
 .portal-links a,
 .event-card a,
 .coffee-card a:not(.btn),
-.hero-play-more a,
 .si-close a {
   color: var(--accent);
 }
@@ -426,16 +423,6 @@ p,
   background: color-mix(in srgb, var(--fg) 8%, transparent);
 }
 
-.brand-lockup {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-height: 44px;
-  color: var(--fg);
-  text-decoration: none;
-  border-radius: 12px;
-}
-
 .logo-mark {
   font-family: var(--mono);
   font-weight: 500;
@@ -445,16 +432,7 @@ p,
   flex: none;
 }
 
-.wordmark {
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  font-size: 0.98rem;
-  line-height: 1.2;
-}
-
-.side-collapse,
-.theme-cycle,
-.icon-btn {
+.theme-cycle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -512,8 +490,7 @@ html[data-theme-mode="dark"] .theme-cycle-label::before {
   content: "Dark";
 }
 
-.side-links,
-.side-foot {
+.side-links {
   display: grid;
   gap: 0.2rem;
 }
@@ -1514,15 +1491,8 @@ html.intro-skip #starfield {
   }
 
   .md-row[hidden],
-  .md-empty[hidden],
   .md-settings[hidden] {
     display: none !important;
-  }
-
-  .md-empty {
-    margin: 0.85rem 0.7rem;
-    color: var(--muted);
-    font-size: 14px;
   }
 
   .md-profile {

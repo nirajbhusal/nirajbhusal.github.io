@@ -67,10 +67,10 @@ function initYear() {
   if (el) el.textContent = String(new Date().getFullYear());
 }
 
+/** Calendar day of the year (1-based). UTC math keeps DST shifts from moving the count. */
 function dayOfYear(d) {
-  const start = new Date(d.getFullYear(), 0, 0);
-  const diff = d - start;
-  return Math.floor(diff / 86_400_000);
+  const today = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  return Math.round((today - Date.UTC(d.getFullYear(), 0, 0)) / 86_400_000);
 }
 
 function daysInYear(year) {
@@ -569,10 +569,13 @@ function initPalette() {
   if (!root || !input || !results || !dataEl) return;
 
   let catalog = [];
+  let icons = {};
   try {
-    catalog = JSON.parse(dataEl.textContent || '[]');
+    const data = JSON.parse(dataEl.textContent || '{}');
+    if (Array.isArray(data.items)) catalog = data.items;
+    if (data.icons && typeof data.icons === 'object') icons = data.icons;
   } catch {
-    catalog = [];
+    /* leave the palette empty */
   }
   const byId = new Map(catalog.map((item) => [item.id, item]));
   const mac = /Mac|iPhone|iPad/.test(navigator.platform || '') || /Mac/.test(navigator.userAgent || '');
@@ -707,7 +710,7 @@ function initPalette() {
       row.setAttribute('role', 'option');
       const icon = document.createElement('span');
       icon.className = 'cmd-ico';
-      icon.innerHTML = item.icon || '';
+      icon.innerHTML = icons[item.icon] || '';
       const copy = document.createElement('span');
       copy.className = 'cmd-copy';
       const title = document.createElement('span');
@@ -835,12 +838,21 @@ function initGamePopup() {
     extra: document.getElementById('gp-extra'),
   };
 
+  const pauseBtn = document.getElementById('gp-pause');
   let current = null;
   let lastFocus = null;
+  let paused = false;
 
   function ensure() {
     if (!current) current = initBasketball(canvas, hud);
     return current;
+  }
+
+  function setPaused(next) {
+    paused = next;
+    if (pauseBtn) pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+    if (paused) current?.pause(true);
+    else current?.start();
   }
 
   function setOpen(open) {
@@ -849,16 +861,22 @@ function initGamePopup() {
       lastFocus = document.activeElement;
       document.body.classList.add('orbit-open');
       modal.hidden = false;
-      window.setTimeout(() => ensure().start(), 40);
+      window.setTimeout(() => {
+        if (modal.hidden) return;
+        ensure();
+        setPaused(false);
+      }, 40);
     } else if (!open && wasOpen) {
-      current?.pause?.(true);
+      current?.pause(true);
       modal.hidden = true;
       document.body.classList.remove('orbit-open');
       lastFocus?.focus?.();
     }
   }
 
-  document.getElementById('gp-pause')?.addEventListener('click', () => current?.pause?.(true));
+  pauseBtn?.addEventListener('click', () => {
+    if (current) setPaused(!paused);
+  });
   document.querySelectorAll('[data-game-close]').forEach((el) => {
     el.addEventListener('click', () => setOpen(false));
   });

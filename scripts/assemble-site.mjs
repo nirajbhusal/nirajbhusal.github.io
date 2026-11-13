@@ -512,8 +512,9 @@ function sectionStat(id) {
     return tally(n, 'publication');
   }
 
+  if (id === 'about') return tally(ABOUT_FOCUS.length, 'focus area');
+
   const file = {
-    about: 'sections/about.html',
     built: 'sections/built.html',
     experience: 'sections/experience.html',
     education: 'sections/education.html',
@@ -528,10 +529,6 @@ function sectionStat(id) {
   if (!file) return '';
   const html = read(file);
 
-  if (id === 'about') {
-    const focus = html.match(/<aside class="card focus-card">([\s\S]*?)<\/aside>/);
-    return tally(focus ? (focus[1].match(/<li>/g) || []).length : 0, 'focus area');
-  }
   if (id === 'built') return tally((html.match(/<article\b/g) || []).length, 'project');
   if (id === 'experience') {
     const roles = (html.match(/class="org-name"/g) || []).length;
@@ -790,7 +787,7 @@ function catalogItem({ id, group, title, hint, text, href, icon, external }) {
     hint: hint || '',
     text: text || `${title} ${hint || ''}`,
     href,
-    icon: iconSvg(icon, 18),
+    icon,
     external: Boolean(external),
   };
 }
@@ -934,7 +931,9 @@ function paletteCatalog() {
 }
 
 function paletteHtml() {
-  const json = JSON.stringify(paletteCatalog()).replace(/</g, '\\u003c');
+  const items = paletteCatalog();
+  const icons = Object.fromEntries([...new Set(items.map((item) => item.icon))].map((name) => [name, iconSvg(name, 18)]));
+  const json = JSON.stringify({ icons, items }).replace(/</g, '\\u003c');
   return `<div class="cmd-palette" id="cmd-palette" hidden>
     <button type="button" class="cmd-backdrop" id="cmd-backdrop" tabindex="-1" aria-label="Close search"></button>
     <div class="cmd-panel" role="dialog" aria-modal="true" aria-label="Search">
@@ -958,6 +957,8 @@ function mobileTopHtml() {
 
 function headHtml(page, { home }) {
   const url = pageUrl(page.slug);
+  const title = escapeHtml(page.title);
+  const description = escapeHtml(page.description);
   const hashLiteral = JSON.stringify(HASH_MAP);
   const introStyle = home
     ? `<style>
@@ -973,11 +974,11 @@ function headHtml(page, { home }) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>${THEME_BOOT}</script>
-  <title>${page.title}</title>
-  <meta name="description" content="${page.description}" />
+  <title>${title}</title>
+  <meta name="description" content="${description}" />
   <link rel="canonical" href="${url}" />
-  <meta property="og:title" content="${page.title}" />
-  <meta property="og:description" content="${page.description}" />
+  <meta property="og:title" content="${title}" />
+  <meta property="og:description" content="${description}" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${url}" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -1025,7 +1026,7 @@ function documentFor(page, { home }) {
     ${sidebarHtml(activeSlug)}
     ${mobileDrawerHtml(activeSlug)}
     <div class="shell-main">
-      ${mobileTopHtml(activeSlug)}
+      ${mobileTopHtml()}
       <main id="content">
 ${main}
       </main>
@@ -1054,7 +1055,6 @@ function main() {
 
   const homeHtml = documentFor(HOME, { home: true });
   fs.writeFileSync(path.join(buildSrc, 'index.html'), homeHtml);
-  fs.writeFileSync(path.join(root, 'index.source.html'), homeHtml);
 
   for (const page of PAGES) {
     const dir = path.join(buildSrc, page.slug);
